@@ -1,0 +1,67 @@
+package com.bairuitech.anychat.config;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+
+/**
+ * Created by jogger on 2017/4/12.
+ *
+ */
+
+public class AnyChatSharePreUtil {
+    private static AnyChatSharePreUtil mSharePreUtil;
+    private static Context mContext;
+    private static SharedPreferences sp;
+    private static String mCustomFileName;
+
+    private AnyChatSharePreUtil() {
+    }
+
+    public static AnyChatSharePreUtil getInstance(Context context) {
+        mContext = context.getApplicationContext();
+        if (mSharePreUtil == null) {
+            synchronized (AnyChatSharePreUtil.class) {
+                if (mSharePreUtil == null) {
+                    mSharePreUtil = new AnyChatSharePreUtil();
+                }
+            }
+        }
+        sp = mContext.getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE);
+        return mSharePreUtil;
+    }
+
+    /**
+     * 保存在手机里的文件名
+     */
+    private static final String FILE_NAME = "anychat_sp";
+
+    public void putString(String key, String value) {
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString(key, value);
+        editor.apply();
+    }
+
+    public void putInt(String key, int value) {
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putInt(key, value);
+        editor.apply();
+    }
+
+    public void putBoolean(String key, Boolean value) {
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putBoolean(key, value);
+        editor.apply();
+    }
+
+    public String getString(String key, String value) {
+        return sp.getString(key, value);
+    }
+
+    public int getInt(String key, int value) {
+        return sp.getInt(key, value);
+    }
+
+    public boolean getBoolean(String key, boolean value) {
+        return sp.getBoolean(key, value);
+    }
+}

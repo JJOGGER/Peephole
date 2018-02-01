@@ -1,0 +1,500 @@
+package cn.jcyh.peephole.control;
+
+import android.content.Context;
+import android.media.MediaPlayer;
+
+import com.bairuitech.anychat.AnyChatCoreSDK;
+import com.bairuitech.anychat.AnyChatDefine;
+import com.google.gson.Gson;
+
+import cn.jcyh.peephole.bean.CommandJson;
+import timber.log.Timber;
+
+/**
+ * Created by jogger on 2017/3/17.
+ * 控制中心
+ */
+
+public class DoorBellControlCenter {
+
+    private static DoorBellControlCenter mDoorBellControlCenter;
+    private static Context mContext;
+    public static boolean sIsAnychatLogin = false;//标记anychat是否登录
+    public AnyChatCoreSDK mAnyChat;//单例的anychat，同一事件的话可以使用这个
+    private MediaPlayer mMediaPlaer;
+    public static int mEventType = -1;
+    private Gson mGson;
+
+    //    public static Map<String, Object> pushFlagMap;
+
+    private DoorBellControlCenter() {
+        mAnyChat = AnyChatCoreSDK.getInstance(null);
+        mGson = new Gson();
+    }
+
+    public static DoorBellControlCenter getInstance(Context context) {
+        mContext = context.getApplicationContext();
+        if (mDoorBellControlCenter == null) {
+            synchronized (DoorBellControlCenter.class) {
+                if (mDoorBellControlCenter == null) {
+                    mDoorBellControlCenter = new DoorBellControlCenter();
+                }
+            }
+        }
+        return mDoorBellControlCenter;
+    }
+
+//    /***
+//     * 停止播放
+//     */
+//    public void stopSessionMis() {
+//        /* End modify by shaunliu for phone can receive video request */
+//        if (mMediaPlaer == null)
+//            return;
+//        try {
+//            mMediaPlaer.pause();
+//            mMediaPlaer.stop();
+//            mMediaPlaer.release();
+//            mMediaPlaer = null;
+//        } catch (Exception e) {
+//            Timber.i("media-stop: er");
+//        }
+//
+//    }
+//
+//    /**
+//     * 初始化在线好友数据
+//     *
+//     * @param isInit
+//     */
+//    public void initFriendDatas(int isInit) {
+//        if (mCurrentDoorBellUser == null) {
+//            return;
+//        }
+//        List<DoorBellBean> user_devices = mCurrentDoorBellUser.getUserDevices();
+//        if (user_devices == null || user_devices.size() == 0) {
+//            return;
+//        }
+//        mFriendItems.clear();
+//        mFriendItems.addAll(user_devices);
+//    }
+//
+//    public void initFriendDatas() {
+//        if (mFriendItems == null || mFriendItems.size() == 0) {
+//            return;
+//        }
+//        for (DoorBellBean doorbell :
+//                mFriendItems) {
+//            doorbell.setIsOnLine(0);
+//        }
+//    }
+//
+//    /***
+//     * 获取好友数据
+//     */
+//    public void getFriendDatas() {
+//        if (mCurrentDoorBellUser != null) {
+//            mFriendItems.clear();
+//            List<DoorBellBean> list = mCurrentDoorBellUser.getUserDevices();
+//            if (list == null || list.size() == 0) {
+//                return;
+//            }
+//            for (int i = 0; i < list.size(); i++) {
+//                //获取好友在线状态
+//                int device_anychat_id = list.get(i).getDevice_anychat_id();
+//                int onLineStatus = mAnyChat.GetFriendStatus(device_anychat_id);
+//                DoorBellBean doorBellBean = list.get(i);
+//                doorBellBean.setIsOnLine(onLineStatus);//设置在线状态
+//                mFriendItems.add(doorBellBean);
+//            }
+//
+//            //按用户在线和不在线排序
+//            int len = mFriendItems.size();
+//            for (int k = len - 1; k >= 0; k--) {
+//                if (mFriendItems.get(k).getIsOnLine() == 0) {
+//                    //把它调整到最后
+//                    mFriendItems.add(list.get(k));
+//                    mFriendItems.remove(k);
+//                }
+//            }
+//        }
+//    }
+//
+//    /***
+//     * 通过anychatid拿到猫眼
+//     */
+//    public DoorBellBean getDoorBellByAnychatId(int anychatId) {
+//        if (mCurrentDoorBellUser != null) {
+//            mFriendItems.clear();
+//            List<DoorBellBean> list = mCurrentDoorBellUser.getUserDevices();
+//            if (list != null && list.size() != 0) {
+//                mFriendItems.addAll(list);
+//                for (int i = 0; i < list.size(); i++) {
+//                    int device_anychat_id = list.get(i).getDevice_anychat_id();
+//                    if (anychatId == device_anychat_id) {
+//                        return list.get(i);
+//                    }
+//                }
+//            }
+//
+//        }
+//        return null;
+//    }
+//
+//    public interface OnLoginDoorBellListener {
+//        void onSuccess(String uid);
+//
+//        void onFailure(String errorCode);
+//    }
+//
+//    private boolean isReLogin = false;
+//
+//    /***
+//     * 通过用户id获取用户对象
+//     *
+//     * @param userId 用户id
+//     */
+//    public DoorBellBean getUserItemByUserId(int userId) {
+//        Timber.e("-------mFriendItems" + mFriendItems);
+//        if (mFriendItems != null) {
+//            int size = mFriendItems.size();
+//            for (int i = 0; i < size; i++) {
+//                DoorBellBean userItem = mFriendItems.get(i);
+//
+//                if (userItem != null && userItem.getDevice_anychat_id() == userId) {
+//                    return userItem;
+//                }
+//            }
+//        }
+//        return null;
+//    }
+//
+//    //清空操作
+//    public void realse() {
+//        mAnyChat = null;
+//        mFriendItems = null;
+//        mDoorBellControlCenter = null;
+//    }
+//
+//    /**
+//     * 清空数据
+//     */
+//    public void realseData() {
+//        mFriendItems.clear();
+//    }
+//
+
+    /***
+     * 发送呼叫事件
+     *
+     * @param dwEventType 视频呼叫事件类型
+     * @param dwUserId    目标userid
+     * @param dwErrorCode 原因
+     * @param dwFlags     功能标志
+     * @param dwParam     自定义参数，传给对方
+     * @param szUserStr   自定义参数，传给对方
+     */
+    public void videoCallContrl(int dwEventType, int dwUserId,
+                                int dwErrorCode, int dwFlags, int dwParam, String szUserStr) {
+        mEventType = dwEventType;
+        mAnyChat.VideoCallControl(dwEventType, dwUserId, dwErrorCode, dwFlags,
+                dwParam, szUserStr);
+    }
+//
+//    @SuppressWarnings("unused")
+//    @Override
+//    public void VideoCall_SessionRequest(int dwUserId, int dwFlags,
+//                                         int dwParam, String szUserStr) {
+//        // 如果程序在后台，通知有呼叫请求
+//    }
+//
+//    @Override
+//    public void VideoCall_SessionReply(int dwUserId, int dwErrorCode,
+//                                       int dwFlags, int dwParam, String szUserStr) {
+//        String strMessage = null;
+//        switch (dwErrorCode) {
+//            case ERRORCODE_SESSION_BUSY:
+//                strMessage = mContext.getString(R.string.str_returncode_bussiness);
+//                break;
+//            case ERRORCODE_SESSION_REFUSE:
+//                strMessage = mContext
+//                        .getString(R.string.str_returncode_requestrefuse);
+//                break;
+//            case ERRORCODE_SESSION_OFFLINE:
+//                strMessage = mContext.getString(R.string.str_returncode_offline);
+//                break;
+//            case ERRORCODE_SESSION_QUIT:
+//                strMessage = mContext
+//                        .getString(R.string.str_returncode_requestcancel);
+//                break;
+//            case ERRORCODE_SESSION_TIMEOUT:
+//                strMessage = mContext.getString(R.string.str_returncode_timeout);
+//                break;
+//            case ERRORCODE_SESSION_DISCONNECT:
+//                strMessage = mContext.getString(R.string.str_returncode_disconnect);
+//                break;
+//            case ERRORCODE_SUCCESS:
+//                break;
+//            default:
+//                break;
+//        }
+//        if (strMessage != null) {
+//            ToastUtil.showToast(mContext, strMessage);
+//            stopSessionMis();
+//        }
+//
+//    }
+//
+//    @Override
+//    public void VideoCall_SessionStart(Context context, int dwUserId, int dwFlags, int dwParam,
+//                                       String szUserStr) {
+//        stopSessionMis();
+////        sessionItem = new SessionItem(dwFlags, mSelfUserId, dwUserId);
+////        sessionItem.setRoomId(dwParam);
+//        Intent intent = new Intent();
+//        intent.setClass(context, VideoActivity.class);
+//        DoorBellBean doorBellBean = getUserItemByUserId(dwUserId);
+//        intent.putExtra("doorBell", doorBellBean);
+//        intent.putExtra("roomId", dwParam);
+//        context.startActivity(intent);
+//    }
+//
+//    @Override
+//    public void VideoCall_SessionEnd(int dwUserId, int dwFlags, int dwParam,
+//                                     String szUserStr) {
+//        deviceVer = null;
+//        sessionItem = null;
+//    }
+//
+
+    /**
+     * 进入房间
+     */
+    public void enterRoom(int roomId, String roomPwd) {
+        mAnyChat.EnterRoom(roomId, roomPwd);
+    }
+
+    /**
+     * 离开房间
+     */
+    public void leaveRoom(int roomId) {
+        mAnyChat.LeaveRoom(roomId);
+    }
+
+
+    /**
+     * 添加指令
+     *
+     * @param targetUserId 目标userid
+     */
+    public void addFriend(int targetUserId) {
+        String add = "addfriend:" + targetUserId;
+        byte[] buf = add.getBytes();
+        mAnyChat.TransBuffer(0, buf, buf.length);
+    }
+
+    /**
+     * 绑定猫眼响应指令
+     */
+    public void sendBindResponse(int userId, CommandJson commandJson) {
+        String json = mGson.toJson(commandJson);
+        Timber.e("------------------>send:" + json);
+        mAnyChat.TransBuffer(userId, json.getBytes(), json.getBytes().length);
+    }
+
+//
+//    /**
+//     * 旧版请求图片
+//     */
+//    public void oldImageRequest(int userId) {
+//        String action = "action:imageRequest";
+//        mAnyChat.TransBuffer(userId, action.getBytes(), action.getBytes().length);//请求图片
+//    }
+//
+//    /**
+//     * 新版请求图片（区分了停留或门铃）
+//     */
+//    public void newImageRequest(int userId) {
+//        String action = "{\"notification\":{\"type\":\"imageRequest\", \" flag\":1000}} ";
+//        mAnyChat.TransBuffer(userId, action.getBytes(), action.getBytes().length);//请求图片
+//    }
+//
+//    /**
+//     * 呼叫请求
+//     */
+//    public void startChat(int tUserId) {
+//        if (mEventType != -1 && mEventType != AnyChatDefine.BRAC_VIDEOCALL_EVENT_FINISH) {
+//            //发起视频通话后未结束
+////            if (sessionItem != null) {
+//            finishVideoCall(tUserId);
+////            }
+//        }
+////        sessionItem = new SessionItem(0, mSelfUserId, tUserId);
+//        //开启视频，发送呼叫事件
+//        requestVideoCall(tUserId);
+//    }
+//
+//    /**
+//     * 呼叫请求
+//     */
+//    public void requestVideoCall(int tUserId) {
+//        videoCallContrl(AnyChatDefine.BRAC_VIDEOCALL_EVENT_REQUEST, tUserId, 0, 0, 0, "");
+//    }
+
+    /**
+     * 接受请求
+     */
+    public void acceptVideoCall(int aId) {
+        videoCallContrl(AnyChatDefine.BRAC_VIDEOCALL_EVENT_REPLY, aId, AnyChatDefine.BRAC_ERRORCODE_SUCCESS, 0, 0, "");
+    }
+
+    /**
+     * 拒绝请求
+     */
+    public void rejectVideoCall(int aId) {
+        videoCallContrl(AnyChatDefine.BRAC_VIDEOCALL_EVENT_REPLY, aId, AnyChatDefine.BRAC_ERRORCODE_SESSION_REFUSE, 0, 0, "");
+    }
+//
+//    /**
+//     * 结束通话
+//     *
+//     * @param tUserId
+//     */
+//    public void finishVideoCall(int tUserId) {
+//        videoCallContrl(AnyChatDefine.BRAC_VIDEOCALL_EVENT_FINISH, tUserId, 0, 0, mSelfUserId, "");
+//    }
+//
+//    public void initVideoSDK(Context context) {
+//        AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_AUTOROTATION, 1);
+//        mAnyChat.mSensorHelper.InitSensor(context);//启动anychat传感器监听
+////        mAnyChat.SetRecordSnapShotEvent(context);
+//    }
+//
+//    /**
+//     * 切换摄像头
+//     */
+//    public void changeCamera(int tUserId) {
+//        CommandJson.Command command = new CommandJson.Command();
+//        command.setType(ConstantUtil.REQUEST_SWITCH_CAMERA);
+//        transCommand(tUserId, command);
+//    }
+//
+//    /**
+//     * 截图
+//     */
+//    public void snapShot(int tUserId) {
+//        mAnyChat.SnapShot(tUserId, AnyChatDefine.ANYCHAT_RECORD_FLAGS_SNAPSHOT, 0);
+//    }
+//
+//    /**
+//     * 录屏
+//     */
+//    public void startRecord(int tUserId) {
+//        AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_RECORD_FILETYPE, 0);
+//        if (FileUtils.getInstance().getSDCardPath() != null) {
+//            AnyChatCoreSDK.SetSDKOptionString(AnyChatDefine.BRAC_SO_RECORD_TMPDIR, FileUtils.getInstance().getSDCardPath() + Environment.DIRECTORY_DCIM);
+//        }
+//        int dwFlags = AnyChatDefine.ANYCHAT_RECORD_FLAGS_VIDEO + AnyChatDefine.ANYCHAT_RECORD_FLAGS_AUDIO;
+//        mAnyChat.StreamRecordCtrlEx(tUserId, 1, dwFlags, 0, "");
+//    }
+//
+//    /**
+//     * 结束录屏
+//     */
+//    public void stopRecord(int tUserId) {
+//        mAnyChat.StreamRecordCtrlEx(tUserId, 0, 0, 0, "");
+//    }
+//
+    public void speakCameraControl(int userId, int type) {
+        if (userId == -1) {
+            //不需要打开本地摄像头，只需要打开speaker
+            mAnyChat.UserSpeakControl(userId, type);
+            mAnyChat.UserCameraControl(userId, 0);
+        } else {
+            mAnyChat.UserSpeakControl(userId, type);
+            mAnyChat.UserCameraControl(userId, type);
+        }
+    }
+
+    /**
+     * 音频控制
+     */
+    public void userSpeakControl(int userId, int volume) {
+        mAnyChat.UserSpeakControl(userId, volume);
+    }
+
+    /**
+     * 视频控制
+     */
+    public void userCameraControl(int userId, int bOpen) {
+        mAnyChat.UserCameraControl(userId, bOpen);
+    }
+//
+//    /**
+//     * 请求图片名称
+//     */
+//    public void requestLastedPicsNames(int userId) {
+////        String command = "{\"command\":{\"type\":\"requestLastedPicsNames\",\"nums\":\"3\"}}";
+////        mAnyChat.TransBuffer(userId, command.getBytes(), command.getBytes().length);
+////        Timber.e("-------->requestLastedPicsNames" + userId + "--->" + mAnyChat + "--->" + command);
+//        CommandJson.Command command = new CommandJson.Command();
+//        command.setType(ConstantUtil.REQUEST_LASTED_PICS_NAME);
+//        command.setNums("3");
+//        transCommand(userId, command);
+//    }
+//
+//    /**
+//     * 请求视频名称
+//     */
+//    public void requestVideoNames(int userId) {
+//        CommandJson.Command command = new CommandJson.Command();
+//        command.setType(ConstantUtil.REQUEST_VIDEO_NAMES);
+//        command.setNums("3");
+//        transCommand(userId, command);
+//    }
+//
+//    /**
+//     * 请求视频缩略图
+//     *
+//     * @param fileName 文件名
+//     */
+//    public void requestVideoThumbnail(int userId, String fileName) {
+//        CommandJson.Command command = new CommandJson.Command();
+//        command.setType(ConstantUtil.REQUEST_VIDEO_THUMBNAIL);
+//        command.setName(fileName);
+//        transCommand(userId, command);
+//    }
+//
+//    /**
+//     * 请求传输指定文件
+//     */
+//    public void requestMediaFile(int userId, String fileName) {
+//        CommandJson.Command command = new CommandJson.Command();
+//        command.setType(ConstantUtil.REQUEST_MEDIA_FILE);
+//        command.setName(fileName);
+//        transCommand(userId, command);
+//    }
+//
+//    /**
+//     * 查询下载进度
+//     */
+//    public int queryTransTaskInfo(int userId, int taskId, AnyChatOutParam anyChatOutParam) {
+//        return mAnyChat.QueryTransTaskInfo(userId, taskId, AnyChatDefine.BRAC_TRANSTASK_PROGRESS, anyChatOutParam);
+//    }
+//
+//    /**
+//     * 取消任务
+//     */
+//    public void cancelTransTask(int userId, int taskId) {
+//        mAnyChat.CancelTransTask(userId, taskId);
+//    }
+//
+//    private void transCommand(int userId, CommandJson.Command command) {
+////        String comm = "{\"command\":{\"type\":\"requestMediaFile\", \"name\":\"" + fileName + "\"}}";
+//        mCommandJson.setCommand(command);
+//        String comm = mGson.toJson(mCommandJson);
+//        mAnyChat.TransBuffer(userId, comm.getBytes(), comm.getBytes().length);
+//    }
+
+
+}

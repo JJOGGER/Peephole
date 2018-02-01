@@ -1,0 +1,1 @@
+include ':app', ':anychat', ':zxing'

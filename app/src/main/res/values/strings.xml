@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">MySmartX</string>
+    <string name="input_phone_email">请输入手机号或邮箱</string>
+    <string name="input_pwd">输入密码</string>
+    <string name="remember_pwd">记住密码</string>
+    <string name="login">登录</string>
+    <string name="forget_pwd">忘记密码</string>
+    <string name="regist">注册</string>
+    <string name="send_verification_code">发送验证码</string>
+    <string name="video_service">视频服务</string>
+    <string name="device_number">设备号</string>
+    <string name="exit">退出</string>
+    <string name="doorbell_set">猫眼设置</string>
+    <string name="set">设置</string>
+    <string name="calendar">日历</string>
+    <string name="file_manager">文件管理</string>
+    <string name="bind">绑定</string>
+    <string name="browser">浏览器</string>
+    <string name="about">关于</string>
+    <string name="user_bind_window">用户绑定窗口</string>
+    <string name="device_no_">设备号：</string>
+    <string name="bind_device_hint">此时不能进行视频通话，请尽快绑定设备</string>
+    <string name="close_window_hint">将在%1$d秒后关闭窗口</string>
+    <string name="request_bind_hint">%s请求与您绑定，是否接受？</string>
+    <string name="bind_succ">绑定成功</string>
+</resources>
