@@ -18,7 +18,8 @@
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW"/>
     <application
         android:name=".MyApp"
         android:allowBackup="true"
@@ -39,6 +40,7 @@
         <service
             android:name=".service.KeepBackRemoteService"
             android:process=":remote"/>
+        <service android:name=".service.VideoService"/>
 
         <activity android:name=".ui.activity.VideoServiceActivity">
         </activity>

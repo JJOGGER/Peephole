@@ -7,7 +7,9 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 
-import com.zxing.encoding.EncodingUtils;
+
+import com.google.zxing.WriterException;
+import com.zxing.encoding.EncodingHandler;
 
 import butterknife.BindView;
 import cn.jcyh.peephole.MyApp;
@@ -59,7 +61,12 @@ public class BindActivity extends BaseActivity {
          * 第三个参数：二维码的高度
          * 第四个参数：Logo图片
          */
-        Bitmap bitmap = EncodingUtils.createQRCode(MyApp.sImei, 500, 500, null);
+        Bitmap bitmap = null;
+        try {
+            bitmap = EncodingHandler.createQRCode(MyApp.sImei, 500);
+        } catch (WriterException e) {
+            e.printStackTrace();
+        }
         ivIcon.setImageBitmap(bitmap);
     }
 

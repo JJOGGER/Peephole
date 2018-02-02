@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-
-	<string name="zxing_scan">Qr code/bar code is placed within the box, can automatically scan</string>
-	<string name="back">Back</string>
-	<string name="zxing">Qr code scanning</string>
-	<string name="sao">Scan</string>
-</resources>

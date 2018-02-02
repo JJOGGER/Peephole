@@ -1,6 +1,0 @@
-<resources>
-    <string name="zxing_scan">将二维码放在框内，即可自动扫描</string>
-    <string name="back">返回</string>
-    <string name="sao">扫描</string>
-    <string name="zxing">二维码扫描</string>
-</resources>

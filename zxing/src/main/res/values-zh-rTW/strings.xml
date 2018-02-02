@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-
-	<string name="zxing_scan">將二維碼/條碼放在框內，即可自動掃描</string>
-	<string name="back">返回</string>
-	<string name="zxing">二維碼掃描</string>
-
-</resources>

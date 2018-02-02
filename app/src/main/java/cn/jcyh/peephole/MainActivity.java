@@ -9,7 +9,6 @@ import android.os.Message;
 import android.support.v4.view.ViewPager;
 
 import com.bairuitech.anychat.AnyChatCoreSDK;
-import com.bairuitech.anychat.AnyChatDefine;
 
 import java.lang.ref.WeakReference;
 
@@ -18,6 +17,7 @@ import cn.jcyh.peephole.adapter.MainPageAdapter;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.service.KeepBackRemoteService;
+import cn.jcyh.peephole.service.VideoService;
 import timber.log.Timber;
 
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_BASE_EVENT;
@@ -66,7 +66,6 @@ public class MainActivity extends BaseActivity {
         intentFilter.addAction(ACTION_ANYCHAT_USER_INFO_EVENT);
         intentFilter.addAction(ACTION_ANYCHAT_VIDEO_CALL_EVENT);
         registerReceiver(mReceiver, intentFilter);
-
     }
 
     @Override
@@ -100,7 +99,7 @@ public class MainActivity extends BaseActivity {
     private void CheckVideoStatus() {
         try {
             if (!bOtherVideoOpened) {
-                Timber.e("-------------->" + mAnyChat.GetCameraState(-1)+"---"+mAnyChat.GetUserVideoWidth(-1));
+                Timber.e("-------------->" + mAnyChat.GetCameraState(-1) + "---" + mAnyChat.GetUserVideoWidth(-1));
                 if (mAnyChat.GetCameraState(-1) == 2
                         && mAnyChat.GetUserVideoWidth(-1) != 0) {
                     bOtherVideoOpened = true;
@@ -150,38 +149,7 @@ public class MainActivity extends BaseActivity {
                 initTimerCheckAv();//检查视频
                 if (dwErrorCode == 0) {
                     if (dwRoomId == mRoomId) {
-                        Timber.e("-------------打开本地音视频");
-                        // 初始化Camera上下文句柄
-                        AnyChatCoreSDK.mCameraHelper.SetContext(getApplicationContext());
-                        AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_AUTOROTATION, 1);
-                        // 如果是采用Java视频采集，则设置Surface的CallBack
-                        // 判断是否显示本地摄像头切换图标
-                        if (AnyChatCoreSDK
-                                .GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
-                            if (AnyChatCoreSDK.mCameraHelper.GetCameraNumber() > 1) {
-                                // 默认打开前置摄像头
-                                Timber.e("---------默认打开前置摄像头");
-                                AnyChatCoreSDK.mCameraHelper.SelectVideoCapture(AnyChatCoreSDK.mCameraHelper.CAMERA_FACING_BACK);
-                            }
-                        } else {
-                            String[] strVideoCaptures = AnyChatCoreSDK.getInstance(this).EnumVideoCapture();
-                            if (strVideoCaptures != null && strVideoCaptures.length > 1) {
-                                Timber.e("---------strVideoCaptures");
-                                // 默认打开前置摄像头
-                                for (int i = 0; i < strVideoCaptures.length; i++) {
-                                    String strDevices = strVideoCaptures[i];
-                                    if (strDevices.indexOf("Front") >= 0) {
-                                        Timber.e("---------Front");
-                                        AnyChatCoreSDK.getInstance(this).SelectVideoCapture(strDevices);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        //进入通话房间
-                        mControlCenter.userCameraControl(-1, 1);
-                        mControlCenter.userSpeakControl(-1, 1);
-                        Timber.e("------------state:" + AnyChatCoreSDK.getInstance(this).GetCameraState(-1));
+
                     } else {
                         Timber.e("-------------dwroomid:" + dwRoomId + "---" + mRoomId);
                     }
@@ -243,7 +211,9 @@ public class MainActivity extends BaseActivity {
             case TYPE_BRAC_VIDEOCALL_EVENT_START:// 视频呼叫会话开始事件
                 Timber.e("--------->开始进入会话窗口");
                 mRoomId = dwParam;
-                mControlCenter.enterRoom(mRoomId, "");
+                Intent videoIntent = new Intent(MainActivity.this, VideoService.class);
+                videoIntent.putExtra("roomId", dwParam);
+                startService(videoIntent);
 //                        Bundle bundle = new Bundle();
 //                        bundle.putInt("roomId", dwParam);
 //                        bundle.putInt("userId", dwUserId);
@@ -259,6 +229,7 @@ public class MainActivity extends BaseActivity {
 //                        DialogFactory.getDialogFactory().dismiss();
                 Timber.e("--------结束通话");
                 mControlCenter.leaveRoom(-1);
+                stopService(new Intent(this, VideoService.class));
                 break;
         }
     }
