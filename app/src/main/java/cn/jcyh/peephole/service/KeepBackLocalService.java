@@ -36,6 +36,8 @@ import cn.jcyh.peephole.MainActivity;
 import cn.jcyh.peephole.MyApp;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.bean.CommandJson;
+import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.utils.ToastUtil;
 import timber.log.Timber;
 
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_BASE_EVENT;
@@ -73,6 +75,7 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
     private MyHandler mMyHandler;
     private ScreenBroadcastReceiver mReceiver;
     private Gson mGson;
+    private DoorBellControlCenter mControlCenter;
 
     @Nullable
     @Override
@@ -84,6 +87,7 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
     public void onCreate() {
         super.onCreate();
         mGson = new Gson();
+        mControlCenter = DoorBellControlCenter.getInstance(this);
         if (mBinder == null) mBinder = new MyBinder();
         mAnyChat = AnyChatCoreSDK.getInstance(getApplicationContext());
         mMyHandler = new MyHandler(this);
@@ -309,9 +313,17 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
         intent.setAction(ACTION_ANYCHAT_TRANS_DATA_EVENT);
         intent.putExtra("type", TYPE_ANYCHAT_TRANS_BUFFER);
         CommandJson commandJson = mGson.fromJson(result, CommandJson.class);
-        intent.putExtra("command",commandJson);
+        intent.putExtra("command", commandJson);
         Timber.e("-----OnAnyChatTransBuffer" + result + "---dwUserid:" + dwUserid);
         sendBroadcast(intent);
+        switch (commandJson.getCommandType()) {
+            case CommandJson.CommandType.UNLOCK_DOORBELL_REQUEST:
+                ToastUtil.showToast(getApplicationContext(), "执行解锁操作");
+                commandJson.setCommandType(CommandJson.CommandType.UNLOCK_DOORBELL_RESPONSE);
+                commandJson.setCommand("success");
+                mControlCenter.sendUnlockResponse(dwUserid, commandJson);
+                break;
+        }
 //        if (result.contains("command")) {
 //            try {
 //                JSONObject jsonObject_all = new JSONObject(result);

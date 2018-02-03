@@ -1,10 +1,6 @@
 package com.bairuitech.anychat;
 
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import android.content.Context;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
@@ -14,6 +10,10 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.WindowManager;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 
 // AnyChat Camera包装类，实现本地视频采集
@@ -36,7 +36,7 @@ public class AnyChatCameraHelper implements SurfaceHolder.Callback{
 	public final int CAMERA_FACING_FRONT = 1;
 	
 	// 设置父窗口句柄
-	public void SetContext(Context ctx)	{	mContext = ctx;	}
+	public void SetContext(Context ctx)	{	mContext = ctx.getApplicationContext();	}
 	
 	// 初始化摄像机，在surfaceCreated中调用
 	private void initCamera()

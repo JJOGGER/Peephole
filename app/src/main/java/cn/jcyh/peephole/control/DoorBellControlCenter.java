@@ -24,6 +24,7 @@ public class DoorBellControlCenter {
     private MediaPlayer mMediaPlaer;
     public static int mEventType = -1;
     private Gson mGson;
+    public static boolean sIsVideo;//标记是否正在视频通话中
 
     //    public static Map<String, Object> pushFlagMap;
 
@@ -281,6 +282,12 @@ public class DoorBellControlCenter {
         mAnyChat.LeaveRoom(roomId);
     }
 
+    /**
+     * 视频帮助类
+     */
+    public DoorbellVideoHelper getDoorbellVideoHelper() {
+        return new DoorbellVideoHelper();
+    }
 
     /**
      * 添加指令
@@ -301,7 +308,14 @@ public class DoorBellControlCenter {
         Timber.e("------------------>send:" + json);
         mAnyChat.TransBuffer(userId, json.getBytes(), json.getBytes().length);
     }
-
+    /**
+     * 解锁响应指令
+     */
+    public void sendUnlockResponse(int userId, CommandJson commandJson) {
+        String json = mGson.toJson(commandJson);
+        Timber.e("------------------>send:" + json);
+        mAnyChat.TransBuffer(userId, json.getBytes(), json.getBytes().length);
+    }
 //
 //    /**
 //     * 旧版请求图片
@@ -354,7 +368,8 @@ public class DoorBellControlCenter {
     public void rejectVideoCall(int aId) {
         videoCallContrl(AnyChatDefine.BRAC_VIDEOCALL_EVENT_REPLY, aId, AnyChatDefine.BRAC_ERRORCODE_SESSION_REFUSE, 0, 0, "");
     }
-//
+
+    //
 //    /**
 //     * 结束通话
 //     *
@@ -405,30 +420,8 @@ public class DoorBellControlCenter {
 //        mAnyChat.StreamRecordCtrlEx(tUserId, 0, 0, 0, "");
 //    }
 //
-    public void speakCameraControl(int userId, int type) {
-        if (userId == -1) {
-            //不需要打开本地摄像头，只需要打开speaker
-            mAnyChat.UserSpeakControl(userId, type);
-            mAnyChat.UserCameraControl(userId, 0);
-        } else {
-            mAnyChat.UserSpeakControl(userId, type);
-            mAnyChat.UserCameraControl(userId, type);
-        }
-    }
 
-    /**
-     * 音频控制
-     */
-    public void userSpeakControl(int userId, int volume) {
-        mAnyChat.UserSpeakControl(userId, volume);
-    }
 
-    /**
-     * 视频控制
-     */
-    public void userCameraControl(int userId, int bOpen) {
-        mAnyChat.UserCameraControl(userId, bOpen);
-    }
 //
 //    /**
 //     * 请求图片名称

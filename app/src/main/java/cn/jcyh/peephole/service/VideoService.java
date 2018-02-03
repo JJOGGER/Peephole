@@ -1,9 +1,13 @@
 package cn.jcyh.peephole.service;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -12,37 +16,30 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.Surface;
 import android.view.SurfaceView;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
-import com.bairuitech.anychat.AnyChatBaseEvent;
 import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
-import com.bairuitech.anychat.AnyChatUserInfoEvent;
-import com.bairuitech.anychat.AnyChatVideoCallEvent;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.lang.ref.WeakReference;
 
 import cn.jcyh.peephole.R;
+import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.control.DoorbellVideoHelper;
+import cn.jcyh.peephole.utils.ConstantUtil;
+import timber.log.Timber;
 
 /**
  * Created by jogger on 2018/2/2.
  */
 
-public class VideoService extends Service implements AnyChatBaseEvent,
-        View.OnClickListener, AnyChatVideoCallEvent, AnyChatUserInfoEvent {
-    private FrameLayout fl_surface_container;
+public class VideoService extends Service {
+    private FrameLayout flSurfaceContainer;
     private WindowManager.LayoutParams mParams;
     private SurfaceView mSurfaceView;
-    private AnyChatCoreSDK anychat;
-    private Handler mHandler;
-    private Timer mTimerCheckAv;
-    private Timer mTimerShowVideoTime;
-    private TimerTask mTimerTask;
+    private AnyChatCoreSDK mAnychat;
     boolean bSelfVideoOpened = false;
     public static final int MSG_CHECKAV = 1;
     public static final int MSG_TIMEUPDATE = 2;
@@ -50,6 +47,12 @@ public class VideoService extends Service implements AnyChatBaseEvent,
     private WindowManager mWindowManager;
     private static final String TAG = "VideoService";
     private int mRoomId;
+    private int mUserId;
+    private MyReceiver mReceiver;
+    private DoorBellControlCenter mControlCenter;
+    private DoorbellVideoHelper mDoorbellVideoHelper;
+    private boolean mIsCheckAv;
+    private MyHandler mHandler;
 
     @Nullable
     @Override
@@ -60,8 +63,19 @@ public class VideoService extends Service implements AnyChatBaseEvent,
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.e(TAG, "---------->onCreate");
-        initSdk();
+        DoorBellControlCenter.sIsVideo = true;
+        mAnychat = AnyChatCoreSDK.getInstance(this);
+        mControlCenter = DoorBellControlCenter.getInstance(this);
+        mDoorbellVideoHelper = mControlCenter.getDoorbellVideoHelper();
+        mReceiver = new MyReceiver();
+        mHandler = new MyHandler(this);
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConstantUtil.ACTION_ANYCHAT_VIDEO_CALL_EVENT);
+        intentFilter.addAction(ConstantUtil.ACTION_ANYCHAT_BASE_EVENT);
+        intentFilter.addAction(ConstantUtil.ACTION_ANYCHAT_TRANS_DATA_EVENT);
+        intentFilter.addAction(ConstantUtil.ACTION_ANYCHAT_RECORD_EVENT);
+        intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(mReceiver, intentFilter);
         createToucher();
 
     }
@@ -86,62 +100,12 @@ public class VideoService extends Service implements AnyChatBaseEvent,
 
         LayoutInflater inflater = LayoutInflater.from(getApplication());
         //获取浮动窗口视图所在布局.
-        fl_surface_container = (FrameLayout) inflater.inflate(R.layout.video_float, null);
+        flSurfaceContainer = (FrameLayout) inflater.inflate(R.layout.video_float, null);
         //添加toucherlayout
-        mWindowManager.addView(fl_surface_container, mParams);
-        Log.e("TAG", "------------------>创建window");
-        Log.i(TAG, "toucherlayout-->left:" + fl_surface_container.getLeft());
-        Log.i(TAG, "toucherlayout-->right:" + fl_surface_container.getRight());
-        Log.i(TAG, "toucherlayout-->top:" + fl_surface_container.getTop());
-        Log.i(TAG, "toucherlayout-->bottom:" + fl_surface_container.getBottom());
-        mSurfaceView = (SurfaceView) fl_surface_container.findViewById(R.id.surface_local);
-        if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
-            mSurfaceView.getHolder().addCallback(AnyChatCoreSDK.mCameraHelper);
-            Log.i("ANYCHAT", "VIDEOCAPTRUE---" + "JAVA");
-        }
-        if (AnyChatCoreSDK
-                .GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
-            if (AnyChatCoreSDK.mCameraHelper.GetCameraNumber() > 1) {
-                // 默认打开前置摄像头
-                AnyChatCoreSDK.mCameraHelper.SelectVideoCapture(AnyChatCoreSDK.mCameraHelper.CAMERA_FACING_FRONT);
-            }
-        } else {
-            String[] strVideoCaptures = anychat.EnumVideoCapture();
-            if (strVideoCaptures != null && strVideoCaptures.length > 1) {
-                // 默认打开前置摄像头
-                for (int i = 0; i < strVideoCaptures.length; i++) {
-                    String strDevices = strVideoCaptures[i];
-                    if (strDevices.indexOf("Front") >= 0) {
-                        anychat.SelectVideoCapture(strDevices);
-                        break;
-                    }
-                }
-            }
-        }
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                switch (msg.what) {
-                    case MSG_CHECKAV:
-                        CheckVideoStatus();
-                        break;
-                    case MSG_TIMEUPDATE:
-                        break;
-                }
-
-            }
-        };
+        mWindowManager.addView(flSurfaceContainer, mParams);
+        mSurfaceView = (SurfaceView) flSurfaceContainer.findViewById(R.id.surface_local);
+        mDoorbellVideoHelper.initView(this, mSurfaceView);
         initTimerCheckAv();
-        initTimerShowTime();
-
-
-        //主动计算出当前View的宽高信息.
-        fl_surface_container.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-
-        //用于检测状态栏高度.
-        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-//
 //        // 根据屏幕方向改变本地surfaceview的宽高比
         if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             adjustLocalVideo(true);
@@ -155,9 +119,10 @@ public class VideoService extends Service implements AnyChatBaseEvent,
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
             mRoomId = intent.getIntExtra("roomId", -1);
+            mUserId = intent.getIntExtra("userId", -1);
         }
         if (mRoomId != -1) {
-            anychat.EnterRoom(mRoomId, "");
+            mControlCenter.enterRoom(mRoomId, "");
         }
         return START_STICKY;
 
@@ -168,7 +133,7 @@ public class VideoService extends Service implements AnyChatBaseEvent,
         float height = 0;
         DisplayMetrics dMetrics = new DisplayMetrics();
         width = (float) dMetrics.widthPixels / 4;
-        WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) fl_surface_container
+        WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) flSurfaceContainer
                 .getLayoutParams();
         if (bLandScape) {
 
@@ -187,34 +152,17 @@ public class VideoService extends Service implements AnyChatBaseEvent,
             else
                 height = (float) 4 / 3 * width + PROGRESSBAR_HEIGHT;
         }
-        layoutParams.width = (int) 100;
-        layoutParams.height = (int) 100;
-        fl_surface_container.setLayoutParams(layoutParams);
-    }
-
-    private void initSdk() {
-        if (anychat == null)
-            anychat = AnyChatCoreSDK.getInstance(this);
-        anychat.SetBaseEvent(this);
-        anychat.SetVideoCallEvent(this);
-        anychat.SetUserInfoEvent(this);
-        anychat.mSensorHelper.InitSensor(getApplicationContext());
-        // 初始化Camera上下文句柄
-        AnyChatCoreSDK.mCameraHelper.SetContext(getApplicationContext());
-
+        layoutParams.width = (int) width;
+        layoutParams.height = (int) height;
+        flSurfaceContainer.setLayoutParams(layoutParams);
     }
 
     // 判断视频是否已打开
-    private void CheckVideoStatus() {
-        Log.e(TAG, "---------->GetCameraState" + anychat.GetCameraState(-1) + "--->" + anychat.GetUserVideoWidth(-1));
+    private void checkVideoStatus() {
+        Log.e(TAG, "---------->GetCameraState" + mAnychat.GetCameraState(-1) + "--->" + mAnychat.GetUserVideoWidth(-1));
         if (!bSelfVideoOpened) {
-            if (anychat.GetCameraState(-1) == 2 && anychat.GetUserVideoWidth(-1) != 0) {
-                if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_VIDEOSHOW_DRIVERCTRL) != AnyChatDefine.VIDEOSHOW_DRIVER_JAVA) {
-                    mSurfaceView.getHolder().setFormat(PixelFormat.RGB_565);
-                    mSurfaceView.getHolder().setFixedSize(anychat.GetUserVideoWidth(-1), anychat.GetUserVideoHeight(-1));
-                }
-                Surface s = mSurfaceView.getHolder().getSurface();
-                anychat.SetVideoPos(-1, s, 0, 0, 0, 0);
+            if (mDoorbellVideoHelper.isVideoOpen()) {
+                mDoorbellVideoHelper.setVideoHolder(mSurfaceView);
                 bSelfVideoOpened = true;
             }
         }
@@ -223,114 +171,145 @@ public class VideoService extends Service implements AnyChatBaseEvent,
     @Override
     public void onDestroy() {
         super.onDestroy();
-        anychat.UserCameraControl(-1, 0);
-        anychat.UserSpeakControl(-1, 0);
-        mTimerCheckAv.cancel();
-        mTimerShowVideoTime.cancel();
-        anychat.LeaveRoom(-1);
+        DoorBellControlCenter.sIsVideo = false;
+        mDoorbellVideoHelper.userCameraControl(-1, 0);
+        mDoorbellVideoHelper.userSpeakControl(-1, 0);
+        if (flSurfaceContainer != null) {
+            mWindowManager.removeView(flSurfaceContainer);
+        }
+        mControlCenter.leaveRoom(-1);
+        unregisterReceiver(mReceiver);
     }
 
-    @Override
-    public void onClick(View v) {
 
+    private void initTimerCheckAv() {
+        mIsCheckAv = true;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (mIsCheckAv) {
+                    mHandler.sendEmptyMessage(MSG_CHECKAV);
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
     }
 
-    @Override
-    public void OnAnyChatVideoCallEvent(int dwEventType, int dwUserId, int dwErrorCode, int dwFlags, int dwParam, String userStr) {
+//    private void initTimerShowTime() {
+//        if (mTimerShowVideoTime == null)
+//            mTimerShowVideoTime = new Timer();
+//        mTimerTask = new TimerTask() {
+//
+//            @Override
+//            public void run() {
+//                mHandler.sendEmptyMessage(MSG_TIMEUPDATE);
+//            }
+//        };
+//        mTimerShowVideoTime.schedule(mTimerTask, 100, 1000);
+//    }
 
-    }
 
-    @Override
-    public void OnAnyChatConnectMessage(boolean bSuccess) {
+    private class MyReceiver extends BroadcastReceiver {
 
-    }
-
-    @Override
-    public void OnAnyChatLoginMessage(int dwUserId, int dwErrorCode) {
-
-    }
-
-    @Override
-    public void OnAnyChatEnterRoomMessage(int dwRoomId, int dwErrorCode) {
-        Log.e(TAG, "-------------OnAnyChatEnterRoomMessage");
-        if (dwErrorCode == 0) {
-            anychat.UserCameraControl(-1, 1);
-            anychat.UserSpeakControl(-1, 1);
-            bSelfVideoOpened = false;
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String type = intent.getStringExtra("type");
+            switch (intent.getAction()) {
+                case ConstantUtil.ACTION_ANYCHAT_BASE_EVENT:
+                    switch (type) {
+                        case ConstantUtil.TYPE_ANYCHAT_ENTER_ROOM:
+                            Timber.e("------------进入房间");
+                            int dwErrorCode = intent.getIntExtra("dwErrorCode", -1);
+                            if (dwErrorCode == 0) {
+                                mDoorbellVideoHelper.userCameraControl(-1, 1);
+                                mDoorbellVideoHelper.userSpeakControl(-1, 1);
+                                mDoorbellVideoHelper.userSpeakControl(mUserId, 1);
+                                bSelfVideoOpened = false;
+                            }
+                            break;
+                        case ConstantUtil.TYPE_ANYCHAT_ONLINE_USER:
+                            break;
+                        case ConstantUtil.TYPE_ANYCHAT_USER_AT_ROOM:
+                            break;
+                        case ConstantUtil.TYPE_ANYCHAT_LINK_CLOSE:
+                            finishVideoCall();
+                            break;
+                    }
+                    break;
+                case ConstantUtil.ACTION_ANYCHAT_TRANS_DATA_EVENT:
+                    if (ConstantUtil.TYPE_ANYCHAT_TRANS_BUFFER.equals(type)) {
+                        String result = intent.getStringExtra("result");
+                        if ("success".equals(result)) {
+//                            ToastUtil.showToast(getApplicationContext(), R.string.open_door_succ);
+//                            ibtn_open_door.setImageResource(R.drawable.icon_lock_p);
+//                            tvVideoLock.setSelected(true);
+//                            lockTime = 0;
+//                            if (mLockTimer != null) {
+//                                mLockTimer.cancel();
+//                                mLockTimer.purge();
+//                            }
+////                            if (mLockTask != null) {
+////                                mLockTask.cancel();
+////                            }
+//                            mLockTimer = new Timer();
+//                            mLockTask = new LockTask();
+//                            mLockTimer.schedule(mLockTask, 0, 1000);
+                        }
+                    }
+                    break;
+                case ConstantUtil.ACTION_ANYCHAT_VIDEO_CALL_EVENT:
+                    if (ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_FINISH.equals(type)) {
+                        Timber.e("------------TYPE_BRAC_VIDEOCALL_EVENT_FINISH");
+                        finishVideoCall();
+                    }
+                    break;
+                case ConstantUtil.ACTION_ANYCHAT_RECORD_EVENT:
+                    if (ConstantUtil.TYPE_ANYCHAT_RECORD.equals(type)) {
+                        String lpFileName = intent.getStringExtra("lpFileName");
+                        Uri data = Uri.parse("file://" + lpFileName);
+                        sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, data));
+                    } else if (ConstantUtil.TYPE_ANYCHAT_SNAP_SHOT.equals(type)) {
+                        //获取到截屏文件
+//                        ToastUtil.showToast(getApplicationContext(), R.string.cut_picture);
+                    }
+                    break;
+            }
         }
     }
 
-    @Override
-    public void OnAnyChatOnlineUserMessage(int dwUserNum, int dwRoomId) {
-        Log.e(TAG, "-------------OnAnyChatOnlineUserMessage");
+    /**
+     * 结束视频
+     */
+    private void finishVideoCall() {
+        stopSelf();
     }
 
-    @Override
-    public void OnAnyChatUserAtRoomMessage(int dwUserId, boolean bEnter) {
-        Log.e(TAG, "-------------OnAnyChatUserAtRoomMessage");
-    }
+    private static class MyHandler extends Handler {
+        private WeakReference<VideoService> mService;
 
-    @Override
-    public void OnAnyChatLinkCloseMessage(int dwErrorCode) {
-        Log.e(TAG, "-------------OnAnyChatLinkCloseMessage");
-    }
+        MyHandler(VideoService service) {
+            mService = new WeakReference<>(service);
+        }
 
-    @Override
-    public void OnAnyChatUserInfoUpdate(int dwUserId, int dwType) {
-
-    }
-
-    @Override
-    public void OnAnyChatFriendStatus(int dwUserId, int dwStatus) {
-
-    }
-
-//    @Override
-//    public void surfaceCreated(SurfaceHolder holder) {
-//        // 将holder，这个holder为开始在oncreat里面取得的holder，将它赋给surfaceHolder
-//        mSurfaceHolder = holder;
-//    }
-//
-//    @Override
-//    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-//// 将holder，这个holder为开始在oncreat里面取得的holder，将它赋给surfaceHolder
-//        mSurfaceHolder = holder;
-//        Log.i("process", Thread.currentThread().getName());
-//        //视频通话
-//    }
-//
-//    @Override
-//    public void surfaceDestroyed(SurfaceHolder holder) {
-//        // surfaceDestroyed的时候同时对象设置为null
-//        mSurfaceView = null;
-//        mSurfaceHolder = null;
-//    }
-
-    private void initTimerCheckAv() {
-        if (mTimerCheckAv == null)
-            mTimerCheckAv = new Timer();
-        mTimerTask = new TimerTask() {
-
-            @Override
-            public void run() {
-                // TODO Auto-generated method stub
-                mHandler.sendEmptyMessage(MSG_CHECKAV);
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            VideoService videoService = mService.get();
+            switch (msg.what) {
+                case MSG_CHECKAV:
+                    if (videoService != null) {
+                        videoService.checkVideoStatus();
+                    }
+                    // videoActivity.updateVolume();
+                    break;
+//                case MSG_TIMEUPDATE:
+//                    //?
+//                    break;
             }
-        };
-        mTimerCheckAv.schedule(mTimerTask, 1000, 100);
-    }
-
-    private void initTimerShowTime() {
-        if (mTimerShowVideoTime == null)
-            mTimerShowVideoTime = new Timer();
-        mTimerTask = new TimerTask() {
-
-            @Override
-            public void run() {
-                // TODO Auto-generated method stub
-                mHandler.sendEmptyMessage(MSG_TIMEUPDATE);
-            }
-        };
-        mTimerShowVideoTime.schedule(mTimerTask, 100, 1000);
+        }
     }
 }

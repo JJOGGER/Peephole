@@ -41,7 +41,6 @@ public class MainActivity extends BaseActivity {
     public static final int MSG_CHECKAV = 1;
     boolean bOtherVideoOpened = false;
     private MyHandler mHandler;
-    int videoIndex = 0;
     private boolean mIsCheckAv;
     private AnyChatCoreSDK mAnyChat;
 
@@ -71,6 +70,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mIsCheckAv = false;
         unregisterReceiver(mReceiver);
     }
 
@@ -103,6 +103,7 @@ public class MainActivity extends BaseActivity {
                 if (mAnyChat.GetCameraState(-1) == 2
                         && mAnyChat.GetUserVideoWidth(-1) != 0) {
                     bOtherVideoOpened = true;
+                    mIsCheckAv = false;
                 }
             }
         } catch (Exception e) {
@@ -176,59 +177,20 @@ public class MainActivity extends BaseActivity {
                 //猫眼端未打开摄像头/未在通话中，则接受请求
                 mControlCenter.acceptVideoCall(dwUserId);
                 break;
-            case TYPE_BRAC_VIDEOCALL_EVENT_REPLY:// < 呼叫请求回复 开始向设备端发送视频请求
-//                        mControlCenter.VideoCall_SessionReply(dwUserId,
-//                                dwErrorCode, dwFlags, dwParam, userStr);
-//                        if (dwErrorCode == VideoCallContrlHandler.ERRORCODE_SUCCESS) {
-//                            Timber.e("------------请求得到猫眼回复");
-//                            ((CommonProgressDialog) DialogFactory.getDialogFactory().getDialog()).setHintContent(getString(R.string.connecting));
-//                        } else if (dwErrorCode == VideoCallContrlHandler.ERRORCODE_SESSION_REFUSE) {
-//                            // 目标用户拒绝会话
-//                            Timber.i("----目标用户拒绝会话");
-//                            DialogFactory.getDialogFactory().dismiss();
-//                            if (userStr != null && !userStr.contentEquals("")) {
-//                                //设备端在用户绑定房间
-//                                Timber.i("------设备端在用户绑定房间");
-//                                ToastUtil.showToast(getApplicationContext(), userStr);
-//                            } else {
-//                                // 设备端拒绝视频即设备端解除了和手机端绑定
-//                                // 门铃端解除了绑定，要实现1、更新本地数据库；2、更新服务器数据库
-//                                //updataLink(userName);
-//                                ToastUtil.showToast(getApplicationContext(), R.string
-//                                        .str_returncode_requestrefuse);
-//                            }
-//
-//                        } else if (dwErrorCode == VideoCallContrlHandler.ERRORCODE_SESSION_BUSY) {// 用户忙,
-//                            // 两种情况：1、对方正在和别人在通话，2、对方的摄像头正被别应用使用
-//                            ToastUtil.showToast(getApplicationContext(), getString(R.string
-//                                    .device_busy));
-//                            DialogFactory.getDialogFactory().dismiss();
-//                        } else {// 超时，网络中断，不在线
-//                            ToastUtil.showToast(getApplicationContext(), R.string.connect_fail);
-//                            DialogFactory.getDialogFactory().dismiss();
-//                        }
+            case TYPE_BRAC_VIDEOCALL_EVENT_REPLY:// < 呼叫请求回复
+
                 break;
             case TYPE_BRAC_VIDEOCALL_EVENT_START:// 视频呼叫会话开始事件
                 Timber.e("--------->开始进入会话窗口");
                 mRoomId = dwParam;
                 Intent videoIntent = new Intent(MainActivity.this, VideoService.class);
                 videoIntent.putExtra("roomId", dwParam);
+                videoIntent.putExtra("userId", dwUserId);
                 startService(videoIntent);
-//                        Bundle bundle = new Bundle();
-//                        bundle.putInt("roomId", dwParam);
-//                        bundle.putInt("userId", dwUserId);
-//                        startNewActivity(VideoServiceActivity.class, bundle);
-//                        if (mProgressDialog != null && mProgressDialog.isShowing()) {
-//                            mProgressDialog.dismiss();
-//                        }
-//                        mControlCenter.VideoCall_SessionStart(DoorBellHomeActivity.this, dwUserId,
-//                                dwFlags, dwParam, userStr);
-//                        DialogFactory.getDialogFactory().dismiss();
                 break;
             case TYPE_BRAC_VIDEOCALL_EVENT_FINISH:// < 挂断（结束）呼叫会话
 //                        DialogFactory.getDialogFactory().dismiss();
                 Timber.e("--------结束通话");
-                mControlCenter.leaveRoom(-1);
                 stopService(new Intent(this, VideoService.class));
                 break;
         }

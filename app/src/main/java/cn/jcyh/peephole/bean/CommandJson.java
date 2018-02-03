@@ -85,5 +85,8 @@ public class CommandJson implements Parcelable {
         public static final String BIND_DOORBELL_RESPONSE = "bind_doorbell_response";
 
         public static final String BIND_DOORBELL_COMPLETED = "bind_doorbell_completed";//接收猫眼绑定成功
+
+        public static final String UNLOCK_DOORBELL_REQUEST="unlock_doorbell_request";
+        public static final String UNLOCK_DOORBELL_RESPONSE="unlock_doorbell_response";
     }
 }
