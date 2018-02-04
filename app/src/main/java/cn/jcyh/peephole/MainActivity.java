@@ -15,26 +15,36 @@ import java.lang.ref.WeakReference;
 import butterknife.BindView;
 import cn.jcyh.peephole.adapter.MainPageAdapter;
 import cn.jcyh.peephole.base.BaseActivity;
+import cn.jcyh.peephole.bean.CommandJson;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.service.KeepBackRemoteService;
 import cn.jcyh.peephole.service.VideoService;
+import cn.jcyh.peephole.ui.activity.PictureActivity;
+import cn.jcyh.peephole.utils.ToastUtil;
 import timber.log.Timber;
 
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_BASE_EVENT;
+import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_TRANS_DATA_EVENT;
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_USER_INFO_EVENT;
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_VIDEO_CALL_EVENT;
+import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_DOORBELL_SYSTEM_EVENT;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_ENTER_ROOM;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_FRIEND_STATUS;
+import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_TRANS_BUFFER;
+import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_TRANS_FILE;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_USER_INFO_UPDATE;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_FINISH;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_REPLY;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_REQUEST;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_START;
+import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_DOORBELL_SYSTEM_ALARM;
+import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_DOORBELL_SYSTEM_RING;
 
 //按门铃，发消息--》app收到消息--》发起视频通话
 public class MainActivity extends BaseActivity {
     @BindView(R.id.vp_main)
     ViewPager vp_main;
+    private static final int REQEUST_CAPTURE = 0x001;
     private MyReceiver mReceiver;
     private DoorBellControlCenter mControlCenter;
     private int mRoomId;
@@ -43,6 +53,7 @@ public class MainActivity extends BaseActivity {
     private MyHandler mHandler;
     private boolean mIsCheckAv;
     private AnyChatCoreSDK mAnyChat;
+    private String mFilePath;
 
     @Override
     public int getLayoutId() {
@@ -52,8 +63,6 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void init() {
         mControlCenter = DoorBellControlCenter.getInstance(this);
-        // 初始化Camera上下文句柄
-        AnyChatCoreSDK.mCameraHelper.SetContext(getApplicationContext());
         startService(new Intent(this, KeepBackRemoteService.class));
         vp_main.setAdapter(new MainPageAdapter(getSupportFragmentManager()));
         vp_main.setOffscreenPageLimit(2);
@@ -64,6 +73,7 @@ public class MainActivity extends BaseActivity {
         intentFilter.addAction(ACTION_ANYCHAT_BASE_EVENT);
         intentFilter.addAction(ACTION_ANYCHAT_USER_INFO_EVENT);
         intentFilter.addAction(ACTION_ANYCHAT_VIDEO_CALL_EVENT);
+        intentFilter.addAction(ACTION_DOORBELL_SYSTEM_EVENT);
         registerReceiver(mReceiver, intentFilter);
     }
 
@@ -99,7 +109,8 @@ public class MainActivity extends BaseActivity {
     private void CheckVideoStatus() {
         try {
             if (!bOtherVideoOpened) {
-                Timber.e("-------------->" + mAnyChat.GetCameraState(-1) + "---" + mAnyChat.GetUserVideoWidth(-1));
+                Timber.e("-------------->" + mAnyChat.GetCameraState(-1) + "---" + mAnyChat
+                        .GetUserVideoWidth(-1));
                 if (mAnyChat.GetCameraState(-1) == 2
                         && mAnyChat.GetUserVideoWidth(-1) != 0) {
                     bOtherVideoOpened = true;
@@ -115,11 +126,22 @@ public class MainActivity extends BaseActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (isFinishing() || getSupportFragmentManager() == null)
+            if (isFinishing() || getSupportFragmentManager() == null || intent.getAction() == null)
                 return;
             switch (intent.getAction()) {
-                case ACTION_ANYCHAT_USER_INFO_EVENT:
+                case ACTION_DOORBELL_SYSTEM_EVENT:
                     String type = intent.getStringExtra("type");
+                    if (TYPE_DOORBELL_SYSTEM_RING.equals(type)) {
+                        // TODO: 2018/2/4 获取绑定猫眼的用户列表
+//                    mControlCenter.sendVideoCall();
+                        startNewActivityForResult(PictureActivity.class, REQEUST_CAPTURE);
+                    } else if (TYPE_DOORBELL_SYSTEM_ALARM.equals(type)) {
+
+                    }
+                    break;
+                case ACTION_ANYCHAT_USER_INFO_EVENT:
+                    type = intent.getStringExtra("type");
+
                     if (TYPE_ANYCHAT_FRIEND_STATUS.equals(type) || TYPE_ANYCHAT_USER_INFO_UPDATE
                             .equals(type)) {
                         int dwUserId = intent.getIntExtra("dwUserId", 0);
@@ -132,7 +154,35 @@ public class MainActivity extends BaseActivity {
                 case ACTION_ANYCHAT_BASE_EVENT:
                     dealBaseEvent(intent);
                     break;
+                case ACTION_ANYCHAT_TRANS_DATA_EVENT:
+                    dealTansDataEvent(intent);
+                    break;
             }
+        }
+    }
+
+    /**
+     * 处理文件传输事件
+     */
+    private void dealTansDataEvent(Intent intent) {
+        String type = intent.getStringExtra("type");
+        if (TYPE_ANYCHAT_TRANS_BUFFER.equals(type)) {
+            CommandJson command = intent.getParcelableExtra("command");
+            int dwUserid = intent.getIntExtra("dwUserid", -1);
+            switch (command.getCommandType()) {
+                case CommandJson.CommandType.UNLOCK_DOORBELL_REQUEST:
+                    ToastUtil.showToast(getApplicationContext(), "执行解锁操作");
+                    command.setCommandType(CommandJson.CommandType.UNLOCK_DOORBELL_RESPONSE);
+                    command.setCommand("success");
+                    mControlCenter.sendUnlockResponse(dwUserid, command);
+                    break;
+                case CommandJson.CommandType.DOORBELL_CALL_IMG_REQUEST:
+                    //视频呼叫图片请求
+                    mControlCenter.sendVideoCallImg(dwUserid, mFilePath);
+                    break;
+            }
+        } else if (TYPE_ANYCHAT_TRANS_FILE.equals(type)) {
+
         }
     }
 
@@ -193,6 +243,19 @@ public class MainActivity extends BaseActivity {
                 Timber.e("--------结束通话");
                 stopService(new Intent(this, VideoService.class));
                 break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == REQEUST_CAPTURE) {
+                //获取拍照的图片
+                mFilePath = data.getStringExtra("filePath");
+                // TODO: 2018/2/4 获取绑定猫眼的用户列表
+//                mControlCenter.sendVideoCall();
+            }
         }
     }
 

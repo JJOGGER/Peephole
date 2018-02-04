@@ -26,7 +26,10 @@ public class ConstantUtil {
     public static final String REQUEST_VIDEO_THUMBNAIL = "requestVideoThumbnail";//请求视频缩略图
     public static final String VIDEO_THUNBNAIL = "VideoThumbnail";//视频缩略图响应
 
-
+    //猫眼系统回调
+    public static final String ACTION_DOORBELL_SYSTEM_EVENT="cn.jcyh.eagleking.doorbell_system_event";//猫眼系统回调
+    public static final String TYPE_DOORBELL_SYSTEM_RING="type_doorbell_system_ring";//有人按门铃
+    public static final String TYPE_DOORBELL_SYSTEM_ALARM="type_doorbell_system_alarm";
     //anychat操作
     public static final String ACTION_DOORBELL_LOGIN_RESULT = "cn.jcyh.eagleking.doorbell_login_result";//首次登录
     public static final String ACTION_ANYCHAT_LOGIN_RESULT_MSG = "cn.jcyh.eagleking.login_result_msg";//登录anychat

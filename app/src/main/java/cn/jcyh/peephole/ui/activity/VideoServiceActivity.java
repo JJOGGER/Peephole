@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import butterknife.BindView;
@@ -16,8 +17,11 @@ import cn.jcyh.peephole.utils.ConstantUtil;
 public class VideoServiceActivity extends BaseActivity {
     @BindView(R.id.tv_state)
     TextView tv_state;
+    @BindView(R.id.btn_ring)
+    Button btnRing;
     private int mRoomId;
     private int mUserId;
+
     private DoorBellControlCenter mControlCenter;
 
 
@@ -28,17 +32,27 @@ public class VideoServiceActivity extends BaseActivity {
 
     @Override
     protected void init() {
-        mRoomId = getIntent().getExtras().getInt("roomId");
-        mUserId = getIntent().getExtras().getInt("userId");
         tv_state.setText("正在与" + mUserId + "通话中");
         mControlCenter = DoorBellControlCenter.getInstance(this);
-        mControlCenter.enterRoom(mRoomId, "");
     }
 
-    @OnClick({R.id.btn_ring})
+    @OnClick({R.id.btn_ring, R.id.btn_alarm})
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_ring:
+                //模拟有人按门铃
+                Intent intent = new Intent();
+                intent.setAction(ConstantUtil.ACTION_DOORBELL_SYSTEM_EVENT);
+                intent.putExtra("type", ConstantUtil.TYPE_DOORBELL_SYSTEM_RING);
+                sendBroadcast(intent);
+//                AnyChatCoreSDK.getInstance(this).SnapShot(-1, AnyChatDefine
+// .ANYCHAT_RECORD_FLAGS_SNAPSHOT,0);
+                break;
+            case R.id.btn_alarm:
+                intent = new Intent();
+                intent.setAction(ConstantUtil.ACTION_DOORBELL_SYSTEM_EVENT);
+                intent.putExtra("type", ConstantUtil.TYPE_DOORBELL_SYSTEM_ALARM);
+                sendBroadcast(intent);
                 break;
         }
     }

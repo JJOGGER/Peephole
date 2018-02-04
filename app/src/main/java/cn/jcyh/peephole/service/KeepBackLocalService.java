@@ -37,7 +37,7 @@ import cn.jcyh.peephole.MyApp;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.bean.CommandJson;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
-import cn.jcyh.peephole.utils.ToastUtil;
+import cn.jcyh.peephole.utils.ConstantUtil;
 import timber.log.Timber;
 
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_BASE_EVENT;
@@ -64,7 +64,8 @@ import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_STAR
  * Created by jogger on 2017/12/4.
  */
 
-public class KeepBackLocalService extends Service implements AnyChatBaseEvent, AnyChatVideoCallEvent, AnyChatUserInfoEvent, AnyChatTransDataEvent, AnyChatRecordEvent {
+public class KeepBackLocalService extends Service implements AnyChatBaseEvent,
+        AnyChatVideoCallEvent, AnyChatUserInfoEvent, AnyChatTransDataEvent, AnyChatRecordEvent {
     private MyBinder mBinder;
     private MyServiceConnection mConnection;
     private AnyChatCoreSDK mAnyChat;
@@ -73,7 +74,7 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
     private static boolean sIsClock;//是否锁屏
     private static int sLockTime;//记录锁屏时间
     private MyHandler mMyHandler;
-    private ScreenBroadcastReceiver mReceiver;
+    private MyReceiver mReceiver;
     private Gson mGson;
     private DoorBellControlCenter mControlCenter;
 
@@ -95,7 +96,7 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
         Intent mIntent = new Intent(this, KeepBackRemoteService.class);
         bindService(mIntent, mConnection, Context.BIND_IMPORTANT);
         //注册屏幕状态广播
-        mReceiver = new ScreenBroadcastReceiver();
+        mReceiver = new MyReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
         intentFilter.addAction(Intent.ACTION_SCREEN_ON);
@@ -111,7 +112,8 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
             mFirstLogin = intent.getBooleanExtra("firstLogin", true);
         Intent mIntent = new Intent(this, MainActivity.class);
         mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, mIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, mIntent, PendingIntent
+                .FLAG_UPDATE_CURRENT);
         builder.setContentIntent(pendingIntent)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
@@ -122,7 +124,8 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
                 .setPriority(NotificationCompat.PRIORITY_MAX);
         startForeground(startId, builder.build());
         connectAnyChat(MyApp.sImei);
-//        DoorBellControlCenter.getInstance(this).login2DoorBell(new DoorBellControlCenter.OnLoginDoorBellListener() {
+//        DoorBellControlCenter.getInstance(this).login2DoorBell(new DoorBellControlCenter
+// .OnLoginDoorBellListener() {
 //            @Override
 //            public void onSuccess(String uid) {
 //
@@ -198,7 +201,8 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
     public void OnAnyChatUserInfoUpdate(int dwUserId, int dwType) {
         Timber.e("------OnAnyChatUserInfoUpdate" + dwUserId);
 //        if (dwUserId == 0 && dwType == 0) {
-//            DoorBellControlCenter.getInstance(getApplicationContext()).getFriendDatas();//mOnFriendItem第一次在此取到值
+//            DoorBellControlCenter.getInstance(getApplicationContext()).getFriendDatas();
+// mOnFriendItem第一次在此取到值
 //        }
         Intent intent = new Intent();
         intent.putExtra("dwUserId", dwUserId);
@@ -221,7 +225,8 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
     }
 
     @Override
-    public void OnAnyChatVideoCallEvent(int dwEventType, int dwUserId, int dwErrorCode, int dwFlags, int dwParam, String userStr) {
+    public void OnAnyChatVideoCallEvent(int dwEventType, int dwUserId, int dwErrorCode, int
+            dwFlags, int dwParam, String userStr) {
         Timber.e("---------OnAnyChatVideoCallEvent");
         Intent intent = new Intent(ACTION_ANYCHAT_VIDEO_CALL_EVENT);
         intent.putExtra("dwUserId", dwUserId);
@@ -258,8 +263,9 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
     public static String sTargetPath = null;
 
     @Override
-    public void OnAnyChatTransFile(int dwUserid, String FileName, String TempFilePath, int dwFileLength, int wParam, int lParam, int dwTaskId) {
-        Timber.e("---------OnAnyChatTransFile" + lParam);
+    public void OnAnyChatTransFile(int dwUserid, String FileName, String TempFilePath, int
+            dwFileLength, int wParam, int lParam, int dwTaskId) {
+        Timber.e("---------OnAnyChatTransFile" + lParam + "-->" + FileName + "--" + TempFilePath);
 //        String targetPath = null;
 //        String mediaImgSrc = FileUtils.getInstance().getMediaImgSrc();
 //        switch (lParam) {
@@ -290,16 +296,16 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
 //                sTargetPath = targetPath;
 //            }
 //            if (b) {
-//                Intent intent = new Intent();
-//                intent.putExtra("dwUserid", dwUserid);
-//                intent.putExtra("targetPath", targetPath);
-//                intent.putExtra("dwFileLength", dwFileLength);
-//                intent.putExtra("wParam", wParam);
-//                intent.putExtra("lParam", lParam);
-//                intent.putExtra("dwTaskId", dwTaskId);
-//                intent.setAction(ACTION_ANYCHAT_TRANS_DATA_EVENT);
-//                intent.putExtra("type", TYPE_ANYCHAT_TRANS_FILE);
-//                sendBroadcast(intent);
+        Intent intent = new Intent();
+        intent.putExtra("dwUserid", dwUserid);
+        intent.putExtra("targetPath", TempFilePath);
+        intent.putExtra("dwFileLength", dwFileLength);
+        intent.putExtra("wParam", wParam);
+        intent.putExtra("lParam", lParam);
+        intent.putExtra("dwTaskId", dwTaskId);
+        intent.setAction(ACTION_ANYCHAT_TRANS_DATA_EVENT);
+        intent.putExtra("type", ConstantUtil.TYPE_ANYCHAT_TRANS_FILE);
+        sendBroadcast(intent);
 //            }
 //        }
     }
@@ -316,14 +322,6 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
         intent.putExtra("command", commandJson);
         Timber.e("-----OnAnyChatTransBuffer" + result + "---dwUserid:" + dwUserid);
         sendBroadcast(intent);
-        switch (commandJson.getCommandType()) {
-            case CommandJson.CommandType.UNLOCK_DOORBELL_REQUEST:
-                ToastUtil.showToast(getApplicationContext(), "执行解锁操作");
-                commandJson.setCommandType(CommandJson.CommandType.UNLOCK_DOORBELL_RESPONSE);
-                commandJson.setCommand("success");
-                mControlCenter.sendUnlockResponse(dwUserid, commandJson);
-                break;
-        }
 //        if (result.contains("command")) {
 //            try {
 //                JSONObject jsonObject_all = new JSONObject(result);
@@ -355,19 +353,22 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
 //        }
 //        sendBroadcast(intent);
 //        if ("action:doorbell".equals(result) || result.contains("notification")) {
-//            DoorBellBean doorBell = DoorBellControlCenter.getInstance(getApplicationContext()).getUserItemByUserId(dwUserid);
+//            DoorBellBean doorBell = DoorBellControlCenter.getInstance(getApplicationContext())
+// .getUserItemByUserId(dwUserid);
 //            Timber.e("------->doorbell" + doorBell);
 //            if (doorBell != null) {
 //                Bundle bundle = new Bundle();
 //                if (result.contains("notification")) {
 //                    try {
 //                        JSONObject jsonObject = new JSONObject(result);
-//                        JSONObject jsonObject_Notification = jsonObject.getJSONObject("notification");
+//                        JSONObject jsonObject_Notification = jsonObject.getJSONObject
+// ("notification");
 //                        String type = jsonObject_Notification.getString("type");
 //                        String trigger = jsonObject_Notification.getString(" trigger");
 //                        Timber.e("----type:" + type + "---tri:" + trigger);
 //                        if ("videoCall".equals(type)) {
-//                            bundle.putString("trigger", jsonObject_Notification.getString(" trigger"));
+//                            bundle.putString("trigger", jsonObject_Notification.getString("
+// trigger"));
 //                        }
 //                    } catch (JSONException e) {
 //                        e.printStackTrace();
@@ -393,7 +394,8 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
     }
 
     @Override
-    public void OnAnyChatTransBufferEx(int dwUserid, byte[] lpBuf, int dwLen, int wparam, int lparam, int taskid) {
+    public void OnAnyChatTransBufferEx(int dwUserid, byte[] lpBuf, int dwLen, int wparam, int
+            lparam, int taskid) {
         Timber.e("-----------OnAnyChatTransBufferEx");
     }
 
@@ -462,13 +464,15 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
         intent.putExtra("type", TYPE_ANYCHAT_LINK_CLOSE);
         sendBroadcast(intent);
 //        if (dwErrorCode != 209) {
-//            final String uid = SharePreUtil.getInstance(getApplicationContext()).getString(ConstansUtil.UID, "");
+//            final String uid = SharePreUtil.getInstance(getApplicationContext()).getString
+// (ConstansUtil.UID, "");
 //            connectAnyChat(uid);
 //        }
     }
 
     @Override
-    public void OnAnyChatRecordEvent(int dwUserId, int dwErrorCode, String lpFileName, int dwElapse, int dwFlags, int dwParam, String lpUserStr) {
+    public void OnAnyChatRecordEvent(int dwUserId, int dwErrorCode, String lpFileName, int
+            dwElapse, int dwFlags, int dwParam, String lpUserStr) {
         Timber.e("------OnAnyChatRecordEvent" + dwErrorCode);
         Intent intent = new Intent();
         intent.putExtra("dwErrorCode", dwErrorCode);
@@ -484,7 +488,8 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
     }
 
     @Override
-    public void OnAnyChatSnapShotEvent(int dwUserId, int dwErrorCode, String lpFileName, int dwFlags, int dwParam, String lpUserStr) {
+    public void OnAnyChatSnapShotEvent(int dwUserId, int dwErrorCode, String lpFileName, int
+            dwFlags, int dwParam, String lpUserStr) {
         Timber.e("------OnAnyChatSnapShotEvent" + dwErrorCode);
 //        Intent intent = new Intent();
 //        String fileName = "IMG_" + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date(System
@@ -507,7 +512,7 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
     }
 
 
-    private class ScreenBroadcastReceiver extends BroadcastReceiver {
+    private class MyReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -556,7 +561,8 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent, A
             //获取电源管理器对象
             PowerManager pm = (PowerManager) service.getSystemService(Context.POWER_SERVICE);
             //获取PowerManager.WakeLock对象,后面的参数|表示同时传入两个值,最后的是LogCat里用的Tag
-            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "bright");
+            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP |
+                    PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "bright");
             //点亮屏幕
             wl.acquire();
 //            final String uid = SharePreUtil.getInstance(service).getString(ConstansUtil.UID, "");

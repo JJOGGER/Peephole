@@ -7,6 +7,7 @@ import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseFragment;
 import cn.jcyh.peephole.ui.activity.BindActivity;
+import cn.jcyh.peephole.ui.activity.VideoServiceActivity;
 
 /**
  * Created by jogger on 2018/1/20.
@@ -34,6 +35,7 @@ public class MenuFragment extends BaseFragment {
             case R.id.tv_doorbell_set:
                 break;
             case R.id.tv_video:
+                startNewActivity(VideoServiceActivity.class);
                 break;
             case R.id.tv_bind:
                 startNewActivity(BindActivity.class);

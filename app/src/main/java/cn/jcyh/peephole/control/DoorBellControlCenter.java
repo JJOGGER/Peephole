@@ -7,6 +7,8 @@ import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
 import com.google.gson.Gson;
 
+import java.util.List;
+
 import cn.jcyh.peephole.bean.CommandJson;
 import timber.log.Timber;
 
@@ -308,6 +310,7 @@ public class DoorBellControlCenter {
         Timber.e("------------------>send:" + json);
         mAnyChat.TransBuffer(userId, json.getBytes(), json.getBytes().length);
     }
+
     /**
      * 解锁响应指令
      */
@@ -359,14 +362,47 @@ public class DoorBellControlCenter {
      * 接受请求
      */
     public void acceptVideoCall(int aId) {
-        videoCallContrl(AnyChatDefine.BRAC_VIDEOCALL_EVENT_REPLY, aId, AnyChatDefine.BRAC_ERRORCODE_SUCCESS, 0, 0, "");
+        videoCallContrl(AnyChatDefine.BRAC_VIDEOCALL_EVENT_REPLY, aId, AnyChatDefine
+                .BRAC_ERRORCODE_SUCCESS, 0, 0, "");
     }
 
     /**
      * 拒绝请求
      */
     public void rejectVideoCall(int aId) {
-        videoCallContrl(AnyChatDefine.BRAC_VIDEOCALL_EVENT_REPLY, aId, AnyChatDefine.BRAC_ERRORCODE_SESSION_REFUSE, 0, 0, "");
+        videoCallContrl(AnyChatDefine.BRAC_VIDEOCALL_EVENT_REPLY, aId, AnyChatDefine
+                .BRAC_ERRORCODE_SESSION_REFUSE, 0, 0, "");
+    }
+
+    /**
+     * 发送视频呼叫消息
+     *
+     * @param aIds 要通知的用户
+     * @param type 通知类型0：门铃 1报警
+     */
+    public void sendVideoCall(List<Integer> aIds, int type) {
+        if (aIds == null || aIds.size() == 0) return;
+        CommandJson commandJson = new CommandJson();
+        commandJson.setCommandType(CommandJson.CommandType.DOORBELL_NOTIFICATION);
+
+        commandJson.setCommand(type == 0 ? CommandJson.CommandType.NOTIFICATION_DOORBELL_RING :
+                CommandJson.CommandType.NOTIFICATION_DOORBELL_ALARM);
+        String json = mGson.toJson(commandJson);
+        for (int i = 0; i < aIds.size(); i++) {
+            mAnyChat.TransBuffer(aIds.get(i), json.getBytes(), json.getBytes().length);
+        }
+
+    }
+
+    /**
+     * 发送视频呼叫抓拍图
+     *
+     * @param aId anychatid
+     */
+    public void sendVideoCallImg(int aId, String filePath) {
+        // TODO: 2018/2/4 判断视频呼叫已打开
+        mAnyChat.TransFile(aId, filePath, CommandJson.CommandType.DOORBELL_VIDEO_CALL_PARAM, 0,
+                0, null);
     }
 
     //
@@ -376,7 +412,8 @@ public class DoorBellControlCenter {
 //     * @param tUserId
 //     */
 //    public void finishVideoCall(int tUserId) {
-//        videoCallContrl(AnyChatDefine.BRAC_VIDEOCALL_EVENT_FINISH, tUserId, 0, 0, mSelfUserId, "");
+//        videoCallContrl(AnyChatDefine.BRAC_VIDEOCALL_EVENT_FINISH, tUserId, 0, 0, mSelfUserId,
+// "");
 //    }
 //
 //    public void initVideoSDK(Context context) {
@@ -407,9 +444,11 @@ public class DoorBellControlCenter {
 //    public void startRecord(int tUserId) {
 //        AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_RECORD_FILETYPE, 0);
 //        if (FileUtils.getInstance().getSDCardPath() != null) {
-//            AnyChatCoreSDK.SetSDKOptionString(AnyChatDefine.BRAC_SO_RECORD_TMPDIR, FileUtils.getInstance().getSDCardPath() + Environment.DIRECTORY_DCIM);
+//            AnyChatCoreSDK.SetSDKOptionString(AnyChatDefine.BRAC_SO_RECORD_TMPDIR, FileUtils
+// .getInstance().getSDCardPath() + Environment.DIRECTORY_DCIM);
 //        }
-//        int dwFlags = AnyChatDefine.ANYCHAT_RECORD_FLAGS_VIDEO + AnyChatDefine.ANYCHAT_RECORD_FLAGS_AUDIO;
+//        int dwFlags = AnyChatDefine.ANYCHAT_RECORD_FLAGS_VIDEO + AnyChatDefine
+// .ANYCHAT_RECORD_FLAGS_AUDIO;
 //        mAnyChat.StreamRecordCtrlEx(tUserId, 1, dwFlags, 0, "");
 //    }
 //
@@ -429,7 +468,8 @@ public class DoorBellControlCenter {
 //    public void requestLastedPicsNames(int userId) {
 ////        String command = "{\"command\":{\"type\":\"requestLastedPicsNames\",\"nums\":\"3\"}}";
 ////        mAnyChat.TransBuffer(userId, command.getBytes(), command.getBytes().length);
-////        Timber.e("-------->requestLastedPicsNames" + userId + "--->" + mAnyChat + "--->" + command);
+////        Timber.e("-------->requestLastedPicsNames" + userId + "--->" + mAnyChat + "--->" +
+/// command);
 //        CommandJson.Command command = new CommandJson.Command();
 //        command.setType(ConstantUtil.REQUEST_LASTED_PICS_NAME);
 //        command.setNums("3");
@@ -472,7 +512,8 @@ public class DoorBellControlCenter {
 //     * 查询下载进度
 //     */
 //    public int queryTransTaskInfo(int userId, int taskId, AnyChatOutParam anyChatOutParam) {
-//        return mAnyChat.QueryTransTaskInfo(userId, taskId, AnyChatDefine.BRAC_TRANSTASK_PROGRESS, anyChatOutParam);
+//        return mAnyChat.QueryTransTaskInfo(userId, taskId, AnyChatDefine
+// .BRAC_TRANSTASK_PROGRESS, anyChatOutParam);
 //    }
 //
 //    /**
@@ -483,7 +524,8 @@ public class DoorBellControlCenter {
 //    }
 //
 //    private void transCommand(int userId, CommandJson.Command command) {
-////        String comm = "{\"command\":{\"type\":\"requestMediaFile\", \"name\":\"" + fileName + "\"}}";
+////        String comm = "{\"command\":{\"type\":\"requestMediaFile\", \"name\":\"" + fileName +
+/// "\"}}";
 //        mCommandJson.setCommand(command);
 //        String comm = mGson.toJson(mCommandJson);
 //        mAnyChat.TransBuffer(userId, comm.getBytes(), comm.getBytes().length);

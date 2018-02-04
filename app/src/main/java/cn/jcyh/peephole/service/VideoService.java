@@ -64,6 +64,8 @@ public class VideoService extends Service {
     public void onCreate() {
         super.onCreate();
         DoorBellControlCenter.sIsVideo = true;
+        // 初始化Camera上下文句柄
+        AnyChatCoreSDK.mCameraHelper.SetContext(getApplicationContext());
         mAnychat = AnyChatCoreSDK.getInstance(this);
         mControlCenter = DoorBellControlCenter.getInstance(this);
         mDoorbellVideoHelper = mControlCenter.getDoorbellVideoHelper();
