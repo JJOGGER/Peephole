@@ -11,12 +11,16 @@ import android.support.v4.view.ViewPager;
 import com.bairuitech.anychat.AnyChatCoreSDK;
 
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 import butterknife.BindView;
 import cn.jcyh.peephole.adapter.MainPageAdapter;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.bean.CommandJson;
+import cn.jcyh.peephole.bean.User;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.http.HttpAction;
+import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.service.KeepBackRemoteService;
 import cn.jcyh.peephole.service.VideoService;
 import cn.jcyh.peephole.ui.activity.PictureActivity;
@@ -44,7 +48,8 @@ import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_DOORBELL_SYSTEM_RING;
 public class MainActivity extends BaseActivity {
     @BindView(R.id.vp_main)
     ViewPager vp_main;
-    private static final int REQEUST_CAPTURE = 0x001;
+    private static final int REQEUST_CAPTURE_RING = 0x001;
+    private static final int REQEUST_CAPTURE_ALARM = 0x002;
     private MyReceiver mReceiver;
     private DoorBellControlCenter mControlCenter;
     private int mRoomId;
@@ -74,6 +79,7 @@ public class MainActivity extends BaseActivity {
         intentFilter.addAction(ACTION_ANYCHAT_USER_INFO_EVENT);
         intentFilter.addAction(ACTION_ANYCHAT_VIDEO_CALL_EVENT);
         intentFilter.addAction(ACTION_DOORBELL_SYSTEM_EVENT);
+        intentFilter.addAction(ACTION_ANYCHAT_TRANS_DATA_EVENT);
         registerReceiver(mReceiver, intentFilter);
     }
 
@@ -134,9 +140,9 @@ public class MainActivity extends BaseActivity {
                     if (TYPE_DOORBELL_SYSTEM_RING.equals(type)) {
                         // TODO: 2018/2/4 获取绑定猫眼的用户列表
 //                    mControlCenter.sendVideoCall();
-                        startNewActivityForResult(PictureActivity.class, REQEUST_CAPTURE);
+                        startNewActivityForResult(PictureActivity.class, REQEUST_CAPTURE_RING);
                     } else if (TYPE_DOORBELL_SYSTEM_ALARM.equals(type)) {
-
+                        startNewActivityForResult(PictureActivity.class, REQEUST_CAPTURE_ALARM);
                     }
                     break;
                 case ACTION_ANYCHAT_USER_INFO_EVENT:
@@ -178,6 +184,7 @@ public class MainActivity extends BaseActivity {
                     break;
                 case CommandJson.CommandType.DOORBELL_CALL_IMG_REQUEST:
                     //视频呼叫图片请求
+                    Timber.e("----------视频呼叫图片请求"+dwUserid+"---filepath:"+mFilePath);
                     mControlCenter.sendVideoCallImg(dwUserid, mFilePath);
                     break;
             }
@@ -247,14 +254,32 @@ public class MainActivity extends BaseActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(final int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Timber.e("-------------onActivityResult" + resultCode + "---" + requestCode);
         if (resultCode == RESULT_OK) {
-            if (requestCode == REQEUST_CAPTURE) {
+            if (requestCode == REQEUST_CAPTURE_RING) {
                 //获取拍照的图片
                 mFilePath = data.getStringExtra("filePath");
-                // TODO: 2018/2/4 获取绑定猫眼的用户列表
+                Timber.e("---------------->mFilePath:" + mFilePath);
+                HttpAction.getHttpAction().getBindUsers(MyApp.sImei, new IDataListener<List<User>>() {
+                    @Override
+                    public void onSuccess(List<User> users) {
+                        Timber.e("-------user:" + users);
+                        if (users != null && users.size() != 0) {
+                            //通知用户
+                            mControlCenter.sendVideoCall(users, requestCode);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(int errorCode) {
+                        Timber.e("------errorCode" + errorCode);
+                    }
+                });
 //                mControlCenter.sendVideoCall();
+            } else if (requestCode == REQEUST_CAPTURE_ALARM) {
+
             }
         }
     }

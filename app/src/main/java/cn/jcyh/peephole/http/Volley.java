@@ -31,4 +31,5 @@ public class Volley {
         //请求任务丢到请求队列中
         ThreadPoolManager.getThreadPoolManager().excute(new FutureTask<>(httpTask, null));
     }
+
 }

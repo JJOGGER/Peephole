@@ -52,7 +52,7 @@ public class JsonHttpService implements IHttpService {
             mURLConnection.setDoInput(true);
             mURLConnection.setDoOutput(true);
             mURLConnection.setUseCaches(false);
-            mURLConnection.setRequestProperty("Content-Type", "application/json;charset=utf-8");
+            mURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
             mURLConnection.setConnectTimeout(10 * 1000);
 //            //添加请求头
 //            connection.setRequestProperty("token", token);
@@ -61,6 +61,7 @@ public class JsonHttpService implements IHttpService {
             if (requestData != null) {
                 OutputStream outputStream = mURLConnection.getOutputStream();
                 outputStream.write(requestData);
+                outputStream.flush();
                 outputStream.close();
             }
             //获取返回结果

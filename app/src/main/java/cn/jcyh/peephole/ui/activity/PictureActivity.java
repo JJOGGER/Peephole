@@ -74,7 +74,9 @@ public class PictureActivity extends BaseActivity {
                 10, 10);
         Timber.e("-------isCompleted:" + isCompleted);
         closeCamera();
-        Intent intent = getIntent().putExtra("filePath", tempPath);
+
+        Intent intent = new Intent();
+        intent.putExtra("filePath",tempPath);
         setResult(RESULT_OK, intent);
         finish();
     }

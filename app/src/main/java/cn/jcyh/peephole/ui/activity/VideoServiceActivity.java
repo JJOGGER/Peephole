@@ -45,6 +45,7 @@ public class VideoServiceActivity extends BaseActivity {
                 intent.setAction(ConstantUtil.ACTION_DOORBELL_SYSTEM_EVENT);
                 intent.putExtra("type", ConstantUtil.TYPE_DOORBELL_SYSTEM_RING);
                 sendBroadcast(intent);
+                finish();
 //                AnyChatCoreSDK.getInstance(this).SnapShot(-1, AnyChatDefine
 // .ANYCHAT_RECORD_FLAGS_SNAPSHOT,0);
                 break;
@@ -53,6 +54,7 @@ public class VideoServiceActivity extends BaseActivity {
                 intent.setAction(ConstantUtil.ACTION_DOORBELL_SYSTEM_EVENT);
                 intent.putExtra("type", ConstantUtil.TYPE_DOORBELL_SYSTEM_ALARM);
                 sendBroadcast(intent);
+                finish();
                 break;
         }
     }

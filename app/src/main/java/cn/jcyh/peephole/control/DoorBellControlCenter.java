@@ -5,11 +5,13 @@ import android.media.MediaPlayer;
 
 import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
+import com.bairuitech.anychat.AnyChatOutParam;
 import com.google.gson.Gson;
 
 import java.util.List;
 
 import cn.jcyh.peephole.bean.CommandJson;
+import cn.jcyh.peephole.bean.User;
 import timber.log.Timber;
 
 /**
@@ -377,19 +379,20 @@ public class DoorBellControlCenter {
     /**
      * 发送视频呼叫消息
      *
-     * @param aIds 要通知的用户
+     * @param users 要通知的用户
      * @param type 通知类型0：门铃 1报警
      */
-    public void sendVideoCall(List<Integer> aIds, int type) {
-        if (aIds == null || aIds.size() == 0) return;
+    public void sendVideoCall(List<User> users, int type) {
+        if (users == null || users.size() == 0) return;
         CommandJson commandJson = new CommandJson();
         commandJson.setCommandType(CommandJson.CommandType.DOORBELL_NOTIFICATION);
 
-        commandJson.setCommand(type == 0 ? CommandJson.CommandType.NOTIFICATION_DOORBELL_RING :
+        commandJson.setCommand(type == 1 ? CommandJson.CommandType.NOTIFICATION_DOORBELL_RING :
                 CommandJson.CommandType.NOTIFICATION_DOORBELL_ALARM);
         String json = mGson.toJson(commandJson);
-        for (int i = 0; i < aIds.size(); i++) {
-            mAnyChat.TransBuffer(aIds.get(i), json.getBytes(), json.getBytes().length);
+        for (int i = 0; i < users.size(); i++) {
+            mAnyChat.TransBuffer(Integer.valueOf(users.get(i).getAid()), json.getBytes(), json.getBytes().length);
+            Timber.e("-----------通知报警的用户："+users.get(i).getAccount());
         }
 
     }
@@ -401,8 +404,8 @@ public class DoorBellControlCenter {
      */
     public void sendVideoCallImg(int aId, String filePath) {
         // TODO: 2018/2/4 判断视频呼叫已打开
-        mAnyChat.TransFile(aId, filePath, CommandJson.CommandType.DOORBELL_VIDEO_CALL_PARAM, 0,
-                0, null);
+        mAnyChat.TransFile(aId, filePath,0, CommandJson.CommandType.DOORBELL_VIDEO_CALL_PARAM,
+                0, new AnyChatOutParam());
     }
 
     //
