@@ -69,7 +69,6 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent,
     private MyBinder mBinder;
     private MyServiceConnection mConnection;
     private AnyChatCoreSDK mAnyChat;
-    private boolean mFirstLogin;
     //    private OnepxReceiver mOnepxReceiver;
     private static boolean sIsClock;//是否锁屏
     private static int sLockTime;//记录锁屏时间
@@ -108,8 +107,6 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent,
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-        if (intent != null)
-            mFirstLogin = intent.getBooleanExtra("firstLogin", true);
         Intent mIntent = new Intent(this, MainActivity.class);
         mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, mIntent, PendingIntent

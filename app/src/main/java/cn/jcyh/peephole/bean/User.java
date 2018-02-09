@@ -6,7 +6,7 @@ package cn.jcyh.peephole.bean;
 
 public class User {
     private String account;
-    private String aid;
+    private int aid;
 
     public String getAccount() {
         return account;
@@ -16,11 +16,11 @@ public class User {
         this.account = account;
     }
 
-    public String getAid() {
+    public int getAid() {
         return aid;
     }
 
-    public void setAid(String aid) {
+    public void setAid(int aid) {
         this.aid = aid;
     }
 

@@ -4,14 +4,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v4.view.ViewPager;
 
-import com.bairuitech.anychat.AnyChatCoreSDK;
-
-import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import cn.jcyh.peephole.adapter.MainPageAdapter;
@@ -20,6 +17,7 @@ import cn.jcyh.peephole.bean.CommandJson;
 import cn.jcyh.peephole.bean.User;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
+import cn.jcyh.peephole.http.HttpUrlIble;
 import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.service.KeepBackRemoteService;
 import cn.jcyh.peephole.service.VideoService;
@@ -53,11 +51,6 @@ public class MainActivity extends BaseActivity {
     private MyReceiver mReceiver;
     private DoorBellControlCenter mControlCenter;
     private int mRoomId;
-    public static final int MSG_CHECKAV = 1;
-    boolean bOtherVideoOpened = false;
-    private MyHandler mHandler;
-    private boolean mIsCheckAv;
-    private AnyChatCoreSDK mAnyChat;
     private String mFilePath;
 
     @Override
@@ -72,8 +65,6 @@ public class MainActivity extends BaseActivity {
         vp_main.setAdapter(new MainPageAdapter(getSupportFragmentManager()));
         vp_main.setOffscreenPageLimit(2);
         mReceiver = new MyReceiver();
-        mHandler = new MyHandler(this);
-        mAnyChat = AnyChatCoreSDK.getInstance(getApplicationContext());
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ACTION_ANYCHAT_BASE_EVENT);
         intentFilter.addAction(ACTION_ANYCHAT_USER_INFO_EVENT);
@@ -86,47 +77,9 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mIsCheckAv = false;
         unregisterReceiver(mReceiver);
     }
 
-    /**
-     * 检查视频
-     */
-    private void initTimerCheckAv() {
-        mIsCheckAv = true;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (mIsCheckAv) {
-                    mHandler.sendEmptyMessage(MSG_CHECKAV);
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }).start();
-
-    }
-
-    // 判断视频是否已打开
-    private void CheckVideoStatus() {
-        try {
-            if (!bOtherVideoOpened) {
-                Timber.e("-------------->" + mAnyChat.GetCameraState(-1) + "---" + mAnyChat
-                        .GetUserVideoWidth(-1));
-                if (mAnyChat.GetCameraState(-1) == 2
-                        && mAnyChat.GetUserVideoWidth(-1) != 0) {
-                    bOtherVideoOpened = true;
-                    mIsCheckAv = false;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     private class MyReceiver extends BroadcastReceiver {
 
@@ -184,7 +137,7 @@ public class MainActivity extends BaseActivity {
                     break;
                 case CommandJson.CommandType.DOORBELL_CALL_IMG_REQUEST:
                     //视频呼叫图片请求
-                    Timber.e("----------视频呼叫图片请求"+dwUserid+"---filepath:"+mFilePath);
+                    Timber.e("----------视频呼叫图片请求" + dwUserid + "---filepath:" + mFilePath);
                     mControlCenter.sendVideoCallImg(dwUserid, mFilePath);
                     break;
             }
@@ -204,7 +157,6 @@ public class MainActivity extends BaseActivity {
             case TYPE_ANYCHAT_ENTER_ROOM:
                 int dwRoomId = intent.getIntExtra("dwRoomId", -1);
                 int dwErrorCode = intent.getIntExtra("dwErrorCode", -1);
-                initTimerCheckAv();//检查视频
                 if (dwErrorCode == 0) {
                     if (dwRoomId == mRoomId) {
 
@@ -231,8 +183,13 @@ public class MainActivity extends BaseActivity {
         switch (type) {
             case TYPE_BRAC_VIDEOCALL_EVENT_REQUEST:// < 呼叫请求
                 Timber.e("----有人发呼叫请求过来了");
-                //猫眼端未打开摄像头/未在通话中，则接受请求
-                mControlCenter.acceptVideoCall(dwUserId);
+                if (DoorBellControlCenter.sIsBinding) {
+                    //正在绑定中，不能会话
+                    mControlCenter.rejectVideoCall(dwUserId);
+                } else {
+                    //猫眼端未打开摄像头/未在通话中，则接受请求
+                    mControlCenter.acceptVideoCall(dwUserId);
+                }
                 break;
             case TYPE_BRAC_VIDEOCALL_EVENT_REPLY:// < 呼叫请求回复
 
@@ -261,6 +218,10 @@ public class MainActivity extends BaseActivity {
             if (requestCode == REQEUST_CAPTURE_RING) {
                 //获取拍照的图片
                 mFilePath = data.getStringExtra("filePath");
+                Map<String,Object> params=new HashMap<>();
+                params.put("sn",MyApp.sImei);
+                params.put("type",1);
+                HttpAction.getHttpAction().sendPostImg(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL,mFilePath,params, null);
                 Timber.e("---------------->mFilePath:" + mFilePath);
                 HttpAction.getHttpAction().getBindUsers(MyApp.sImei, new IDataListener<List<User>>() {
                     @Override
@@ -280,28 +241,6 @@ public class MainActivity extends BaseActivity {
 //                mControlCenter.sendVideoCall();
             } else if (requestCode == REQEUST_CAPTURE_ALARM) {
 
-            }
-        }
-    }
-
-    private static class MyHandler extends Handler {
-        private WeakReference<MainActivity> mActivity;
-
-        MyHandler(MainActivity activity) {
-            mActivity = new WeakReference<>(activity);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            MainActivity videoActivity = mActivity.get();
-            switch (msg.what) {
-                case MSG_CHECKAV:
-                    if (videoActivity != null) {
-                        videoActivity.CheckVideoStatus();
-                    }
-                    // videoActivity.updateVolume();
-                    break;
             }
         }
     }

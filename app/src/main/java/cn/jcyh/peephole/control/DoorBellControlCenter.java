@@ -29,6 +29,7 @@ public class DoorBellControlCenter {
     public static int mEventType = -1;
     private Gson mGson;
     public static boolean sIsVideo;//标记是否正在视频通话中
+    public static boolean sIsBinding;//标记是否正在绑定中
 
     //    public static Map<String, Object> pushFlagMap;
 
@@ -380,7 +381,7 @@ public class DoorBellControlCenter {
      * 发送视频呼叫消息
      *
      * @param users 要通知的用户
-     * @param type 通知类型0：门铃 1报警
+     * @param type  通知类型0：门铃 1报警
      */
     public void sendVideoCall(List<User> users, int type) {
         if (users == null || users.size() == 0) return;
@@ -392,7 +393,7 @@ public class DoorBellControlCenter {
         String json = mGson.toJson(commandJson);
         for (int i = 0; i < users.size(); i++) {
             mAnyChat.TransBuffer(Integer.valueOf(users.get(i).getAid()), json.getBytes(), json.getBytes().length);
-            Timber.e("-----------通知报警的用户："+users.get(i).getAccount());
+            Timber.e("-----------通知报警的用户：" + users.get(i).getAccount());
         }
 
     }
@@ -404,7 +405,7 @@ public class DoorBellControlCenter {
      */
     public void sendVideoCallImg(int aId, String filePath) {
         // TODO: 2018/2/4 判断视频呼叫已打开
-        mAnyChat.TransFile(aId, filePath,0, CommandJson.CommandType.DOORBELL_VIDEO_CALL_PARAM,
+        mAnyChat.TransFile(aId, filePath, 0, CommandJson.CommandType.DOORBELL_VIDEO_CALL_PARAM,
                 0, new AnyChatOutParam());
     }
 

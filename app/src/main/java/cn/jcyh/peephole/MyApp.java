@@ -18,9 +18,10 @@ public class MyApp extends Application {
         if (BuildConfig.DEBUG)
             Timber.plant(new Timber.DebugTree());
         sImei = getAndroidIMEI();
-        Timber.e("---------imei:"+sImei);
+        Timber.e("---------imei:" + sImei);
 //        HttpAction.getHttpAction().initDoorbell(sImei, null);
     }
+
 
     private String getAndroidIMEI() {
         String androidIMEI = android.provider.Settings.System.getString(getContentResolver(), android.provider.Settings.System.ANDROID_ID);

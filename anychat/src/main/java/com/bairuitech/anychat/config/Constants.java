@@ -8,6 +8,6 @@ public class Constants {
 //    public static final String ADDRESS = "ihomecn.rollupcn.com";//ihomecn.rollupcn.com
 //    public static final String ADDRESS2 = "ihomeen.rollupcn.com";//国外的
 
-    public static final String ADDRESS="119.23.58.28";
+    public static final String ADDRESS="192.168.0.127";
     public static final int PORT = 8906;
 }

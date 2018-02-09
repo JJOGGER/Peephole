@@ -2,6 +2,7 @@ package cn.jcyh.peephole.http;
 
 import com.google.gson.Gson;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
@@ -10,14 +11,14 @@ import java.util.Map;
  * Created by jogger on 2018/1/25.
  */
 
- class HttpTask implements Runnable {
+class HttpTask implements Runnable {
     //含有请求服务器的接口引用
     private IHttpService mHttpService;
 
     /**
      * 对象做参数
      */
-     <T> HttpTask(String url, T requestBean, IHttpListener httpListener) {
+    <T> HttpTask(String url, T requestBean, IHttpListener httpListener) {
         mHttpService = new JsonHttpService();
         mHttpService.setUrl(url);
         //设置处理结果的接口
@@ -43,6 +44,18 @@ import java.util.Map;
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 上传文件
+     */
+    HttpTask(String url, File file, IHttpListener httpListener) {
+        mHttpService = new UploadHttpService();
+        mHttpService.setUrl(url);
+        //设置处理结果的接口
+        mHttpService.setHttpListener(httpListener);
+        ((UploadHttpService) mHttpService).setFileName(file.getName());
+        ((UploadHttpService) mHttpService).setFilePath(file.getAbsolutePath());
     }
 
     @Override

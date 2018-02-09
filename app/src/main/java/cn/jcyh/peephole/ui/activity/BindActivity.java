@@ -7,28 +7,35 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 
-
 import com.google.zxing.WriterException;
 import com.zxing.encoding.EncodingHandler;
+
+import java.util.List;
 
 import butterknife.BindView;
 import cn.jcyh.peephole.MyApp;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.bean.CommandJson;
+import cn.jcyh.peephole.bean.User;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
-import cn.jcyh.peephole.ui.dialog.DialogFactory;
-import cn.jcyh.peephole.ui.dialog.OnDialogListener;
+import cn.jcyh.peephole.http.HttpAction;
+import cn.jcyh.peephole.http.IDataListener;
+import cn.jcyh.peephole.ui.dialog.DialogHelper;
+import cn.jcyh.peephole.ui.dialog.HintDialogFragmemt;
 import cn.jcyh.peephole.utils.CameraProvider;
 import cn.jcyh.peephole.utils.ConstantUtil;
 import cn.jcyh.peephole.utils.ToastUtil;
 import timber.log.Timber;
+
+import static cn.jcyh.peephole.control.DoorBellControlCenter.sIsBinding;
 
 public class BindActivity extends BaseActivity {
     @BindView(R.id.iv_icon)
     ImageView ivIcon;
     private DoorBellControlCenter mControlCenter;
     private MyReceiver mReceiver;
+    private DialogHelper mDialogHelper;
 
     @Override
     public int getLayoutId() {
@@ -37,6 +44,7 @@ public class BindActivity extends BaseActivity {
 
     @Override
     protected void init() {
+        sIsBinding = true;
         decordQR();
         mReceiver = new MyReceiver();
         mControlCenter = DoorBellControlCenter.getInstance(this);
@@ -44,12 +52,15 @@ public class BindActivity extends BaseActivity {
         intentFilter.addAction(ConstantUtil.ACTION_ANYCHAT_USER_INFO_EVENT);
         registerReceiver(mReceiver, intentFilter);
         mControlCenter.enterRoom(1, "");
+        HintDialogFragmemt hintDialogFragmemt = new HintDialogFragmemt();
+        mDialogHelper = new DialogHelper(this, hintDialogFragmemt);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         mControlCenter.leaveRoom(1);
+        sIsBinding = false;
         unregisterReceiver(mReceiver);
     }
 
@@ -82,22 +93,10 @@ public class BindActivity extends BaseActivity {
                     switch (commandJson.getCommandType()) {
                         case CommandJson.CommandType.BIND_DOORBELL_REQUEST:
                             if (commandJson.getCommand().equals(MyApp.sImei)) {
-                                DialogFactory.getDialogFactory().create(BindActivity.this, String.format(getString(R.string.request_bind_hint), commandJson.getFlag()), DialogFactory.DIALOG_COMMON_HINT)
-                                        .setOnDialogListener(new OnDialogListener() {
-                                            @Override
-                                            public void onConfirm(Object isConfirm) {
-                                                DialogFactory.getDialogFactory().dismiss();
-                                                if ((Boolean) isConfirm) {
-                                                    commandJson.setFlag("1");
-                                                } else {
-                                                    commandJson.setFlag("0");
-                                                }
-                                                int flag2 = CameraProvider.hasFrontFacingCamera() && CameraProvider.hasBackFacingCamera() ? 1 : 0;
-                                                commandJson.setCommandType(CommandJson.CommandType.BIND_DOORBELL_RESPONSE);
-                                                commandJson.setFlag2(flag2);
-                                                mControlCenter.sendBindResponse(dwUserid, commandJson);
-                                            }
-                                        }).commit();
+                                if (mDialogHelper.isShowing()) {
+                                    return;
+                                }
+                                responseBindRequest(dwUserid, commandJson);
                             }
                             break;
                         case CommandJson.CommandType.BIND_DOORBELL_COMPLETED:
@@ -127,5 +126,58 @@ public class BindActivity extends BaseActivity {
                 }
             }
         }
+    }
+
+    /**
+     * 处理绑定请求
+     */
+    private void responseBindRequest(final int dwUserid, final CommandJson commandJson) {
+        //先判断是否已绑定
+        HttpAction.getHttpAction(getApplicationContext()).getBindUsers(MyApp.sImei, new IDataListener<List<User>>() {
+            @Override
+            public void onSuccess(List<User> users) {
+                if (users != null && users.size() != 0) {
+                    for (User user :
+                            users) {
+                        if (user.getAid() == dwUserid) {
+                            //已绑定
+                            commandJson.setFlag("2");
+                            commandJson.setCommandType(CommandJson.CommandType.BIND_DOORBELL_RESPONSE);
+                            mControlCenter.sendBindResponse(dwUserid, commandJson);
+                            return;
+                        }
+                    }
+                }
+                //未绑定
+                HintDialogFragmemt dialogFragment = (HintDialogFragmemt) mDialogHelper.getDialogFragment();
+                dialogFragment.setHintContent(String.format(getString(R.string.request_bind_hint), commandJson.getFlag()));
+                dialogFragment.setOnHintDialogListener(new HintDialogFragmemt.OnHintDialogListener() {
+                    @Override
+                    public void onConfirm(boolean isConfirm) {
+                        if (isConfirm) {
+                            commandJson.setFlag("1");
+                            int flag2 = CameraProvider.hasFrontFacingCamera() && CameraProvider.hasBackFacingCamera() ? 1 : 0;
+                            commandJson.setCommandType(CommandJson.CommandType.BIND_DOORBELL_RESPONSE);
+                            commandJson.setFlag2(flag2);
+                            mControlCenter.sendBindResponse(dwUserid, commandJson);
+                        } else {
+                            commandJson.setFlag("0");
+                            commandJson.setCommandType(CommandJson.CommandType.BIND_DOORBELL_RESPONSE);
+                            mControlCenter.sendBindResponse(dwUserid, commandJson);
+                        }
+                        mDialogHelper.dismiss();
+                    }
+                });
+
+            }
+
+            @Override
+            public void onFailure(int errorCode) {
+                //请求失败
+                commandJson.setFlag("4");
+                commandJson.setCommandType(CommandJson.CommandType.BIND_DOORBELL_RESPONSE);
+                mControlCenter.sendBindResponse(dwUserid, commandJson);
+            }
+        });
     }
 }

@@ -23,6 +23,15 @@ public class HintDialogFragmemt extends BaseDialogFragment {
     private String mHintContent = "";
     private String confirmText = "";
     private String cancelText = "";
+    private OnHintDialogListener mListener;
+
+    public interface OnHintDialogListener {
+        void onConfirm(boolean isConfirm);
+    }
+
+    public void setOnHintDialogListener(OnHintDialogListener listener) {
+        mListener = listener;
+    }
 
     public String getHintContent() {
         return mHintContent;
@@ -31,8 +40,6 @@ public class HintDialogFragmemt extends BaseDialogFragment {
     public void setHintContent(String hintContent) {
         mHintContent = hintContent;
     }
-
-    private OnDialogListener mListener;
 
     public void setConfirmText(String text) {
         confirmText = text;
@@ -48,12 +55,6 @@ public class HintDialogFragmemt extends BaseDialogFragment {
 
     public String getCancelText() {
         return cancelText;
-    }
-
-    @Override
-    protected void setOnDialogListener(OnDialogListener onDialogListener) {
-        super.setOnDialogListener(onDialogListener);
-        mListener = onDialogListener;
     }
 
     @Override
