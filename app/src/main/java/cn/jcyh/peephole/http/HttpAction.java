@@ -5,6 +5,9 @@ import android.os.Handler;
 
 import com.google.gson.Gson;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -12,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import cn.jcyh.peephole.bean.DoorbellParam;
 import cn.jcyh.peephole.bean.HttpResult;
 import cn.jcyh.peephole.bean.User;
 import okhttp3.Call;
@@ -109,15 +113,72 @@ public class HttpAction {
 //        });
     }
 
+    /**
+     * 设置参数
+     *
+     * @param sn   猫眼id
+     * @param type 设置类型 mode/monitor/sensor
+     */
+    public void setDoorbellParams(String sn, String type, DoorbellParam value, final IDataListener<Boolean> listener) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("sn", sn);
+        params.put("type", type);
+        params.put("value", mGson.toJson(value));
+        Timber.e("-------value:"+mGson.toJson(value));
+        request2(HttpUrlIble.DOORBELL_PARAMS_SET_UTL, params, listener);
+    }
+
+    public void getDoorbellParams(String sn, String type, final IDataListener<DoorbellParam> listener) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("sn", sn);
+        params.put("type", type);
+        request(HttpUrlIble.DOORBELL_PARAMS_GET_UTL, params, listener);
+    }
+
     private <T> void request(String url, Map<String, Object> params, final IDataListener<T> listener) {
         HttpUtil.getInstance(mContext).sendPostRequest(url, params, new HttpUtil.OnRequestListener() {
             @Override
             public void success(String result) {
-                HttpResult<T> httpResult = mGson.fromJson(result, HttpResult.class);
+                Timber.e("-------result:" + result);
+                try {
+                    JSONObject jsonObject=new JSONObject(result);
+                    JSONObject data = jsonObject.getJSONObject("data");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                HttpResult httpResult = mGson.fromJson(result, HttpResult.class);
                 if (listener != null) {
                     if (httpResult != null) {
                         if (httpResult.getCode() == 200) {
-                            listener.onSuccess(httpResult.getData());
+                            Timber.e("-------:"+httpResult.getData());
+                            DoorbellParam doorbellParam=new DoorbellParam();
+                            Timber.e("-------2:"+ mGson.toJson(doorbellParam));
+//                            listener.onSuccess(httpResult.getData());
+                        } else {
+                            listener.onFailure(httpResult.getCode());
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void failure() {
+                listener.onFailure(-1);
+            }
+        });
+    }
+
+    private void request2(String url, Map<String, Object> params, final IDataListener<Boolean> listener) {
+        HttpUtil.getInstance(mContext).sendPostRequest(url, params, new HttpUtil.OnRequestListener() {
+            @Override
+            public void success(String result) {
+                Timber.e("-----------result:" + result);
+                HttpResult httpResult = mGson.fromJson(result, HttpResult.class);
+                if (listener != null) {
+                    if (httpResult != null) {
+                        if (httpResult.getCode() == 200) {
+                            listener.onSuccess(true);
                         } else {
                             listener.onFailure(httpResult.getCode());
                         }

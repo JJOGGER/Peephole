@@ -10,7 +10,4 @@ import cn.jcyh.peephole.http.HttpAction;
 public class UserBiz {
     private HttpAction mHttpAction;
 
-    public UserBiz() {
-        mHttpAction = HttpAction.getHttpAction();
-    }
 }

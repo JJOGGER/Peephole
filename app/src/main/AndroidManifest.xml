@@ -52,6 +52,14 @@
         </activity>
         <activity android:name=".ui.activity.PictureActivity">
         </activity>
+        <activity android:name=".ui.activity.AboutActivity">
+        </activity>
+        <activity android:name=".ui.activity.SetActivity">
+        </activity>
+        <activity android:name=".ui.activity.DoorbellSetActivity">
+        </activity>
+        <activity android:name=".ui.activity.SensorSetActivity">
+        </activity>
     </application>
 
 </manifest>

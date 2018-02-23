@@ -15,6 +15,10 @@ public interface HttpUrlIble {
     String INIT_DOORBELL_URL = EAGLERKING_IP + "Doorbell/InsertRegistNim";
     //获取绑定的用户列表
     String GET_BIND_USERS_URL = EAGLERKING_IP + "Doorbell/GetUsersByImei";
+    //设置门铃模式
+    String DOORBELL_PARAMS_SET_UTL=EAGLERKING_IP+"Doorbell/Setting";
+    //获取门铃模式
+    String DOORBELL_PARAMS_GET_UTL=EAGLERKING_IP+"Doorbell/GetSetting";
     //文件上传
     String UPLOAD_DOORBELL_ALARM_URL = EAGLERKING_IP + "Doorbell/DoorbellAlarm";
 }

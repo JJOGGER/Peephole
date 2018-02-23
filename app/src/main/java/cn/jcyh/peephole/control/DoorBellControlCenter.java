@@ -22,6 +22,9 @@ import timber.log.Timber;
 public class DoorBellControlCenter {
 
     private static DoorBellControlCenter mDoorBellControlCenter;
+    public static final String DOORBELL_PARAMS_TYPE_MODE = "mode";
+    public static final String DOORBELL_PARAMS_TYPE_MONITOR = "monitor";
+    public static final String DOORBELL_PARAMS_TYPE_SENSOR = "sensor";
     private static Context mContext;
     public static boolean sIsAnychatLogin = false;//标记anychat是否登录
     public AnyChatCoreSDK mAnyChat;//单例的anychat，同一事件的话可以使用这个
@@ -30,6 +33,7 @@ public class DoorBellControlCenter {
     private Gson mGson;
     public static boolean sIsVideo;//标记是否正在视频通话中
     public static boolean sIsBinding;//标记是否正在绑定中
+
 
     //    public static Map<String, Object> pushFlagMap;
 
@@ -312,6 +316,10 @@ public class DoorBellControlCenter {
         String json = mGson.toJson(commandJson);
         Timber.e("------------------>send:" + json);
         mAnyChat.TransBuffer(userId, json.getBytes(), json.getBytes().length);
+    }
+
+    public void sendDoorbellParams() {
+
     }
 
     /**

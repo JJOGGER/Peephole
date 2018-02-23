@@ -39,7 +39,6 @@ public class HttpUtil {
     private OkHttpClient mOkHttpClient;
     private static HttpUtil mInstance;
     private Handler mHandler;//全局处理子线程和M主线程通信
-    private IHttpListener mHttpListener;
 
 
     private HttpUtil() {
@@ -123,7 +122,6 @@ public class HttpUtil {
                                     @Override
                                     public void run() {
                                         if (listener != null) {
-                                            mHttpListener.onSuccess(response.body().byteStream());
                                             listener.success(result);
                                         }
                                     }

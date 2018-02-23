@@ -221,9 +221,9 @@ public class MainActivity extends BaseActivity {
                 Map<String,Object> params=new HashMap<>();
                 params.put("sn",MyApp.sImei);
                 params.put("type",1);
-                HttpAction.getHttpAction().sendPostImg(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL,mFilePath,params, null);
+                HttpAction.getHttpAction(this).sendPostImg(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL,mFilePath,params, null);
                 Timber.e("---------------->mFilePath:" + mFilePath);
-                HttpAction.getHttpAction().getBindUsers(MyApp.sImei, new IDataListener<List<User>>() {
+                HttpAction.getHttpAction(this).getBindUsers(MyApp.sImei, new IDataListener<List<User>>() {
                     @Override
                     public void onSuccess(List<User> users) {
                         Timber.e("-------user:" + users);
