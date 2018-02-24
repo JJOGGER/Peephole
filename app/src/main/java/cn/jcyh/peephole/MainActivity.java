@@ -222,11 +222,9 @@ public class MainActivity extends BaseActivity {
                 params.put("sn",MyApp.sImei);
                 params.put("type",1);
                 HttpAction.getHttpAction(this).sendPostImg(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL,mFilePath,params, null);
-                Timber.e("---------------->mFilePath:" + mFilePath);
                 HttpAction.getHttpAction(this).getBindUsers(MyApp.sImei, new IDataListener<List<User>>() {
                     @Override
                     public void onSuccess(List<User> users) {
-                        Timber.e("-------user:" + users);
                         if (users != null && users.size() != 0) {
                             //通知用户
                             mControlCenter.sendVideoCall(users, requestCode);

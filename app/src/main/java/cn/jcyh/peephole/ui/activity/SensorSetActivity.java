@@ -1,7 +1,10 @@
 package cn.jcyh.peephole.ui.activity;
 
+import android.content.Intent;
 import android.view.View;
 import android.widget.CheckBox;
+
+import com.google.gson.Gson;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -12,6 +15,8 @@ import cn.jcyh.peephole.bean.DoorbellParam;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
+import cn.jcyh.peephole.utils.ConstantUtil;
+import cn.jcyh.peephole.utils.SharePreUtil;
 
 public class SensorSetActivity extends BaseActivity {
     @BindView(R.id.cb_net_push)
@@ -83,10 +88,10 @@ public class SensorSetActivity extends BaseActivity {
      */
     private void setParam() {
         //保存到服务器
-        HttpAction.getHttpAction(this).setDoorbellParams(MyApp.sImei, DoorBellControlCenter.DOORBELL_PARAMS_TYPE_SENSOR,mDoorbellParam, new IDataListener<Boolean>() {
+        HttpAction.getHttpAction(this).setDoorbellParams(MyApp.sImei, DoorBellControlCenter.DOORBELL_PARAMS_TYPE_SENSOR, mDoorbellParam, new IDataListener<Boolean>() {
             @Override
             public void onSuccess(Boolean aBoolean) {
-
+                SharePreUtil.getInstance(getApplicationContext()).setString(ConstantUtil.DOORBELL_SENSOR_PARAMS, new Gson().toJson(mDoorbellParam));
             }
 
             @Override
@@ -94,5 +99,13 @@ public class SensorSetActivity extends BaseActivity {
 
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent();
+        intent.putExtra("doorbellParam", mDoorbellParam);
+        setResult(RESULT_OK, intent);
+        finish();
     }
 }

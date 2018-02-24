@@ -4,9 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 
 import com.google.gson.Gson;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,46 +60,15 @@ public class HttpAction {
     }
 
     public void initDoorbell(String sn, final IDataListener<Boolean> listener) {
-        Map<String, String> params = new HashMap<>();
-        params.put("sn", sn);
-        Volley.sendRequest(HttpUrlIble.INIT_DOORBELL_URL, params, HttpResult.class, new IDataListener<HttpResult>() {
-            @Override
-            public void onSuccess(HttpResult httpResult) {
-                if (listener != null) {
-                    if (httpResult.getCode() == 200)
-                        listener.onSuccess(true);
-                    else listener.onFailure(httpResult.getCode());
-                }
-            }
-
-            @Override
-            public void onFailure(int errorCode) {
-                if (listener != null)
-                    listener.onFailure(errorCode);
-            }
-        });
-
-    }
-
-    /**
-     * 获取猫眼绑定的用户列表
-     */
-    public void getBindUsers(String sn, final IDataListener<List<User>> listener) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("sn", sn);
-        request(HttpUrlIble.GET_BIND_USERS_URL, params, listener);
-//        HttpUtil.getInstance(mContext).sendPostRequest(HttpUrlIble.GET_BIND_USERS_URL, params, );
-//        Volley.sendRequest(HttpUrlIble.GET_BIND_USERS_URL, params, new IDataListener<HttpResult>() {
+//        Map<String, String> params = new HashMap<>();
+//        params.put("sn", sn);
+//        Volley.sendRequest(HttpUrlIble.INIT_DOORBELL_URL, params, HttpResult.class, new IDataListener<HttpResult>() {
 //            @Override
 //            public void onSuccess(HttpResult httpResult) {
 //                if (listener != null) {
-//                    if (httpResult.getCode() == 200) {
-//                        Object data = httpResult.getData();
-//                        TypeToken<List<User>> typeToken = new TypeToken<List<User>>() {
-//                        };
-//                        List<User> users = mGson.fromJson(data.toString(), typeToken.getType());
-//                        listener.onSuccess(users);
-//                    } else listener.onFailure(httpResult.getCode());
+//                    if (httpResult.getCode() == 200)
+//                        listener.onSuccess(true);
+//                    else listener.onFailure(httpResult.getCode());
 //                }
 //            }
 //
@@ -111,6 +78,33 @@ public class HttpAction {
 //                    listener.onFailure(errorCode);
 //            }
 //        });
+
+    }
+
+    /**
+     * 获取猫眼绑定的用户列表
+     */
+    public void getBindUsers(String sn, final IDataListener<List<User>> listener) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("sn", sn);
+        request(HttpUrlIble.GET_BIND_USERS_URL, params, new IDataListener<HttpResult>() {
+            @Override
+            public void onSuccess(HttpResult httpResult) {
+                TypeToken<List<User>> typeToken = new TypeToken<List<User>>() {
+                };
+                List<User> users = mGson.fromJson(httpResult.getData().toString(), typeToken.getType());
+                if (listener != null) {
+                    listener.onSuccess(users);
+                }
+            }
+
+            @Override
+            public void onFailure(int errorCode) {
+                if (listener != null) {
+                    listener.onFailure(errorCode);
+                }
+            }
+        });
     }
 
     /**
@@ -124,7 +118,7 @@ public class HttpAction {
         params.put("sn", sn);
         params.put("type", type);
         params.put("value", mGson.toJson(value));
-        Timber.e("-------value:"+mGson.toJson(value));
+        Timber.e("-------value:" + mGson.toJson(value));
         request2(HttpUrlIble.DOORBELL_PARAMS_SET_UTL, params, listener);
     }
 
@@ -132,29 +126,34 @@ public class HttpAction {
         Map<String, Object> params = new HashMap<>();
         params.put("sn", sn);
         params.put("type", type);
-        request(HttpUrlIble.DOORBELL_PARAMS_GET_UTL, params, listener);
+        request(HttpUrlIble.DOORBELL_PARAMS_GET_UTL, params, new IDataListener<HttpResult>() {
+            @Override
+            public void onSuccess(HttpResult httpResult) {
+                DoorbellParam doorbellParam = mGson.fromJson(httpResult.getData().toString(), DoorbellParam.class);
+                if (listener != null) {
+                    listener.onSuccess(doorbellParam);
+                }
+
+            }
+
+            @Override
+            public void onFailure(int errorCode) {
+                if (listener != null)
+                    listener.onFailure(errorCode);
+            }
+        });
     }
 
-    private <T> void request(String url, Map<String, Object> params, final IDataListener<T> listener) {
+    private void request(String url, Map<String, Object> params, final IDataListener<HttpResult> listener) {
         HttpUtil.getInstance(mContext).sendPostRequest(url, params, new HttpUtil.OnRequestListener() {
             @Override
             public void success(String result) {
                 Timber.e("-------result:" + result);
-                try {
-                    JSONObject jsonObject=new JSONObject(result);
-                    JSONObject data = jsonObject.getJSONObject("data");
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
                 HttpResult httpResult = mGson.fromJson(result, HttpResult.class);
                 if (listener != null) {
                     if (httpResult != null) {
                         if (httpResult.getCode() == 200) {
-                            Timber.e("-------:"+httpResult.getData());
-                            DoorbellParam doorbellParam=new DoorbellParam();
-                            Timber.e("-------2:"+ mGson.toJson(doorbellParam));
-//                            listener.onSuccess(httpResult.getData());
+                            listener.onSuccess(httpResult);
                         } else {
                             listener.onFailure(httpResult.getCode());
                         }
@@ -188,7 +187,8 @@ public class HttpAction {
 
             @Override
             public void failure() {
-                listener.onFailure(-1);
+                if (listener != null)
+                    listener.onFailure(-1);
             }
         });
     }

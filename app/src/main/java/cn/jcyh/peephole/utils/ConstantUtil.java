@@ -12,7 +12,8 @@ public class ConstantUtil {
     public static final String UID = "uid";//登录猫眼的帐号
     public static final String AUTO_LOGIN = "save_account_pwd";
     public static final String LAST_DOOR_BELL_NO = "last_door_bell_no";
-
+    public static final String DOORBELL_RING_PARAMS="doorbell_ring_params";
+    public static final String DOORBELL_SENSOR_PARAMS="doorbell_sensor_params";
 
     //猫眼动作
     public static final String REQUEST_SWITCH_CAMERA = "requestSwitchCamera";//请求切换摄像头

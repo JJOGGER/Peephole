@@ -3,6 +3,8 @@ package cn.jcyh.peephole.ui.activity;
 import android.view.View;
 import android.widget.CheckBox;
 
+import com.google.gson.Gson;
+
 import butterknife.BindView;
 import butterknife.OnClick;
 import cn.jcyh.peephole.MyApp;
@@ -13,6 +15,8 @@ import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.HttpErrorCode;
 import cn.jcyh.peephole.http.IDataListener;
+import cn.jcyh.peephole.utils.ConstantUtil;
+import cn.jcyh.peephole.utils.SharePreUtil;
 import cn.jcyh.peephole.utils.ToastUtil;
 import timber.log.Timber;
 
@@ -110,6 +114,8 @@ public class DoorbellSetActivity extends BaseActivity {
             @Override
             public void onSuccess(Boolean aBoolean) {
                 Timber.e("----------设置成功");
+                //保存到本地
+                SharePreUtil.getInstance(getApplicationContext()).setString(ConstantUtil.DOORBELL_RING_PARAMS,new Gson().toJson(mDoorbellParam));
             }
 
             @Override

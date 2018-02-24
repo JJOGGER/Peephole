@@ -1,5 +1,6 @@
 package cn.jcyh.peephole.ui.activity;
 
+import android.content.Intent;
 import android.support.v4.app.FragmentManager;
 import android.view.View;
 import android.widget.CheckBox;
@@ -30,6 +31,7 @@ public class SetActivity extends BaseActivity {
     RelativeLayout rlSensorDistance;
     @BindView(R.id.rl_sensor_set)
     RelativeLayout rlSensorSet;
+    private static final int SENSOR_SET_REQUEST = 0X001;
     private FragmentManager mFragmentManager;
     private DoorbellParam mDoorbellParam;
 
@@ -73,17 +75,19 @@ public class SetActivity extends BaseActivity {
                 startNewActivity(DoorbellSetActivity.class);
                 break;
             case R.id.rl_sensor_set:
-                startNewActivity(SensorSetActivity.class, "doorbellParam", mDoorbellParam);
+                Intent intent = new Intent(SetActivity.this, SensorSetActivity.class);
+                intent.putExtra("doorbellParam", mDoorbellParam);
+                startActivityForResult(intent, SENSOR_SET_REQUEST);
                 break;
             case R.id.rl_monitor:
                 cbMonitor.setChecked(!cbMonitor.isChecked());
-                updateView(false);
+                updateView(cbMonitor.isChecked());
                 break;
         }
     }
 
     private void updateView(boolean isMonitor) {
-        if (isMonitor) {
+        if (!isMonitor) {
             tvMonitorState.setText(R.string.monitor_closed);
             rlSensorTime.setEnabled(false);
             rlSensorDistance.setEnabled(false);
@@ -93,6 +97,14 @@ public class SetActivity extends BaseActivity {
             rlSensorTime.setEnabled(true);
             rlSensorDistance.setEnabled(true);
             rlSensorSet.setEnabled(true);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == SENSOR_SET_REQUEST && resultCode == RESULT_OK) {
+            mDoorbellParam = data.getParcelableExtra("doorbellParam");
         }
     }
 }
