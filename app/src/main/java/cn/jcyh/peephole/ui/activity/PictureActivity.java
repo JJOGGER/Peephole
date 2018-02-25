@@ -36,6 +36,11 @@ public class PictureActivity extends BaseActivity {
     private void initCamera()
 
     {
+        if (mCamera != null) {
+            mCamera.stopPreview();
+            mCamera.release();
+            mCamera = null;
+        }
         mCamera = Camera.open();
 //        Camera.Parameters parameters = mCamera.getParameters();
 //
@@ -76,7 +81,7 @@ public class PictureActivity extends BaseActivity {
         closeCamera();
 
         Intent intent = new Intent();
-        intent.putExtra("filePath",tempPath);
+        intent.putExtra("filePath", tempPath);
         setResult(RESULT_OK, intent);
         finish();
     }
