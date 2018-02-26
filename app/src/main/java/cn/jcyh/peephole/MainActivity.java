@@ -140,6 +140,10 @@ public class MainActivity extends BaseActivity {
                     Timber.e("----------视频呼叫图片请求" + dwUserid + "---filepath:" + mFilePath);
                     mControlCenter.sendVideoCallImg(dwUserid, mFilePath);
                     break;
+                case CommandJson.CommandType.UNBIND_DOORBELL_COMPLETED:
+                    // TODO: 2018/2/26 有用户解绑成功
+                    Timber.e("---------收到用户解绑");
+                    break;
             }
         } else if (TYPE_ANYCHAT_TRANS_FILE.equals(type)) {
 
@@ -218,10 +222,10 @@ public class MainActivity extends BaseActivity {
             if (requestCode == REQEUST_CAPTURE_RING) {
                 //获取拍照的图片
                 mFilePath = data.getStringExtra("filePath");
-                Map<String,Object> params=new HashMap<>();
-                params.put("sn",MyApp.sImei);
-                params.put("type",1);
-                HttpAction.getHttpAction(this).sendPostImg(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL,mFilePath,params, null);
+                Map<String, Object> params = new HashMap<>();
+                params.put("sn", MyApp.sImei);
+                params.put("type", 1);
+                HttpAction.getHttpAction(this).sendPostImg(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL, mFilePath, params, null);
                 HttpAction.getHttpAction(this).getBindUsers(MyApp.sImei, new IDataListener<List<User>>() {
                     @Override
                     public void onSuccess(List<User> users) {

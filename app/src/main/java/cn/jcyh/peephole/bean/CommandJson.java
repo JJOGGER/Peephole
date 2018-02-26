@@ -80,11 +80,22 @@ public class CommandJson implements Parcelable {
         this.flag2 = flag2;
     }
 
+    @Override
+    public String toString() {
+        return "CommandJson{" +
+                "command='" + command + '\'' +
+                ", commandType='" + commandType + '\'' +
+                ", flag='" + flag + '\'' +
+                ", flag2=" + flag2 +
+                '}';
+    }
+
     public class CommandType {
         public static final String BIND_DOORBELL_REQUEST = "bind_doorbell_request";
         public static final String BIND_DOORBELL_RESPONSE = "bind_doorbell_response";
 
         public static final String BIND_DOORBELL_COMPLETED = "bind_doorbell_completed";//接收猫眼绑定成功
+        public static final String UNBIND_DOORBELL_COMPLETED = "unbind_doorbell_completed";//接收猫眼解绑成功
 
         public static final String UNLOCK_DOORBELL_REQUEST = "unlock_doorbell_request";//解锁请求
         public static final String UNLOCK_DOORBELL_RESPONSE = "unlock_doorbell_response";//解锁响应

@@ -90,6 +90,7 @@ public class BindActivity extends BaseActivity {
                 final int dwUserid = intent.getIntExtra("dwUserid", -1);
                 if (ConstantUtil.TYPE_ANYCHAT_TRANS_BUFFER.equals(type)) {
                     final CommandJson commandJson = intent.getParcelableExtra("command");
+                    Timber.e("---------com:"+commandJson);
                     switch (commandJson.getCommandType()) {
                         case CommandJson.CommandType.BIND_DOORBELL_REQUEST:
                             if (commandJson.getCommand().equals(MyApp.sImei)) {
@@ -102,6 +103,7 @@ public class BindActivity extends BaseActivity {
                         case CommandJson.CommandType.BIND_DOORBELL_COMPLETED:
                             //绑定猫眼成功
                             Timber.e("-------------绑定猫眼成功，刷新列表");
+                            // TODO: 2018/2/26  绑定猫眼成功，刷新列表
                             ToastUtil.showToast(getApplicationContext(), R.string.bind_succ);
                             finish();
                             break;
@@ -148,6 +150,7 @@ public class BindActivity extends BaseActivity {
                         }
                     }
                 }
+                Timber.e("-------responseBindRequest");
                 //未绑定
                 HintDialogFragmemt dialogFragment = (HintDialogFragmemt) mDialogHelper.getDialogFragment();
                 dialogFragment.setHintContent(String.format(getString(R.string.request_bind_hint), commandJson.getFlag()));
@@ -168,7 +171,7 @@ public class BindActivity extends BaseActivity {
                         mDialogHelper.dismiss();
                     }
                 });
-
+                mDialogHelper.commit();
             }
 
             @Override
