@@ -9,8 +9,11 @@ import android.os.Environment;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import butterknife.BindView;
 import cn.jcyh.peephole.R;
@@ -70,14 +73,15 @@ public class PictureActivity extends BaseActivity {
 
     private void onTakePhoto(byte[] data) {
         Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+        String time = simpleDateFormat.format(new Date(System.currentTimeMillis()));
         final String tempPath = Environment.getExternalStoragePublicDirectory(Environment
-                .DIRECTORY_DCIM).getAbsolutePath() + "/a" +
+                .DIRECTORY_DCIM).getAbsolutePath() + File.separator + "IMG_" + time +
                 ".jpg";
         boolean isCompleted = ImgUtil.createWaterMaskRightBottom2File(this,
                 tempPath, bitmap,
                 BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher),
                 10, 10);
-        Timber.e("-------isCompleted:" + isCompleted);
         closeCamera();
 
         Intent intent = new Intent();
