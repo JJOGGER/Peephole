@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.os.Build;
-import android.os.Environment;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -18,6 +17,7 @@ import java.util.Date;
 import butterknife.BindView;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
+import cn.jcyh.peephole.utils.FileUtil;
 import cn.jcyh.peephole.utils.ImgUtil;
 import timber.log.Timber;
 
@@ -75,8 +75,7 @@ public class PictureActivity extends BaseActivity {
         Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
         String time = simpleDateFormat.format(new Date(System.currentTimeMillis()));
-        final String tempPath = Environment.getExternalStoragePublicDirectory(Environment
-                .DIRECTORY_DCIM).getAbsolutePath() + File.separator + "IMG_" + time +
+        final String tempPath = FileUtil.getInstance().getDoorbellImgPath() + File.separator + "IMG_" + time +
                 ".jpg";
         boolean isCompleted = ImgUtil.createWaterMaskRightBottom2File(this,
                 tempPath, bitmap,

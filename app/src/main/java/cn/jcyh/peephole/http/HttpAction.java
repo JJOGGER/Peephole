@@ -59,9 +59,9 @@ public class HttpAction {
         return sHttpAction;
     }
 
-    public void initDoorbell(String sn, final IDataListener<Boolean> listener) {
+    public void initDoorbell(String deviceId, final IDataListener<Boolean> listener) {
 //        Map<String, String> params = new HashMap<>();
-//        params.put("sn", sn);
+//        params.put("deviceId", deviceId);
 //        Volley.sendRequest(HttpUrlIble.INIT_DOORBELL_URL, params, HttpResult.class, new IDataListener<HttpResult>() {
 //            @Override
 //            public void onSuccess(HttpResult httpResult) {
@@ -84,9 +84,9 @@ public class HttpAction {
     /**
      * 获取猫眼绑定的用户列表
      */
-    public void getBindUsers(String sn, final IDataListener<List<User>> listener) {
+    public void getBindUsers(String deviceId, final IDataListener<List<User>> listener) {
         Map<String, Object> params = new HashMap<>();
-        params.put("sn", sn);
+        params.put("deviceId", deviceId);
         request(HttpUrlIble.GET_BIND_USERS_URL, params, new IDataListener<HttpResult>() {
             @Override
             public void onSuccess(HttpResult httpResult) {
@@ -110,21 +110,21 @@ public class HttpAction {
     /**
      * 设置参数
      *
-     * @param sn   猫眼id
+     * @param deviceId   猫眼id
      * @param type 设置类型 mode/monitor/sensor
      */
-    public void setDoorbellParams(String sn, String type, DoorbellParam value, final IDataListener<Boolean> listener) {
+    public void setDoorbellParams(String deviceId, String type, DoorbellParam value, final IDataListener<Boolean> listener) {
         Map<String, Object> params = new HashMap<>();
-        params.put("sn", sn);
+        params.put("deviceId", deviceId);
         params.put("type", type);
         params.put("value", mGson.toJson(value));
         Timber.e("-------value:" + mGson.toJson(value));
         request2(HttpUrlIble.DOORBELL_PARAMS_SET_UTL, params, listener);
     }
 
-    public void getDoorbellParams(String sn, String type, final IDataListener<DoorbellParam> listener) {
+    public void getDoorbellParams(String deviceId, String type, final IDataListener<DoorbellParam> listener) {
         Map<String, Object> params = new HashMap<>();
-        params.put("sn", sn);
+        params.put("deviceId", deviceId);
         params.put("type", type);
         request(HttpUrlIble.DOORBELL_PARAMS_GET_UTL, params, new IDataListener<HttpResult>() {
             @Override

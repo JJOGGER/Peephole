@@ -8,10 +8,15 @@ import com.bairuitech.anychat.AnyChatDefine;
 import com.bairuitech.anychat.AnyChatOutParam;
 import com.google.gson.Gson;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import cn.jcyh.peephole.bean.CommandJson;
 import cn.jcyh.peephole.bean.User;
+import cn.jcyh.peephole.utils.FileUtil;
 import timber.log.Timber;
 
 /**
@@ -313,9 +318,7 @@ public class DoorBellControlCenter {
      * 绑定猫眼响应指令
      */
     public void sendBindResponse(int userId, CommandJson commandJson) {
-        String json = mGson.toJson(commandJson);
-        Timber.e("------------------>send:" + json);
-        mAnyChat.TransBuffer(userId, json.getBytes(), json.getBytes().length);
+        sendCommand(userId, commandJson);
     }
 
     public void sendDoorbellParams() {
@@ -326,6 +329,76 @@ public class DoorBellControlCenter {
      * 解锁响应指令
      */
     public void sendUnlockResponse(int userId, CommandJson commandJson) {
+        sendCommand(userId, commandJson);
+    }
+
+    /**
+     * 图片请求响应
+     */
+    public void sendLastedPicsNamesResponse(int userId, int requestNum) {
+        File baseFile = new File(FileUtil.getInstance().getDoorbellImgPath());
+        CommandJson commandJson = new CommandJson();
+        if (!baseFile.exists() || baseFile.list() == null || baseFile.list().length == 0) {
+            //找不到文件
+            commandJson.setFlag2(0);
+        } else {
+            List<String> names = new ArrayList<>();
+            final List<File> files = new ArrayList<>();
+            for (int i = 0; i < baseFile.list().length; i++) {
+                File file = new File(baseFile.getAbsolutePath() + File.separator + baseFile.list()[i]);
+                Timber.e("-----<file:" + file.getName());
+                if (file.isDirectory() || !file.getName().endsWith(".jpg")) {
+                    continue;
+                }
+                files.add(file);
+            }
+            //按时间排序
+            if (files.size() == 0) {
+                //找不到文件
+                commandJson.setFlag2(0);
+            } else {
+                Collections.sort(files, new Comparator<File>() {
+                    @Override
+                    public int compare(File o1, File o2) {
+                        if (o1.lastModified() < o2.lastModified())
+                            return -1;
+                        return 1;
+                    }
+                });
+                Timber.e("-----------。files:" + files);
+                requestNum = files.size() >= requestNum ? requestNum : files.size();
+                for (int i = 0; i < files.size(); i++) {
+                    requestNum--;
+                    if (requestNum < 0) break;
+                    names.add(files.get(i).getName());
+                    Timber.e("--------将发送文件：" + files.get(i).getName());
+                }
+                commandJson.setFlag(mGson.toJson(names));
+                commandJson.setFlag2(1);
+            }
+
+        }
+        commandJson.setCommandType(CommandJson.CommandType.DOORBELL_LASTED_PICS_NAMES_RESPONSE);
+        sendCommand(userId, commandJson);
+    }
+
+    /**
+     * 传输图片
+     */
+    public void sendLastedPics(int userId, List<String> names) {
+        Timber.e("--------names:" + names);
+        for (int i = 0; i < names.size(); i++) {
+            File file = new File(FileUtil.getInstance().getDoorbellImgPath() + File.separator + names.get(i));
+            if (file.exists()) {
+                mAnyChat.TransFile(userId, file.getAbsolutePath(), 0, CommandJson.CommandType.DOORBELL_MEDIA_PIC_PARAM, 0, new AnyChatOutParam());
+            }
+        }
+    }
+
+    /**
+     * 发送命令
+     */
+    private void sendCommand(int userId, CommandJson commandJson) {
         String json = mGson.toJson(commandJson);
         Timber.e("------------------>send:" + json);
         mAnyChat.TransBuffer(userId, json.getBytes(), json.getBytes().length);

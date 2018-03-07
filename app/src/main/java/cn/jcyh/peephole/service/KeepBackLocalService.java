@@ -18,13 +18,8 @@ import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 
-import com.bairuitech.anychat.AnyChatBaseEvent;
 import com.bairuitech.anychat.AnyChatCoreSDK;
-import com.bairuitech.anychat.AnyChatDefine;
 import com.bairuitech.anychat.AnyChatRecordEvent;
-import com.bairuitech.anychat.AnyChatTransDataEvent;
-import com.bairuitech.anychat.AnyChatUserInfoEvent;
-import com.bairuitech.anychat.AnyChatVideoCallEvent;
 import com.bairuitech.anychat.config.ConfigEntity;
 import com.bairuitech.anychat.config.ConfigHelper;
 import com.google.gson.Gson;
@@ -35,37 +30,22 @@ import java.lang.ref.WeakReference;
 import cn.jcyh.peephole.MainActivity;
 import cn.jcyh.peephole.MyApp;
 import cn.jcyh.peephole.R;
-import cn.jcyh.peephole.bean.CommandJson;
+import cn.jcyh.peephole.adapter.AnyChatTransDataEventAdapter;
+import cn.jcyh.peephole.adapter.AnyChatUserInfoEventAdapter;
+import cn.jcyh.peephole.adapter.AnyChatVideoCallEventAdapter;
+import cn.jcyh.peephole.adapter.AnychatBaseEventAdapter;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
-import cn.jcyh.peephole.utils.ConstantUtil;
 import timber.log.Timber;
 
-import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_BASE_EVENT;
-import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_LOGIN_RESULT_MSG;
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_RECORD_EVENT;
-import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_TRANS_DATA_EVENT;
-import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_USER_INFO_EVENT;
-import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_VIDEO_CALL_EVENT;
-import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_ENTER_ROOM;
-import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_FRIEND_STATUS;
-import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_LINK_CLOSE;
-import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_ONLINE_USER;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_RECORD;
-import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_TRANS_BUFFER;
-import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_USER_AT_ROOM;
-import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_USER_INFO_UPDATE;
-import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_FINISH;
-import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_REPLY;
-import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_REQUEST;
-import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_START;
 
 
 /**
  * Created by jogger on 2017/12/4.
  */
 
-public class KeepBackLocalService extends Service implements AnyChatBaseEvent,
-        AnyChatVideoCallEvent, AnyChatUserInfoEvent, AnyChatTransDataEvent, AnyChatRecordEvent {
+public class KeepBackLocalService extends Service implements AnyChatRecordEvent {
     private MyBinder mBinder;
     private MyServiceConnection mConnection;
     private AnyChatCoreSDK mAnyChat;
@@ -154,10 +134,10 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent,
         mAnyChat.Release();
         mAnyChat = null;
         mAnyChat = AnyChatCoreSDK.getInstance(getApplicationContext());
-        mAnyChat.SetBaseEvent(KeepBackLocalService.this);//anyChat基本事件接口
-        mAnyChat.SetUserInfoEvent(KeepBackLocalService.this);//更新设备信息
-        mAnyChat.SetVideoCallEvent(KeepBackLocalService.this);//视频呼叫事件接口
-        mAnyChat.SetTransDataEvent(KeepBackLocalService.this);//数据传输通知接口
+        mAnyChat.SetBaseEvent(new AnychatBaseEventAdapter(this));//anyChat基本事件接口
+        mAnyChat.SetUserInfoEvent(new AnyChatUserInfoEventAdapter(this));//更新设备信息
+        mAnyChat.SetVideoCallEvent(new AnyChatVideoCallEventAdapter(this));//视频呼叫事件接口
+        mAnyChat.SetTransDataEvent(new AnyChatTransDataEventAdapter(this));//数据传输通知接口
         mAnyChat.SetRecordSnapShotEvent(KeepBackLocalService.this);//截图录制接口
         mAnyChat.InitSDK(Build.VERSION.SDK_INT, 0);
         ConfigHelper configHelper = ConfigHelper.getConfigHelper(KeepBackLocalService.this);
@@ -191,280 +171,6 @@ public class KeepBackLocalService extends Service implements AnyChatBaseEvent,
             startService(intent);
             bindService(intent, mConnection, Context.BIND_IMPORTANT);
         }
-    }
-
-
-    @Override
-    public void OnAnyChatUserInfoUpdate(int dwUserId, int dwType) {
-        Timber.e("------OnAnyChatUserInfoUpdate" + dwUserId);
-//        if (dwUserId == 0 && dwType == 0) {
-//            DoorBellControlCenter.getInstance(getApplicationContext()).getFriendDatas();
-// mOnFriendItem第一次在此取到值
-//        }
-        Intent intent = new Intent();
-        intent.putExtra("dwUserId", dwUserId);
-        intent.putExtra("dwType", dwType);
-        intent.setAction(ACTION_ANYCHAT_USER_INFO_EVENT);
-        intent.putExtra("type", TYPE_ANYCHAT_USER_INFO_UPDATE);
-        sendBroadcast(intent);
-    }
-
-    @Override
-    public void OnAnyChatFriendStatus(int dwUserId, int dwStatus) {
-        Timber.e("------OnAnyChatFriendStatus" + dwUserId);
-//        DoorBellControlCenter.getInstance(getApplicationContext()).getFriendDatas();//重新获取好友数据
-        Intent intent = new Intent();
-        intent.putExtra("dwUserId", dwUserId);
-        intent.putExtra("dwStatus", dwStatus);
-        intent.setAction(ACTION_ANYCHAT_USER_INFO_EVENT);
-        intent.putExtra("type", TYPE_ANYCHAT_FRIEND_STATUS);
-        sendBroadcast(intent);
-    }
-
-    @Override
-    public void OnAnyChatVideoCallEvent(int dwEventType, int dwUserId, int dwErrorCode, int
-            dwFlags, int dwParam, String userStr) {
-        Timber.e("---------OnAnyChatVideoCallEvent");
-        Intent intent = new Intent(ACTION_ANYCHAT_VIDEO_CALL_EVENT);
-        intent.putExtra("dwUserId", dwUserId);
-        intent.putExtra("dwErrorCode", dwErrorCode);
-        intent.putExtra("dwFlags", dwFlags);
-        intent.putExtra("dwParam", dwParam);
-        String type = "";
-        intent.putExtra("userStr", userStr);
-        switch (dwEventType) {
-            case AnyChatDefine.BRAC_VIDEOCALL_EVENT_REQUEST:// < 呼叫请求
-                Timber.e("----有人发呼叫请求过来了");
-                type = TYPE_BRAC_VIDEOCALL_EVENT_REQUEST;
-                break;
-            case AnyChatDefine.BRAC_VIDEOCALL_EVENT_REPLY:// < 呼叫请求回复 开始向设备端发送视频请求
-                Timber.e("------呼叫请求得到回复");
-                type = TYPE_BRAC_VIDEOCALL_EVENT_REPLY;
-                break;
-            case AnyChatDefine.BRAC_VIDEOCALL_EVENT_START:// 视频呼叫会话开始事件
-                Timber.e("-----视频呼叫会话开始事件");
-                type = TYPE_BRAC_VIDEOCALL_EVENT_START;
-                break;
-            case AnyChatDefine.BRAC_VIDEOCALL_EVENT_FINISH:// < 挂断（结束）呼叫会话
-                Timber.e(" -------挂断（结束）呼叫会话");
-                type = TYPE_BRAC_VIDEOCALL_EVENT_FINISH;
-                break;
-            default:
-                Timber.i(" -------?????");
-                break;
-        }
-        intent.putExtra("type", type);
-        sendBroadcast(intent);
-    }
-
-    public static String sTargetPath = null;
-
-    @Override
-    public void OnAnyChatTransFile(int dwUserid, String FileName, String TempFilePath, int
-            dwFileLength, int wParam, int lParam, int dwTaskId) {
-        Timber.e("---------OnAnyChatTransFile" + lParam + "-->" + FileName + "--" + TempFilePath);
-//        String targetPath = null;
-//        String mediaImgSrc = FileUtils.getInstance().getMediaImgSrc();
-//        switch (lParam) {
-//            case 3:
-//                //视频呼叫文件传输
-//                targetPath = FileUtils.getInstance().getDoorBellRecordFileSrc(FileName);
-//                break;
-//            case 10:
-//                //传输照片文件
-//                if (mediaImgSrc != null)
-//                    targetPath = FileUtils.getInstance().getMediaImgSrc()
-//                            + File.separator + dwUserid + File.separator + FileName;
-//                break;
-//            case 11:
-//                //传输视频文件
-//                break;
-//            case 12:
-//                //传输视频缩略图文件
-//                if (mediaImgSrc != null)
-//                    targetPath = FileUtils.getInstance().getMediaVideoSrc()
-//                            + File.separator + dwUserid + File.separator + FileName;
-//                break;
-//        }
-//        Timber.e("----TempFilePath:" + TempFilePath + "---targetPath:" + targetPath);
-//        if (targetPath != null) {
-//            boolean b = FileUtils.getInstance().moveFile(TempFilePath, targetPath);
-//            if (lParam == 3) {
-//                sTargetPath = targetPath;
-//            }
-//            if (b) {
-        Intent intent = new Intent();
-        intent.putExtra("dwUserid", dwUserid);
-        intent.putExtra("targetPath", TempFilePath);
-        intent.putExtra("dwFileLength", dwFileLength);
-        intent.putExtra("wParam", wParam);
-        intent.putExtra("lParam", lParam);
-        intent.putExtra("dwTaskId", dwTaskId);
-        intent.setAction(ACTION_ANYCHAT_TRANS_DATA_EVENT);
-        intent.putExtra("type", ConstantUtil.TYPE_ANYCHAT_TRANS_FILE);
-        sendBroadcast(intent);
-//            }
-//        }
-    }
-
-    @Override
-    public void OnAnyChatTransBuffer(int dwUserid, byte[] lpBuf, int dwLen) {
-        String result = new String(lpBuf, 0, lpBuf.length);
-        Intent intent = new Intent();
-        intent.putExtra("dwUserid", dwUserid);
-        intent.putExtra("result", result);
-        intent.setAction(ACTION_ANYCHAT_TRANS_DATA_EVENT);
-        intent.putExtra("type", TYPE_ANYCHAT_TRANS_BUFFER);
-        CommandJson commandJson = mGson.fromJson(result, CommandJson.class);
-        intent.putExtra("command", commandJson);
-        Timber.e("-----OnAnyChatTransBuffer" + result + "---dwUserid:" + dwUserid);
-        sendBroadcast(intent);
-//        if (result.contains("command")) {
-//            try {
-//                JSONObject jsonObject_all = new JSONObject(result);
-//                JSONObject jsonObject_command = jsonObject_all.getJSONObject("command");
-//                String type = jsonObject_command.getString("type");
-//                switch (type) {
-//                    case CHANGE_CAMERA:
-//                        intent.putExtra("type2", CHANGE_CAMERA);
-//                        String status = jsonObject_command.getString("status");
-//                        if ("success".equals(status))
-//                            ToastUtil.showToast(getApplicationContext(), R.string.change_succ);
-//                        break;
-//                    case LASTED_PICS_NAMES:
-//                        intent.putExtra("type2", LASTED_PICS_NAMES);
-//                        break;
-//                    case MEDIA_FILE:
-//                        intent.putExtra("type2", MEDIA_FILE);
-//                        break;
-//                    case VIDEO_NAMES:
-//                        intent.putExtra("type2", VIDEO_NAMES);
-//                        break;
-//                    case VIDEO_THUNBNAIL:
-//                        intent.putExtra("type2", VIDEO_THUNBNAIL);
-//                        break;
-//                }
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        sendBroadcast(intent);
-//        if ("action:doorbell".equals(result) || result.contains("notification")) {
-//            DoorBellBean doorBell = DoorBellControlCenter.getInstance(getApplicationContext())
-// .getUserItemByUserId(dwUserid);
-//            Timber.e("------->doorbell" + doorBell);
-//            if (doorBell != null) {
-//                Bundle bundle = new Bundle();
-//                if (result.contains("notification")) {
-//                    try {
-//                        JSONObject jsonObject = new JSONObject(result);
-//                        JSONObject jsonObject_Notification = jsonObject.getJSONObject
-// ("notification");
-//                        String type = jsonObject_Notification.getString("type");
-//                        String trigger = jsonObject_Notification.getString(" trigger");
-//                        Timber.e("----type:" + type + "---tri:" + trigger);
-//                        if ("videoCall".equals(type)) {
-//                            bundle.putString("trigger", jsonObject_Notification.getString("
-// trigger"));
-//                        }
-//                    } catch (JSONException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//                //存在一种情况，app解绑但设备未解绑仍收得到此信息
-//                bundle.putSerializable("doorBell", doorBell);
-//                //发送请求图片的指令
-////            String action = "action:imageRequest";
-////            mAnyChat.TransBuffer(dwUserid, action.getBytes(), action.getBytes().length);
-//                intent = new Intent(KeepBackLocalService.this, CallActivity.class);
-//                intent.putExtras(bundle);
-//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                startActivity(intent);
-////                intent = new Intent(KeepBackLocalService.this, CallActivity.class);
-////                intent.putExtras(bundle);
-////                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                ActivityCollector.finishActivity(AddDoorBellActivity.class);
-////                startActivity(intent);
-//            }
-//        }
-
-    }
-
-    @Override
-    public void OnAnyChatTransBufferEx(int dwUserid, byte[] lpBuf, int dwLen, int wparam, int
-            lparam, int taskid) {
-        Timber.e("-----------OnAnyChatTransBufferEx");
-    }
-
-    @Override
-    public void OnAnyChatSDKFilterData(byte[] lpBuf, int dwLen) {
-        Timber.e("-----------OnAnyChatSDKFilterData");
-    }
-
-    @Override
-    public void OnAnyChatConnectMessage(boolean bSuccess) {
-        Timber.e("------OnAnyChatConnectMessage" + bSuccess);
-    }
-
-    @Override
-    public void OnAnyChatLoginMessage(int dwUserId, int dwErrorCode) {
-        Timber.e("------OnAnyChatLoginMessage" + dwErrorCode);
-        if (dwErrorCode == 0) {//登录成功
-            Timber.i("-----anychat登录成功！客户端dwUserId:" + dwUserId);
-        } else {
-            Timber.i("-------anychat登录失败！错误码:" + dwErrorCode);
-        }
-        Intent intent = new Intent(ACTION_ANYCHAT_LOGIN_RESULT_MSG);
-        intent.putExtra("dwErrorCode", dwErrorCode);
-        sendBroadcast(intent);
-    }
-
-    @Override
-    public void OnAnyChatEnterRoomMessage(int dwRoomId, int dwErrorCode) {
-        Timber.e("------OnAnyChatEnterRoomMessage--->" + dwRoomId);
-        Intent intent = new Intent();
-        intent.putExtra("dwRoomId", dwRoomId);
-        intent.putExtra("dwErrorCode", dwErrorCode);
-        intent.setAction(ACTION_ANYCHAT_BASE_EVENT);
-        intent.putExtra("type", TYPE_ANYCHAT_ENTER_ROOM);
-        sendBroadcast(intent);
-    }
-
-    @Override
-    public void OnAnyChatOnlineUserMessage(int dwUserNum, int dwRoomId) {
-        Timber.e("------OnAnyChatOnlineUserMessage");
-        Intent intent = new Intent();
-        intent.putExtra("dwUserNum", dwUserNum);
-        intent.putExtra("dwRoomId", dwRoomId);
-        intent.setAction(ACTION_ANYCHAT_BASE_EVENT);
-        intent.putExtra("type", TYPE_ANYCHAT_ONLINE_USER);
-        sendBroadcast(intent);
-    }
-
-    @Override
-    public void OnAnyChatUserAtRoomMessage(int dwUserId, boolean bEnter) {
-        Timber.e("------OnAnyChatUserAtRoomMessage");
-        Intent intent = new Intent();
-        intent.putExtra("dwUserId", dwUserId);
-        intent.putExtra("bEnter", bEnter);
-        intent.setAction(ACTION_ANYCHAT_BASE_EVENT);
-        intent.putExtra("type", TYPE_ANYCHAT_USER_AT_ROOM);
-        sendBroadcast(intent);
-    }
-
-    @Override
-    public void OnAnyChatLinkCloseMessage(int dwErrorCode) {
-        Timber.e("------OnAnyChatLinkCloseMessage" + dwErrorCode);
-        Intent intent = new Intent();
-        intent.putExtra("dwErrorCode", dwErrorCode);
-        intent.setAction(ACTION_ANYCHAT_BASE_EVENT);
-        intent.putExtra("type", TYPE_ANYCHAT_LINK_CLOSE);
-        sendBroadcast(intent);
-//        if (dwErrorCode != 209) {
-//            final String uid = SharePreUtil.getInstance(getApplicationContext()).getString
-// (ConstansUtil.UID, "");
-//            connectAnyChat(uid);
-//        }
     }
 
     @Override

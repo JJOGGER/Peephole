@@ -95,7 +95,7 @@ public class CommandJson implements Parcelable {
         public static final String BIND_DOORBELL_RESPONSE = "bind_doorbell_response";
 
         public static final String BIND_DOORBELL_COMPLETED = "bind_doorbell_completed";//接收猫眼绑定成功
-        public static final String UNBIND_DOORBELL_COMPLETED = "unbind_doorbell_completed";//接收猫眼解绑成功
+        public static final String UNBIND_DOORBELL_COMPLETED = "unbind_doorbell_completed";
 
         public static final String UNLOCK_DOORBELL_REQUEST = "unlock_doorbell_request";//解锁请求
         public static final String UNLOCK_DOORBELL_RESPONSE = "unlock_doorbell_response";//解锁响应
@@ -105,7 +105,11 @@ public class CommandJson implements Parcelable {
         public static final String NOTIFICATION_DOORBELL_ALARM = "doorbell_alarm";//停留报警
         //视频呼叫图片请求
         public static final String DOORBELL_CALL_IMG_REQUEST = "doorbell_call_img_request";
+        public static final String DOORBELL_LASTED_PICS_NAMES_REQUEST = "doorbell_lasted_pics_names_request";//猫眼最后图片请求
+        public static final String DOORBELL_LASTED_PICS_NAMES_RESPONSE = "doorbell_lasted_pics_names_response";//猫眼最后图片响应
+        public static final String DOORBELL_LASTED_PICS_REQUEST = "doorbell_lasted_pics_request";//请求图片
 
         public static final int DOORBELL_VIDEO_CALL_PARAM = 10;//视频呼叫传输参数
+        public static final int DOORBELL_MEDIA_PIC_PARAM = 11;//多媒体图片传输参数
     }
 }
