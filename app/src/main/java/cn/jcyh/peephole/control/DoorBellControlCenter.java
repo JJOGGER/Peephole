@@ -1,6 +1,8 @@
 package cn.jcyh.peephole.control;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 
 import com.bairuitech.anychat.AnyChatCoreSDK;
@@ -14,6 +16,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import cn.jcyh.peephole.bean.AnyChatTask;
 import cn.jcyh.peephole.bean.CommandJson;
 import cn.jcyh.peephole.bean.User;
 import cn.jcyh.peephole.utils.FileUtil;
@@ -335,9 +338,10 @@ public class DoorBellControlCenter {
     /**
      * 图片请求响应
      */
-    public void sendLastedPicsNamesResponse(int userId, int requestNum) {
-        File baseFile = new File(FileUtil.getInstance().getDoorbellImgPath());
+    public void sendLastedPicsNamesResponse(int userId, String command, int requestNum) {
+        File baseFile = new File(FileUtil.getInstance().getDoorbellMediaPath());
         CommandJson commandJson = new CommandJson();
+        commandJson.setCommand(command);
         if (!baseFile.exists() || baseFile.list() == null || baseFile.list().length == 0) {
             //找不到文件
             commandJson.setFlag2(0);
@@ -346,12 +350,18 @@ public class DoorBellControlCenter {
             final List<File> files = new ArrayList<>();
             for (int i = 0; i < baseFile.list().length; i++) {
                 File file = new File(baseFile.getAbsolutePath() + File.separator + baseFile.list()[i]);
-                Timber.e("-----<file:" + file.getName());
-                if (file.isDirectory() || !file.getName().endsWith(".jpg")) {
-                    continue;
+                if (CommandJson.CommandType.DOORBELL_IMG_COMMAND.equals(command)) {
+                    if (file.isDirectory() || !file.getName().endsWith(".jpg")) {
+                        continue;
+                    }
+                } else {
+                    if (file.isDirectory() || !file.getName().endsWith(".mp4")) {
+                        continue;
+                    }
                 }
                 files.add(file);
             }
+            Timber.e("------->files.size()："+files.size());
             //按时间排序
             if (files.size() == 0) {
                 //找不到文件
@@ -361,11 +371,10 @@ public class DoorBellControlCenter {
                     @Override
                     public int compare(File o1, File o2) {
                         if (o1.lastModified() < o2.lastModified())
-                            return -1;
-                        return 1;
+                            return 1;
+                        return -1;
                     }
                 });
-                Timber.e("-----------。files:" + files);
                 requestNum = files.size() >= requestNum ? requestNum : files.size();
                 for (int i = 0; i < files.size(); i++) {
                     requestNum--;
@@ -376,24 +385,66 @@ public class DoorBellControlCenter {
                 commandJson.setFlag(mGson.toJson(names));
                 commandJson.setFlag2(1);
             }
-
         }
-        commandJson.setCommandType(CommandJson.CommandType.DOORBELL_LASTED_PICS_NAMES_RESPONSE);
+        commandJson.setCommandType(CommandJson.CommandType.DOORBELL_LASTED_IMG_NAMES_RESPONSE);
         sendCommand(userId, commandJson);
     }
 
     /**
      * 传输图片
      */
-    public void sendLastedPics(int userId, List<String> names) {
+    public void sendLastedPics(int userId, String command, List<String> names) {
         Timber.e("--------names:" + names);
-        for (int i = 0; i < names.size(); i++) {
-            File file = new File(FileUtil.getInstance().getDoorbellImgPath() + File.separator + names.get(i));
-            if (file.exists()) {
-                mAnyChat.TransFile(userId, file.getAbsolutePath(), 0, CommandJson.CommandType.DOORBELL_MEDIA_PIC_PARAM, 0, new AnyChatOutParam());
+        FileUtil fileUtil = FileUtil.getInstance();
+        if (CommandJson.CommandType.DOORBELL_IMG_COMMAND.equals(command)) {
+            for (int i = 0; i < names.size(); i++) {
+                File file = new File(fileUtil.getDoorbellMediaPath() + File.separator + names.get(i));
+                if (file.exists())
+                    mAnyChat.TransFile(userId, file.getAbsolutePath(), 0, CommandJson.CommandType.DOORBELL_MEDIA_PIC_PARAM, 0, new AnyChatOutParam());
+            }
+        } else {
+            MediaMetadataRetriever media = new MediaMetadataRetriever();
+            for (int i = 0; i < names.size(); i++) {
+                if (names.get(i).endsWith(".mp4")) {
+                    //视频缩略图请求
+                    media.setDataSource(fileUtil.getDoorbellMediaPath() + File.separator + names.get(i));
+                    Bitmap bitmap = media.getFrameAtTime();
+                    File thumbnailPath = new File(fileUtil.getDoorbellMediaThumbnailPath());
+                    if (!thumbnailPath.exists())
+                        thumbnailPath.mkdirs();
+                    String filePath = thumbnailPath + File.separator + names.get(i).replace(".mp4", ".jpg");
+                    fileUtil.saveBitmap2File(bitmap, filePath);
+                    File file = new File(filePath);
+                    if (file.exists())
+                        mAnyChat.TransFile(userId, filePath, 0, CommandJson.CommandType.DOORBELL_MEDIA_THUMBNAIL_PARAM, 0, new AnyChatOutParam());
+                }
             }
         }
     }
+
+    /**
+     * 发送视频文件
+     *
+     * @param fileName .mp4
+     */
+    public void sendLastVideo(int userId, String fileName) {
+        File file = new File(FileUtil.getInstance().getDoorbellMediaPath() + File.separator + fileName);
+        CommandJson commandJson = new CommandJson();
+        commandJson.setCommandType(CommandJson.CommandType.DOORBELL_LASTED_VIDEO_RESPONSE);
+        if (file.exists()) {
+            AnyChatOutParam anyChatOutParam = new AnyChatOutParam();
+            mAnyChat.TransFile(userId, file.getAbsolutePath(), 0, CommandJson.CommandType.DOORBELL_MEDIA_VIDEO_PARAM, 0, anyChatOutParam);
+            commandJson.setFlag2(1);//表示成功
+            AnyChatTask anyChatTask = new AnyChatTask();
+            anyChatTask.setName(fileName);
+            anyChatTask.setTastId(anyChatOutParam.GetIntValue());
+            commandJson.setFlag(mGson.toJson(anyChatTask));
+        } else {
+            commandJson.setFlag2(0);
+        }
+        sendCommand(userId, commandJson);
+    }
+
 
     /**
      * 发送命令

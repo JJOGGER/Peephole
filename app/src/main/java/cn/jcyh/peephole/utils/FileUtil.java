@@ -1,5 +1,6 @@
 package cn.jcyh.peephole.utils;
 
+import android.graphics.Bitmap;
 import android.os.Environment;
 
 import java.io.BufferedInputStream;
@@ -8,6 +9,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,21 +39,17 @@ public class FileUtil {
         return sUtils;
     }
 
-
     /**
      * 猫眼图片路径
      */
-    public String getDoorbellImgPath() {
+    public String getDoorbellMediaPath() {
         return Environment.getExternalStoragePublicDirectory(Environment
                 .DIRECTORY_DCIM).getAbsolutePath() + File.separator + "Camera";
     }
 
-    /**
-     * 猫眼视频路径
-     */
-    public String getDoorbellVideoPath() {
+    public String getDoorbellMediaThumbnailPath() {
         return Environment.getExternalStoragePublicDirectory(Environment
-                .DIRECTORY_MOVIES).getAbsolutePath();
+                .DIRECTORY_DCIM).getAbsolutePath() + File.separator + "Camera" + File.separator + "thumbnail";
     }
 
 
@@ -71,6 +69,30 @@ public class FileUtil {
             return sdcardDir.toString() + File.separator;
         } else {
             return null;
+        }
+    }
+
+
+    public void saveBitmap2File(Bitmap bitmap, String filePath) {
+        File file = new File(filePath);
+        BufferedOutputStream bos = null;
+        try {
+            bos = new BufferedOutputStream(new FileOutputStream(file));
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+            try {
+                bos.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (bos != null)
+                    bos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

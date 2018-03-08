@@ -92,18 +92,23 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
         Timber.e("-----OnAnyChatTransBuffer" + result + "---dwUserid:" + dwUserid);
         mContext.sendBroadcast(intent);
         switch (commandJson.getCommandType()) {
-            case CommandJson.CommandType.DOORBELL_LASTED_PICS_NAMES_REQUEST:
+            case CommandJson.CommandType.DOORBELL_LASTED_IMG_NAMES_REQUEST:
                 //收到近期图片获取请求
                 int requestNum = commandJson.getFlag2();//获取请求数
                 //从文件中获取响应数量的图片
-                mControlCenter.sendLastedPicsNamesResponse(dwUserid, requestNum);
+                mControlCenter.sendLastedPicsNamesResponse(dwUserid, commandJson.getCommand(), requestNum);
                 break;
-            case CommandJson.CommandType.DOORBELL_LASTED_PICS_REQUEST:
+            case CommandJson.CommandType.DOORBELL_LASTED_IMG_REQUEST:
                 //发送图片
                 String namesJson = commandJson.getFlag();
                 List<String> names = mGson.fromJson(namesJson, new TypeToken<List<String>>() {
                 }.getType());
-                mControlCenter.sendLastedPics(dwUserid, names);
+                mControlCenter.sendLastedPics(dwUserid, commandJson.getCommand(), names);
+                break;
+            case CommandJson.CommandType.DOORBELL_LASTED_VIDEO_REQUEST:
+                //发送视频文件
+                String fileName = commandJson.getFlag();
+                mControlCenter.sendLastVideo(dwUserid, fileName);
                 break;
         }
 //        if (result.contains("command")) {

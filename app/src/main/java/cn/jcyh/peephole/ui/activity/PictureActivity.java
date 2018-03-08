@@ -75,7 +75,7 @@ public class PictureActivity extends BaseActivity {
         Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
         String time = simpleDateFormat.format(new Date(System.currentTimeMillis()));
-        final String tempPath = FileUtil.getInstance().getDoorbellImgPath() + File.separator + "IMG_" + time +
+        final String tempPath = FileUtil.getInstance().getDoorbellMediaPath() + File.separator + "IMG_" + time +
                 ".jpg";
         boolean isCompleted = ImgUtil.createWaterMaskRightBottom2File(this,
                 tempPath, bitmap,

@@ -105,11 +105,17 @@ public class CommandJson implements Parcelable {
         public static final String NOTIFICATION_DOORBELL_ALARM = "doorbell_alarm";//停留报警
         //视频呼叫图片请求
         public static final String DOORBELL_CALL_IMG_REQUEST = "doorbell_call_img_request";
-        public static final String DOORBELL_LASTED_PICS_NAMES_REQUEST = "doorbell_lasted_pics_names_request";//猫眼最后图片请求
-        public static final String DOORBELL_LASTED_PICS_NAMES_RESPONSE = "doorbell_lasted_pics_names_response";//猫眼最后图片响应
-        public static final String DOORBELL_LASTED_PICS_REQUEST = "doorbell_lasted_pics_request";//请求图片
+        public static final String DOORBELL_LASTED_IMG_NAMES_REQUEST = "doorbell_lasted_img_names_request";//猫眼最后图片请求
+        public static final String DOORBELL_LASTED_IMG_NAMES_RESPONSE = "doorbell_lasted_img_names_response";//猫眼最后图片响应
+        public static final String DOORBELL_LASTED_IMG_REQUEST = "doorbell_lasted_img_request";//请求图片
+        public static final String DOORBELL_LASTED_VIDEO_REQUEST = "doorbell_lasted_video_request";//视频文件请求
+        public static final String DOORBELL_LASTED_VIDEO_RESPONSE = "doorbell_lasted_video_response";//视频文件响应
+        public static final String DOORBELL_IMG_COMMAND = "image";
+        public static final String DOORBELL_VIDEO_COMMAND = "video";
 
         public static final int DOORBELL_VIDEO_CALL_PARAM = 10;//视频呼叫传输参数
         public static final int DOORBELL_MEDIA_PIC_PARAM = 11;//多媒体图片传输参数
+        public static final int DOORBELL_MEDIA_THUMBNAIL_PARAM = 12;//多媒体缩略图片传输参数
+        public static final int DOORBELL_MEDIA_VIDEO_PARAM = 13;//多媒体视频文件传输参数
     }
 }
