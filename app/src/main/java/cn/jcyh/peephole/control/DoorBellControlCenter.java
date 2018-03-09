@@ -361,7 +361,7 @@ public class DoorBellControlCenter {
                 }
                 files.add(file);
             }
-            Timber.e("------->files.size()："+files.size());
+            Timber.e("------->files.size()：" + files.size());
             //按时间排序
             if (files.size() == 0) {
                 //找不到文件
@@ -394,29 +394,36 @@ public class DoorBellControlCenter {
      * 传输图片
      */
     public void sendLastedPics(int userId, String command, List<String> names) {
-        Timber.e("--------names:" + names);
+
         FileUtil fileUtil = FileUtil.getInstance();
         if (CommandJson.CommandType.DOORBELL_IMG_COMMAND.equals(command)) {
             for (int i = 0; i < names.size(); i++) {
                 File file = new File(fileUtil.getDoorbellMediaPath() + File.separator + names.get(i));
-                if (file.exists())
+                if (file.exists()) {
+                    Timber.e("--------已发送文件");
                     mAnyChat.TransFile(userId, file.getAbsolutePath(), 0, CommandJson.CommandType.DOORBELL_MEDIA_PIC_PARAM, 0, new AnyChatOutParam());
+                }
             }
         } else {
             MediaMetadataRetriever media = new MediaMetadataRetriever();
             for (int i = 0; i < names.size(); i++) {
                 if (names.get(i).endsWith(".mp4")) {
                     //视频缩略图请求
-                    media.setDataSource(fileUtil.getDoorbellMediaPath() + File.separator + names.get(i));
-                    Bitmap bitmap = media.getFrameAtTime();
                     File thumbnailPath = new File(fileUtil.getDoorbellMediaThumbnailPath());
                     if (!thumbnailPath.exists())
                         thumbnailPath.mkdirs();
                     String filePath = thumbnailPath + File.separator + names.get(i).replace(".mp4", ".jpg");
-                    fileUtil.saveBitmap2File(bitmap, filePath);
                     File file = new File(filePath);
                     if (file.exists())
                         mAnyChat.TransFile(userId, filePath, 0, CommandJson.CommandType.DOORBELL_MEDIA_THUMBNAIL_PARAM, 0, new AnyChatOutParam());
+                    else {
+                        media.setDataSource(fileUtil.getDoorbellMediaPath() + File.separator + names.get(i));
+                        Bitmap bitmap = media.getFrameAtTime();
+                        fileUtil.saveBitmap2File(bitmap, filePath);
+                        file = new File(filePath);
+                        if (file.exists())
+                            mAnyChat.TransFile(userId, filePath, 0, CommandJson.CommandType.DOORBELL_MEDIA_THUMBNAIL_PARAM, 0, new AnyChatOutParam());
+                    }
                 }
             }
         }
@@ -431,6 +438,7 @@ public class DoorBellControlCenter {
         File file = new File(FileUtil.getInstance().getDoorbellMediaPath() + File.separator + fileName);
         CommandJson commandJson = new CommandJson();
         commandJson.setCommandType(CommandJson.CommandType.DOORBELL_LASTED_VIDEO_RESPONSE);
+        Timber.e("---------->file:" + file.getAbsolutePath() + "-->" + file.exists());
         if (file.exists()) {
             AnyChatOutParam anyChatOutParam = new AnyChatOutParam();
             mAnyChat.TransFile(userId, file.getAbsolutePath(), 0, CommandJson.CommandType.DOORBELL_MEDIA_VIDEO_PARAM, 0, anyChatOutParam);
