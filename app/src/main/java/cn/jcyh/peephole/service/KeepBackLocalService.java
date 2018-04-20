@@ -28,13 +28,14 @@ import com.szjcyh.mysmart.IMyAidlInterface;
 import java.lang.ref.WeakReference;
 
 import cn.jcyh.peephole.MainActivity;
-import cn.jcyh.peephole.MyApp;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.adapter.AnyChatTransDataEventAdapter;
 import cn.jcyh.peephole.adapter.AnyChatUserInfoEventAdapter;
 import cn.jcyh.peephole.adapter.AnyChatVideoCallEventAdapter;
 import cn.jcyh.peephole.adapter.AnychatBaseEventAdapter;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.utils.ConstantUtil;
+import cn.jcyh.peephole.utils.SharePreUtil;
 import timber.log.Timber;
 
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_RECORD_EVENT;
@@ -99,7 +100,9 @@ public class KeepBackLocalService extends Service implements AnyChatRecordEvent 
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_MAX);
         startForeground(startId, builder.build());
-        connectAnyChat(MyApp.sImei);
+        String imei = SharePreUtil.getInstance(this).getString(ConstantUtil.IMEI,
+                getAndroidIMEI());
+        connectAnyChat(imei);
 //        DoorBellControlCenter.getInstance(this).login2DoorBell(new DoorBellControlCenter
 // .OnLoginDoorBellListener() {
 //            @Override
@@ -124,7 +127,9 @@ public class KeepBackLocalService extends Service implements AnyChatRecordEvent 
 //        });
         return START_STICKY;
     }
-
+    private String getAndroidIMEI() {
+        return android.provider.Settings.System.getString(getContentResolver(), android.provider.Settings.System.ANDROID_ID);
+    }
     /**
      * 连接anychat
      */

@@ -11,7 +11,6 @@ import timber.log.Timber;
 
 
 public class MyApp extends Application {
-    public static String sImei;
 
     @Override
     public void onCreate() {
@@ -19,7 +18,6 @@ public class MyApp extends Application {
         if (BuildConfig.DEBUG)
             Timber.plant(new Timber.DebugTree());
         SharePreUtil.getInstance(this).setString(ConstantUtil.IMEI, getAndroidIMEI());
-        Timber.e("---------imei:" + sImei);
 //        HttpAction.getHttpAction().initDoorbell(sImei, null);
     }
 

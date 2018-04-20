@@ -19,6 +19,8 @@ public class VideoServiceActivity extends BaseActivity {
     TextView tv_state;
     @BindView(R.id.btn_ring)
     Button btnRing;
+    @BindView(R.id.tv_device_number)
+    TextView tvDeviceNumber;
     private int mRoomId;
     private int mUserId;
 
@@ -32,7 +34,15 @@ public class VideoServiceActivity extends BaseActivity {
 
     @Override
     protected void init() {
-        tv_state.setText("正在与" + mUserId + "通话中");
+        tvDeviceNumber.setText(String.format(getString(R.string.device_no_),IMEI));
+        if (DoorBellControlCenter.sIsAnychatLogin) {
+            if (DoorBellControlCenter.sIsVideo)
+                tv_state.setText("正在与" + mUserId + "通话中");
+            else
+                tv_state.setText(R.string.ready_connect);
+        } else {
+            tv_state.setText(R.string.connecting);
+        }
         mControlCenter = DoorBellControlCenter.getInstance(this);
     }
 

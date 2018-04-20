@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.zxing.WriterException;
 import com.zxing.encoding.EncodingHandler;
@@ -15,7 +16,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import butterknife.BindView;
-import cn.jcyh.peephole.MyApp;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.bean.CommandJson;
@@ -35,11 +35,16 @@ import static cn.jcyh.peephole.control.DoorBellControlCenter.sIsBinding;
 public class BindActivity extends BaseActivity {
     @BindView(R.id.iv_icon)
     ImageView ivIcon;
+    @BindView(R.id.tv_imei)
+    TextView tvImei;
+    @BindView(R.id.tv_count_down)
+    TextView tvCountDown;
     private DoorBellControlCenter mControlCenter;
     private MyReceiver mReceiver;
     private DialogHelper mDialogHelper;
     private Timer mTimer;
     private TimerTask mTimerTask;
+    private int mCount = 30;
 
     @Override
     public int getLayoutId() {
@@ -49,6 +54,7 @@ public class BindActivity extends BaseActivity {
     @Override
     protected void init() {
         sIsBinding = true;
+        tvImei.setText(String.format(getString(R.string.device_no_), IMEI));
         decordQR();
         mReceiver = new MyReceiver();
         mControlCenter = DoorBellControlCenter.getInstance(this);
@@ -58,7 +64,25 @@ public class BindActivity extends BaseActivity {
         mControlCenter.enterRoom(1, "");
         HintDialogFragmemt hintDialogFragmemt = new HintDialogFragmemt();
         mDialogHelper = new DialogHelper(this, hintDialogFragmemt);
-        mTimer=new Timer();
+        mTimer = new Timer();
+        mTimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                mCount--;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mCount <= 0) {
+                            finish();
+                        }
+                        if (isFinishing() || getSupportFragmentManager() == null) return;
+                        tvCountDown.setText(String.format(getString(R.string
+                                .close_window_hint_format), mCount));
+                    }
+                });
+            }
+        };
+        mTimer.schedule(mTimerTask, 0, 1000);
     }
 
     @Override
@@ -71,6 +95,10 @@ public class BindActivity extends BaseActivity {
         super.onDestroy();
         mControlCenter.leaveRoom(1);
         sIsBinding = false;
+        mTimer.cancel();
+        mTimer = null;
+        mTimerTask.cancel();
+        mTimerTask = null;
         unregisterReceiver(mReceiver);
     }
 
@@ -84,7 +112,7 @@ public class BindActivity extends BaseActivity {
          */
         Bitmap bitmap = null;
         try {
-            bitmap = EncodingHandler.createQRCode(MyApp.sImei, 500);
+            bitmap = EncodingHandler.createQRCode(IMEI, 500);
         } catch (WriterException e) {
             e.printStackTrace();
         }
@@ -103,7 +131,7 @@ public class BindActivity extends BaseActivity {
                     Timber.e("---------com:" + commandJson);
                     switch (commandJson.getCommandType()) {
                         case CommandJson.CommandType.BIND_DOORBELL_REQUEST:
-                            if (commandJson.getCommand().equals(MyApp.sImei)) {
+                            if (commandJson.getCommand().equals(IMEI)) {
                                 if (mDialogHelper.isShowing()) {
                                     return;
                                 }
@@ -126,7 +154,8 @@ public class BindActivity extends BaseActivity {
 //                        //拒绝绑定
 //                        if (mProgressDialog != null && mProgressDialog.isShowing())
 //                            mProgressDialog.dismiss();
-//                        ToastUtil.showToast(getApplicationContext(), getString(R.string.reject_bind));
+//                        ToastUtil.showToast(getApplicationContext(), getString(R.string
+// .reject_bind));
 //                    } else if ("14".equals(result)) {
 //                        //设备已经绑定
 //                        dwTargetUserId = dwUserid;
@@ -145,52 +174,62 @@ public class BindActivity extends BaseActivity {
      */
     private void responseBindRequest(final int dwUserid, final CommandJson commandJson) {
         //先判断是否已绑定
-        HttpAction.getHttpAction(getApplicationContext()).getBindUsers(MyApp.sImei, new IDataListener<List<User>>() {
-            @Override
-            public void onSuccess(List<User> users) {
-                if (users != null && users.size() != 0) {
-                    for (User user :
-                            users) {
-                        if (user.getAid() == dwUserid) {
-                            //已绑定
-                            commandJson.setFlag("2");
-                            commandJson.setCommandType(CommandJson.CommandType.BIND_DOORBELL_RESPONSE);
-                            mControlCenter.sendBindResponse(dwUserid, commandJson);
-                            return;
-                        }
-                    }
-                }
-                Timber.e("-------responseBindRequest");
-                //未绑定
-                HintDialogFragmemt dialogFragment = (HintDialogFragmemt) mDialogHelper.getDialogFragment();
-                dialogFragment.setHintContent(String.format(getString(R.string.request_bind_hint), commandJson.getFlag()));
-                dialogFragment.setOnHintDialogListener(new HintDialogFragmemt.OnHintDialogListener() {
+        HttpAction.getHttpAction(getApplicationContext()).getBindUsers(IMEI, new
+                IDataListener<List<User>>() {
                     @Override
-                    public void onConfirm(boolean isConfirm) {
-                        if (isConfirm) {
-                            commandJson.setFlag("1");
-                            int flag2 = CameraProvider.hasFrontFacingCamera() && CameraProvider.hasBackFacingCamera() ? 1 : 0;
-                            commandJson.setCommandType(CommandJson.CommandType.BIND_DOORBELL_RESPONSE);
-                            commandJson.setFlag2(flag2);
-                            mControlCenter.sendBindResponse(dwUserid, commandJson);
-                        } else {
-                            commandJson.setFlag("0");
-                            commandJson.setCommandType(CommandJson.CommandType.BIND_DOORBELL_RESPONSE);
-                            mControlCenter.sendBindResponse(dwUserid, commandJson);
+                    public void onSuccess(List<User> users) {
+                        if (users != null && users.size() != 0) {
+                            for (User user :
+                                    users) {
+                                if (user.getAid() == dwUserid) {
+                                    //已绑定
+                                    commandJson.setFlag("2");
+                                    commandJson.setCommandType(CommandJson.CommandType
+                                            .BIND_DOORBELL_RESPONSE);
+                                    mControlCenter.sendBindResponse(dwUserid, commandJson);
+                                    return;
+                                }
+                            }
                         }
-                        mDialogHelper.dismiss();
+                        Timber.e("-------responseBindRequest");
+                        //未绑定
+                        HintDialogFragmemt dialogFragment = (HintDialogFragmemt) mDialogHelper
+                                .getDialogFragment();
+                        dialogFragment.setHintContent(String.format(getString(R.string
+                                        .request_bind_hint)
+                                , commandJson.getFlag()));
+                        dialogFragment.setOnHintDialogListener(new HintDialogFragmemt
+                                .OnHintDialogListener() {
+                            @Override
+                            public void onConfirm(boolean isConfirm) {
+                                if (isConfirm) {
+                                    commandJson.setFlag("1");
+                                    int flag2 = CameraProvider.hasFrontFacingCamera() &&
+                                            CameraProvider
+                                                    .hasBackFacingCamera() ? 1 : 0;
+                                    commandJson.setCommandType(CommandJson.CommandType
+                                            .BIND_DOORBELL_RESPONSE);
+                                    commandJson.setFlag2(flag2);
+                                    mControlCenter.sendBindResponse(dwUserid, commandJson);
+                                } else {
+                                    commandJson.setFlag("0");
+                                    commandJson.setCommandType(CommandJson.CommandType
+                                            .BIND_DOORBELL_RESPONSE);
+                                    mControlCenter.sendBindResponse(dwUserid, commandJson);
+                                }
+                                mDialogHelper.dismiss();
+                            }
+                        });
+                        mDialogHelper.commit();
+                    }
+
+                    @Override
+                    public void onFailure(int errorCode) {
+                        //请求失败
+                        commandJson.setFlag("4");
+                        commandJson.setCommandType(CommandJson.CommandType.BIND_DOORBELL_RESPONSE);
+                        mControlCenter.sendBindResponse(dwUserid, commandJson);
                     }
                 });
-                mDialogHelper.commit();
-            }
-
-            @Override
-            public void onFailure(int errorCode) {
-                //请求失败
-                commandJson.setFlag("4");
-                commandJson.setCommandType(CommandJson.CommandType.BIND_DOORBELL_RESPONSE);
-                mControlCenter.sendBindResponse(dwUserid, commandJson);
-            }
-        });
     }
 }

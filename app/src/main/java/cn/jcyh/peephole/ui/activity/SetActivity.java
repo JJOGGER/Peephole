@@ -44,7 +44,7 @@ public class SetActivity extends BaseActivity {
     public void init() {
         mFragmentManager = getSupportFragmentManager();
         //获取智能监控开关
-        HttpAction.getHttpAction(this).getDoorbellParams(MyApp.sImei, DoorBellControlCenter.DOORBELL_PARAMS_TYPE_SENSOR, new IDataListener<DoorbellParam>() {
+        HttpAction.getHttpAction(this).getDoorbellParams(IMEI, DoorBellControlCenter.DOORBELL_PARAMS_TYPE_SENSOR, new IDataListener<DoorbellParam>() {
             @Override
             public void onSuccess(DoorbellParam doorbellParam) {
                 Timber.e("------doorbell:" + doorbellParam);

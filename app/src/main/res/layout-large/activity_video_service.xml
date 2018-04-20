@@ -25,22 +25,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:gravity="center"
-        android:text="@string/device_number"
+        android:text="@string/device_no_"
         android:textSize="16sp"/>
-
-    <Button
-        android:id="@+id/btn_ring"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="模拟有人按门铃"/>
-
-    <Button
-        android:id="@+id/btn_alarm"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="模拟报警"/>
 
     <View
         android:layout_width="wrap_content"

@@ -24,7 +24,7 @@ import cn.jcyh.peephole.utils.StatusUtil;
 
 public abstract class BaseActivity extends AppCompatActivity {
     private static final int STATUS_COLOR = Color.parseColor("#3f000000");
-    private String IMEI;
+    public String IMEI;
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -42,6 +42,11 @@ public abstract class BaseActivity extends AppCompatActivity {
         if (isFullScreen()) {
             statusUtil.setActivityFullScreen(this);
         }
+        IMEI = SharePreUtil.getInstance(this).getString(ConstantUtil.IMEI, "");
+        if (TextUtils.isEmpty(IMEI)) {
+            String imei = Settings.System.getString(getContentResolver(), Settings.System.ANDROID_ID);
+            SharePreUtil.getInstance(this).getString(ConstantUtil.IMEI, imei);
+        }
         init();
         loadData();
     }
@@ -49,11 +54,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        IMEI = SharePreUtil.getInstance(this).getString(ConstantUtil.IMEI, "");
-        if (TextUtils.isEmpty(IMEI)) {
-            String imei = Settings.System.getString(getContentResolver(), Settings.System.ANDROID_ID);
-            SharePreUtil.getInstance(this).getString(ConstantUtil.IMEI, imei);
-        }
     }
 
     @Override
@@ -89,7 +89,7 @@ public abstract class BaseActivity extends AppCompatActivity {
      * 是否全屏
      */
     public boolean isFullScreen() {
-        return false;
+        return true;
     }
 
 //    public void startNewActivity(Class cls) {

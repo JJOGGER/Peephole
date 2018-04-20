@@ -7,7 +7,6 @@ import com.google.gson.Gson;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import cn.jcyh.peephole.MyApp;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.bean.DoorbellParam;
@@ -43,7 +42,7 @@ public class DoorbellSetActivity extends BaseActivity {
 
     @Override
     public void init() {
-        HttpAction.getHttpAction(this).getDoorbellParams(MyApp.sImei, DoorBellControlCenter.DOORBELL_PARAMS_TYPE_MODE, new IDataListener<DoorbellParam>() {
+        HttpAction.getHttpAction(this).getDoorbellParams(IMEI, DoorBellControlCenter.DOORBELL_PARAMS_TYPE_MODE, new IDataListener<DoorbellParam>() {
             @Override
             public void onSuccess(DoorbellParam doorbellParam) {
                 mDoorbellParam = doorbellParam;
@@ -110,7 +109,7 @@ public class DoorbellSetActivity extends BaseActivity {
      */
     private void setParam() {
         //保存到服务器
-        HttpAction.getHttpAction(this).setDoorbellParams(MyApp.sImei, DoorBellControlCenter.DOORBELL_PARAMS_TYPE_MODE, mDoorbellParam, new IDataListener<Boolean>() {
+        HttpAction.getHttpAction(this).setDoorbellParams(IMEI, DoorBellControlCenter.DOORBELL_PARAMS_TYPE_MODE, mDoorbellParam, new IDataListener<Boolean>() {
             @Override
             public void onSuccess(Boolean aBoolean) {
                 Timber.e("----------设置成功");

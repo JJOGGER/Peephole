@@ -92,7 +92,7 @@ public class MainActivity extends BaseActivity {
                     String type = intent.getStringExtra("type");
                     if (TYPE_DOORBELL_SYSTEM_RING.equals(type)) {
                         // TODO: 2018/2/4 获取绑定猫眼的用户列表
-//                    mControlCenter.sendVideoCall();
+//  mControlCenter.sendVideoCall();
                         startNewActivityForResult(PictureActivity.class, REQEUST_CAPTURE_RING);
                     } else if (TYPE_DOORBELL_SYSTEM_ALARM.equals(type)) {
                         startNewActivityForResult(PictureActivity.class, REQEUST_CAPTURE_ALARM);
@@ -223,10 +223,11 @@ public class MainActivity extends BaseActivity {
                 //获取拍照的图片
                 mFilePath = data.getStringExtra("filePath");
                 Map<String, Object> params = new HashMap<>();
-                params.put("sn", MyApp.sImei);
+                params.put("sn", IMEI);
                 params.put("type", 1);
-                HttpAction.getHttpAction(this).sendPostImg(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL, mFilePath, params, null);
-                HttpAction.getHttpAction(this).getBindUsers(MyApp.sImei, new IDataListener<List<User>>() {
+                HttpAction.getHttpAction(this).sendPostImg(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL,
+                        mFilePath, params, null);
+                HttpAction.getHttpAction(this).getBindUsers(IMEI, new IDataListener<List<User>>() {
                     @Override
                     public void onSuccess(List<User> users) {
                         if (users != null && users.size() != 0) {

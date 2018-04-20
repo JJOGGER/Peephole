@@ -53,10 +53,11 @@
         android:textSize="14sp"/>
 
     <TextView
+        android:id="@+id/tv_count_down"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:paddingBottom="5dp"
-        android:text="@string/close_window_hint"
+        android:text="@string/close_window_hint_format"
         android:textColor="@color/gray_888888"/>
 </LinearLayout>

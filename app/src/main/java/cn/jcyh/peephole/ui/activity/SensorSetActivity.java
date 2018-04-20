@@ -88,7 +88,7 @@ public class SensorSetActivity extends BaseActivity {
      */
     private void setParam() {
         //保存到服务器
-        HttpAction.getHttpAction(this).setDoorbellParams(MyApp.sImei, DoorBellControlCenter.DOORBELL_PARAMS_TYPE_SENSOR, mDoorbellParam, new IDataListener<Boolean>() {
+        HttpAction.getHttpAction(this).setDoorbellParams(IMEI, DoorBellControlCenter.DOORBELL_PARAMS_TYPE_SENSOR, mDoorbellParam, new IDataListener<Boolean>() {
             @Override
             public void onSuccess(Boolean aBoolean) {
                 SharePreUtil.getInstance(getApplicationContext()).setString(ConstantUtil.DOORBELL_SENSOR_PARAMS, new Gson().toJson(mDoorbellParam));

@@ -18,9 +18,9 @@
     <string name="browser">浏览器</string>
     <string name="about">关于</string>
     <string name="user_bind_window">用户绑定窗口</string>
-    <string name="device_no_">设备号：</string>
+    <string name="device_no_">设备号：%s</string>
     <string name="bind_device_hint">此时不能进行视频通话，请尽快绑定设备</string>
-    <string name="close_window_hint">将在%1$d秒后关闭窗口</string>
+    <string name="close_window_hint_format">将在%1$d秒后关闭窗口</string>
     <string name="request_bind_hint">%s请求与您绑定，是否接受？</string>
     <string name="bind_succ">绑定成功</string>
     <string name="am">上午</string>
@@ -109,4 +109,6 @@
     <string name="thirty">三十</string>
     <string name="loading">加载中</string>
     <string name="monitor_opened">监控已打开</string>
+    <string name="ready_connect">准备就绪，等待被连接</string>
+    <string name="connecting">正在连接...</string>
 </resources>

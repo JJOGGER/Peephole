@@ -97,8 +97,8 @@ public class VideoService extends Service {
         //注意，这里的width和height均使用px而非dp.这里我偷了个懒
         //如果你想完全对应布局设置，需要先获取到机器的dpi
         //px与dp的换算为px = dp * (dpi / 160).
-        mParams.width = 300;
-        mParams.height = 300;
+        mParams.width = 1;
+        mParams.height = 1;
 
         LayoutInflater inflater = LayoutInflater.from(getApplication());
         //获取浮动窗口视图所在布局.

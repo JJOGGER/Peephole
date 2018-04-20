@@ -9,7 +9,7 @@ import android.widget.Toast;
 import cn.jcyh.peephole.utils.ConstantUtil;
 
 public class BcReceiver extends BroadcastReceiver {
-    protected static final String TAG = "eogleking:Manager";
+    protected static final String TAG = "eagleking:Manager";
 
     @Override
     public void onReceive(Context context, Intent intent) {
