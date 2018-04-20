@@ -80,7 +80,6 @@ public class KeepBackLocalService extends Service implements AnyChatRecordEvent 
         intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
         intentFilter.addAction(Intent.ACTION_SCREEN_ON);
         registerReceiver(mReceiver, intentFilter);
-
 //        intentFilter.addAction("android.intent.action.USER_PRESENT");
     }
 

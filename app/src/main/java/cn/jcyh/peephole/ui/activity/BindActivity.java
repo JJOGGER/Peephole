@@ -11,6 +11,8 @@ import com.google.zxing.WriterException;
 import com.zxing.encoding.EncodingHandler;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import butterknife.BindView;
 import cn.jcyh.peephole.MyApp;
@@ -36,6 +38,8 @@ public class BindActivity extends BaseActivity {
     private DoorBellControlCenter mControlCenter;
     private MyReceiver mReceiver;
     private DialogHelper mDialogHelper;
+    private Timer mTimer;
+    private TimerTask mTimerTask;
 
     @Override
     public int getLayoutId() {
@@ -54,6 +58,12 @@ public class BindActivity extends BaseActivity {
         mControlCenter.enterRoom(1, "");
         HintDialogFragmemt hintDialogFragmemt = new HintDialogFragmemt();
         mDialogHelper = new DialogHelper(this, hintDialogFragmemt);
+        mTimer=new Timer();
+    }
+
+    @Override
+    public boolean isFullScreen() {
+        return true;
     }
 
     @Override
@@ -90,7 +100,7 @@ public class BindActivity extends BaseActivity {
                 final int dwUserid = intent.getIntExtra("dwUserid", -1);
                 if (ConstantUtil.TYPE_ANYCHAT_TRANS_BUFFER.equals(type)) {
                     final CommandJson commandJson = intent.getParcelableExtra("command");
-                    Timber.e("---------com:"+commandJson);
+                    Timber.e("---------com:" + commandJson);
                     switch (commandJson.getCommandType()) {
                         case CommandJson.CommandType.BIND_DOORBELL_REQUEST:
                             if (commandJson.getCommand().equals(MyApp.sImei)) {

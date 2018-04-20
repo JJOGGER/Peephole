@@ -56,6 +56,7 @@ public class AnyChatVideoCallEventAdapter implements AnyChatVideoCallEvent {
                 Timber.i(" -------?????");
                 break;
         }
+        intent.putExtra("type", type);
         mContext.sendBroadcast(intent);
     }
 }

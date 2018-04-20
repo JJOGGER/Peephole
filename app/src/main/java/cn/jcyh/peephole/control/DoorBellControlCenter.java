@@ -399,6 +399,7 @@ public class DoorBellControlCenter {
         if (CommandJson.CommandType.DOORBELL_IMG_COMMAND.equals(command)) {
             for (int i = 0; i < names.size(); i++) {
                 File file = new File(fileUtil.getDoorbellMediaPath() + File.separator + names.get(i));
+                Timber.e("----------->filePath:" + file.getAbsolutePath());
                 if (file.exists()) {
                     Timber.e("--------已发送文件");
                     mAnyChat.TransFile(userId, file.getAbsolutePath(), 0, CommandJson.CommandType.DOORBELL_MEDIA_PIC_PARAM, 0, new AnyChatOutParam());
@@ -414,6 +415,7 @@ public class DoorBellControlCenter {
                         thumbnailPath.mkdirs();
                     String filePath = thumbnailPath + File.separator + names.get(i).replace(".mp4", ".jpg");
                     File file = new File(filePath);
+                    Timber.e("----------->filePath:" + file.getAbsolutePath()+"--->userid:"+userId);
                     if (file.exists())
                         mAnyChat.TransFile(userId, filePath, 0, CommandJson.CommandType.DOORBELL_MEDIA_THUMBNAIL_PARAM, 0, new AnyChatOutParam());
                     else {
@@ -460,6 +462,7 @@ public class DoorBellControlCenter {
     private void sendCommand(int userId, CommandJson commandJson) {
         String json = mGson.toJson(commandJson);
         Timber.e("------------------>send:" + json);
+
         mAnyChat.TransBuffer(userId, json.getBytes(), json.getBytes().length);
     }
 //

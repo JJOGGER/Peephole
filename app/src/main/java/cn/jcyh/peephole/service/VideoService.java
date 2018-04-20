@@ -167,6 +167,8 @@ public class VideoService extends Service {
                 mDoorbellVideoHelper.setVideoHolder(mSurfaceView);
                 bSelfVideoOpened = true;
             }
+        } else {
+            mIsCheckAv = false;
         }
     }
 
@@ -176,7 +178,7 @@ public class VideoService extends Service {
         DoorBellControlCenter.sIsVideo = false;
         mDoorbellVideoHelper.userCameraControl(-1, 0);
         mDoorbellVideoHelper.userSpeakControl(-1, 0);
-        mIsCheckAv=false;
+        mIsCheckAv = false;
         if (flSurfaceContainer != null) {
             mWindowManager.removeView(flSurfaceContainer);
         }

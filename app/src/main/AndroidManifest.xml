@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="cn.jcyh.peephole">
-
     <!-- 权限声明 -->
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
     <!-- 访问网络状态 -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -45,6 +45,21 @@
             android:name=".service.KeepBackRemoteService"
             android:process=":remote"/>
         <service android:name=".service.VideoService"/>
+
+        <receiver android:name=".receiver.BcReceiver">
+            <intent-filter>
+                <action android:name="kphone.intent.action.LOCK_DETECT"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="kphone.intent.action.PIR"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="kphone.intent.action.RING"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="kphone.intent.action.HOME_PRESS"/>
+            </intent-filter>
+        </receiver>
 
         <activity android:name=".ui.activity.VideoServiceActivity">
         </activity>

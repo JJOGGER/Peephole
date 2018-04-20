@@ -103,6 +103,7 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
                 String namesJson = commandJson.getFlag();
                 List<String> names = mGson.fromJson(namesJson, new TypeToken<List<String>>() {
                 }.getType());
+                Timber.e("---------->>commandjson:"+commandJson);
                 mControlCenter.sendLastedPics(dwUserid, commandJson.getCommand(), names);
                 break;
             case CommandJson.CommandType.DOORBELL_LASTED_VIDEO_REQUEST:

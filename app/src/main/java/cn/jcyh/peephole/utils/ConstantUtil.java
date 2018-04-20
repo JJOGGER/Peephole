@@ -12,8 +12,8 @@ public class ConstantUtil {
     public static final String UID = "uid";//登录猫眼的帐号
     public static final String AUTO_LOGIN = "save_account_pwd";
     public static final String LAST_DOOR_BELL_NO = "last_door_bell_no";
-    public static final String DOORBELL_RING_PARAMS="doorbell_ring_params";
-    public static final String DOORBELL_SENSOR_PARAMS="doorbell_sensor_params";
+    public static final String DOORBELL_RING_PARAMS = "doorbell_ring_params";
+    public static final String DOORBELL_SENSOR_PARAMS = "doorbell_sensor_params";
 
     //猫眼动作
     public static final String REQUEST_SWITCH_CAMERA = "requestSwitchCamera";//请求切换摄像头
@@ -28,9 +28,9 @@ public class ConstantUtil {
     public static final String VIDEO_THUNBNAIL = "VideoThumbnail";//视频缩略图响应
 
     //猫眼系统回调
-    public static final String ACTION_DOORBELL_SYSTEM_EVENT="cn.jcyh.eagleking.doorbell_system_event";//猫眼系统回调
-    public static final String TYPE_DOORBELL_SYSTEM_RING="type_doorbell_system_ring";//有人按门铃
-    public static final String TYPE_DOORBELL_SYSTEM_ALARM="type_doorbell_system_alarm";
+    public static final String ACTION_DOORBELL_SYSTEM_EVENT = "cn.jcyh.eagleking.doorbell_system_event";//猫眼系统回调
+    public static final String TYPE_DOORBELL_SYSTEM_RING = "type_doorbell_system_ring";//有人按门铃
+    public static final String TYPE_DOORBELL_SYSTEM_ALARM = "type_doorbell_system_alarm";
     //anychat操作
     public static final String ACTION_DOORBELL_LOGIN_RESULT = "cn.jcyh.eagleking.doorbell_login_result";//首次登录
     public static final String ACTION_ANYCHAT_LOGIN_RESULT_MSG = "cn.jcyh.eagleking.login_result_msg";//登录anychat
@@ -58,4 +58,5 @@ public class ConstantUtil {
     public static final String ACTION_ANYCHAT_RECORD_EVENT = "cn.jcyh.eagleking.record_event";
     public static final String TYPE_ANYCHAT_RECORD = "type_anychat_record";
     public static final String TYPE_ANYCHAT_SNAP_SHOT = "type_anychat_snap_shot";
+    public static final String IMEI = "system_imei";
 }

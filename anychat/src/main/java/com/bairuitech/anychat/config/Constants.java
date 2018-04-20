@@ -9,5 +9,6 @@ public class Constants {
 //    public static final String ADDRESS2 = "ihomeen.rollupcn.com";//国外的
 
     public static final String ADDRESS="119.23.58.28";
+//    public static final String ADDRESS="192.168.0.134";
     public static final int PORT = 8906;
 }

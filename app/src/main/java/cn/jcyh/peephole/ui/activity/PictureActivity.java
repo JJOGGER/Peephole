@@ -93,7 +93,12 @@ public class PictureActivity extends BaseActivity {
         if (mCamera == null) {
             return;
         }
-        mCamera.cancelAutoFocus();
+        try {
+            mCamera.cancelAutoFocus();
+        }catch (Exception e){
+            e.printStackTrace();
+            Timber.e("---->"+e.getMessage());
+        }
         mCamera.stopPreview();
         mCamera.release();
         mCamera = null;

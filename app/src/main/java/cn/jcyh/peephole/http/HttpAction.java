@@ -87,9 +87,11 @@ public class HttpAction {
     public void getBindUsers(String deviceId, final IDataListener<List<User>> listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("deviceId", deviceId);
+        Timber.e("------deviceId:" + deviceId);
         request(HttpUrlIble.GET_BIND_USERS_URL, params, new IDataListener<HttpResult>() {
             @Override
             public void onSuccess(HttpResult httpResult) {
+
                 TypeToken<List<User>> typeToken = new TypeToken<List<User>>() {
                 };
                 List<User> users = mGson.fromJson(httpResult.getData().toString(), typeToken.getType());
@@ -110,8 +112,8 @@ public class HttpAction {
     /**
      * 设置参数
      *
-     * @param deviceId   猫眼id
-     * @param type 设置类型 mode/monitor/sensor
+     * @param deviceId 猫眼id
+     * @param type     设置类型 mode/monitor/sensor
      */
     public void setDoorbellParams(String deviceId, String type, DoorbellParam value, final IDataListener<Boolean> listener) {
         Map<String, Object> params = new HashMap<>();
@@ -144,20 +146,25 @@ public class HttpAction {
         });
     }
 
-    private void request(String url, Map<String, Object> params, final IDataListener<HttpResult> listener) {
+    private void request(final String url, Map<String, Object> params, final IDataListener<HttpResult> listener) {
         HttpUtil.getInstance(mContext).sendPostRequest(url, params, new HttpUtil.OnRequestListener() {
             @Override
             public void success(String result) {
-                Timber.e("-------result:" + result);
-                HttpResult httpResult = mGson.fromJson(result, HttpResult.class);
+                Timber.e("-------result:" + result+"-->"+url);
                 if (listener != null) {
-                    if (httpResult != null) {
-                        if (httpResult.getCode() == 200) {
-                            listener.onSuccess(httpResult);
-                        } else {
-                            listener.onFailure(httpResult.getCode());
+                    try {
+                        HttpResult httpResult = mGson.fromJson(result, HttpResult.class);
+                        if (httpResult != null) {
+                            if (httpResult.getCode() == 200) {
+                                listener.onSuccess(httpResult);
+                            } else {
+                                listener.onFailure(httpResult.getCode());
+                            }
                         }
+                    } catch (Exception e) {
+                        listener.onFailure(-1);
                     }
+
                 }
             }
 
@@ -168,11 +175,11 @@ public class HttpAction {
         });
     }
 
-    private void request2(String url, Map<String, Object> params, final IDataListener<Boolean> listener) {
+    private void request2(final String url, Map<String, Object> params, final IDataListener<Boolean> listener) {
         HttpUtil.getInstance(mContext).sendPostRequest(url, params, new HttpUtil.OnRequestListener() {
             @Override
             public void success(String result) {
-                Timber.e("-----------result:" + result);
+                Timber.e("-----------result:" + result+"-->"+url);
                 HttpResult httpResult = mGson.fromJson(result, HttpResult.class);
                 if (listener != null) {
                     if (httpResult != null) {
