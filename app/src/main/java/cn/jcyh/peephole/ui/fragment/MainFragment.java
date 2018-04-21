@@ -1,10 +1,14 @@
 package cn.jcyh.peephole.ui.fragment;
 
+import android.content.Intent;
 import android.content.res.TypedArray;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
@@ -31,6 +35,9 @@ public class MainFragment extends BaseFragment {
     TextView tvDate;
     @BindView(R.id.tv_date2)
     TextView tvDate2;
+    @BindView(R.id.iv_home)
+    ImageView ivHome;
+    private final String IMAGE_TYPE = "image/*";
     private String mDate;
     private static MainFragment sInstance;
     private MyHandler mHandler;
@@ -61,7 +68,7 @@ public class MainFragment extends BaseFragment {
         mSimpleDateFormat = new SimpleDateFormat("yyyy" + getString(R.string.year)
                 + "MM" + getString(R.string.month) + "dd" + getString(R.string.day));
         mHandler = new MyHandler(this);
-        mTimeThread=new TimeThread();
+        mTimeThread = new TimeThread();
         mTimeThread.start();
     }
 
@@ -109,20 +116,48 @@ public class MainFragment extends BaseFragment {
         tvDate2.setText(ChinaYear + getString(R.string.year) + ChinaMonth + ChinaDay);
     }
 
-    @OnClick({R.id.tv_media_record, R.id.tv_leave_message, R.id.tv_monitor_switch, R.id.tv_sos})
+    @OnClick({R.id.rl_media_record, R.id.rl_leave_message, R.id.rl_monitor_switch, R.id.rl_sos,
+            R.id.iv_home})
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.tv_media_record:
+            case R.id.rl_media_record:
+                openAlbum();
                 break;
-            case R.id.tv_leave_message:
+            case R.id.rl_leave_message:
                 break;
-            case R.id.tv_monitor_switch:
+            case R.id.rl_monitor_switch:
                 break;
-            case R.id.tv_sos:
+            case R.id.rl_sos:
+                break;
+            case R.id.iv_home:
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);// 启动系统相机
+                startActivity(intent);
                 break;
         }
     }
 
+    /**
+     * 打开系统相册
+     */
+//    public void openAlbum() {
+////        FileUtil.getInstance().getSDCardPath()
+//        File file = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+//        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+//        intent.setDataAndType(Uri.fromFile(file), IMAGE_TYPE);
+//        intent.addCategory(Intent.CATEGORY_OPENABLE);
+//        mActivity.startActivity(intent);
+//    }
+    public void openAlbum() {
+        Intent intent = new Intent();
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType(IMAGE_TYPE);
+        if (Build.VERSION.SDK_INT < 19) {
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+        } else {
+            intent.setAction(Intent.ACTION_OPEN_DOCUMENT);
+        }
+        startActivity(intent);
+    }
 
     private void setweek() {
         // 系统时间

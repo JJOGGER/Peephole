@@ -8,6 +8,7 @@ public class ConstantUtil {
     public static final String NIM_ID = "nim_id";
     public static final String NIM_TOKEN = "nim_token";
     public static final String ACCOUNT = "account";
+    public static final String DOORBELL_CONFIG="doorbell_config";
     public static final String PWD = "pwd";
     public static final String UID = "uid";//登录猫眼的帐号
     public static final String AUTO_LOGIN = "save_account_pwd";

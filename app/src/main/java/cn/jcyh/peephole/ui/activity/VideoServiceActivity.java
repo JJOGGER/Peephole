@@ -3,12 +3,9 @@ package cn.jcyh.peephole.ui.activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 
 import butterknife.BindView;
-import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
@@ -17,8 +14,6 @@ import cn.jcyh.peephole.utils.ConstantUtil;
 public class VideoServiceActivity extends BaseActivity {
     @BindView(R.id.tv_state)
     TextView tv_state;
-    @BindView(R.id.btn_ring)
-    Button btnRing;
     @BindView(R.id.tv_device_number)
     TextView tvDeviceNumber;
     private int mRoomId;
@@ -46,22 +41,7 @@ public class VideoServiceActivity extends BaseActivity {
         mControlCenter = DoorBellControlCenter.getInstance(this);
     }
 
-    @OnClick({R.id.btn_ring, R.id.btn_alarm})
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btn_ring:
-                //模拟有人按门铃
-
-//                AnyChatCoreSDK.getInstance(this).SnapShot(-1, AnyChatDefine
-// .ANYCHAT_RECORD_FLAGS_SNAPSHOT,0);
-                break;
-            case R.id.btn_alarm:
-
-                break;
-        }
-    }
-
-    private class MyReceiver extends BroadcastReceiver {
+     private class MyReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {

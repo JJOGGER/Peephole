@@ -9,12 +9,17 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
 
+import com.google.gson.Gson;
 import com.szjcyh.mysmart.IMyAidlInterface;
 
+import cn.jcyh.peephole.config.DoorbellConfig;
+import cn.jcyh.peephole.utils.ConstantUtil;
+import cn.jcyh.peephole.utils.SharePreUtil;
 import timber.log.Timber;
 
 /**
  * Created by jogger on 2017/12/4.
+ *
  */
 
 public class KeepBackRemoteService extends Service {
@@ -30,15 +35,14 @@ public class KeepBackRemoteService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        configDoorbell();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (mBinder == null) mBinder = new MyBinder();
         if (mConnection == null) mConnection = new MyServiceConnection();
-        if (intent.getIntExtra("flag", 0) == 1) {
-            //表示该服务停止了，但又被KeepBackLocalService唤起
-        } else {
+        if (intent.getIntExtra("flag", 0) != 1) {
             //表示该服务正常被调用了startService,此时KeepBackLocalService没运行
             Intent mIntent = new Intent(this, KeepBackLocalService.class);
             startService(mIntent);
@@ -51,6 +55,20 @@ public class KeepBackRemoteService extends Service {
 
         @Override
         public void dealThings() throws RemoteException {
+        }
+    }
+
+    /**
+     * 配置猫眼
+     */
+    private void configDoorbell() {
+        String configJson = SharePreUtil.getInstance(getApplicationContext()).getString(ConstantUtil.DOORBELL_CONFIG, "");
+        Gson gson = new Gson();
+        DoorbellConfig config = gson.fromJson(configJson, DoorbellConfig.class);
+        if (config == null) {
+            //本地不存在
+
+        } else {
         }
     }
 
