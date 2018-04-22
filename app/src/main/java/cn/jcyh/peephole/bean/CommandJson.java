@@ -100,16 +100,24 @@ public class CommandJson implements Parcelable {
         public static final String UNLOCK_DOORBELL_REQUEST = "unlock_doorbell_request";//解锁请求
         public static final String UNLOCK_DOORBELL_RESPONSE = "unlock_doorbell_response";//解锁响应
 
+        public static final String CHANGE_CAMERA_REQUEST = "change_camera_request";//切换摄像头
+        public static final String CHANGE_CAMERA_RESPONSE = "change_camera_response";
+
         public static final String DOORBELL_NOTIFICATION = "doorbell_notification";//猫眼通知
         public static final String NOTIFICATION_DOORBELL_RING = "doorbell_ring";//有人按门铃
         public static final String NOTIFICATION_DOORBELL_ALARM = "doorbell_alarm";//停留报警
         //视频呼叫图片请求
         public static final String DOORBELL_CALL_IMG_REQUEST = "doorbell_call_img_request";
-        public static final String DOORBELL_LASTED_IMG_NAMES_REQUEST = "doorbell_lasted_img_names_request";//猫眼最后图片请求
-        public static final String DOORBELL_LASTED_IMG_NAMES_RESPONSE = "doorbell_lasted_img_names_response";//猫眼最后图片响应
-        public static final String DOORBELL_LASTED_IMG_REQUEST = "doorbell_lasted_img_request";//请求图片
-        public static final String DOORBELL_LASTED_VIDEO_REQUEST = "doorbell_lasted_video_request";//视频文件请求
-        public static final String DOORBELL_LASTED_VIDEO_RESPONSE = "doorbell_lasted_video_response";//视频文件响应
+        public static final String DOORBELL_LASTED_IMG_NAMES_REQUEST =
+                "doorbell_lasted_img_names_request";//猫眼最后图片请求
+        public static final String DOORBELL_LASTED_IMG_NAMES_RESPONSE =
+                "doorbell_lasted_img_names_response";//猫眼最后图片响应
+        public static final String DOORBELL_LASTED_IMG_REQUEST = "doorbell_lasted_img_request";
+        //请求图片
+        public static final String DOORBELL_LASTED_VIDEO_REQUEST =
+                "doorbell_lasted_video_request";//视频文件请求
+        public static final String DOORBELL_LASTED_VIDEO_RESPONSE =
+                "doorbell_lasted_video_response";//视频文件响应
         public static final String DOORBELL_IMG_COMMAND = "image";
         public static final String DOORBELL_VIDEO_COMMAND = "video";
 

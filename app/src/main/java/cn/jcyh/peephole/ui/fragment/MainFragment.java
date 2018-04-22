@@ -1,8 +1,8 @@
 package cn.jcyh.peephole.ui.fragment;
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.TypedArray;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -28,7 +28,7 @@ import cn.jcyh.peephole.utils.LunarCalendar;
 
 public class MainFragment extends BaseFragment {
     @BindView(R.id.tv_time)
-    TextView tv_time;
+    TextView tvTime;
     @BindView(R.id.tv_am_pm)
     TextView tvAmPm;
     @BindView(R.id.tv_date)
@@ -139,23 +139,12 @@ public class MainFragment extends BaseFragment {
     /**
      * 打开系统相册
      */
-//    public void openAlbum() {
-////        FileUtil.getInstance().getSDCardPath()
-//        File file = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-//        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-//        intent.setDataAndType(Uri.fromFile(file), IMAGE_TYPE);
-//        intent.addCategory(Intent.CATEGORY_OPENABLE);
-//        mActivity.startActivity(intent);
-//    }
     public void openAlbum() {
         Intent intent = new Intent();
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType(IMAGE_TYPE);
-        if (Build.VERSION.SDK_INT < 19) {
-            intent.setAction(Intent.ACTION_GET_CONTENT);
-        } else {
-            intent.setAction(Intent.ACTION_OPEN_DOCUMENT);
-        }
+        intent.addCategory(Intent.ACTION_MAIN);
+        ComponentName componentName = new ComponentName("com.android.gallery3d", "com.android" +
+                ".gallery3d.app.GalleryActivity");
+        intent.setComponent(componentName);
         startActivity(intent);
     }
 
@@ -207,11 +196,13 @@ public class MainFragment extends BaseFragment {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             MainFragment mainFragment = mReference.get();
-            if (mainFragment.isRemoving() || mainFragment.getActivity() == null || mainFragment.getActivity().isFinishing())
+            if (mainFragment.isRemoving() || mainFragment.getActivity() == null || mainFragment
+                    .getActivity().isFinishing())
                 return;
             if (msg.what == WHAT) {
                 mainFragment.mHourMinDate.setTime(System.currentTimeMillis());
-                mainFragment.tvDate.setText(mainFragment.mHmformat.format(mainFragment.mHourMinDate));
+                mainFragment.tvDate.setText(mainFragment.mHmformat.format(mainFragment
+                        .mHourMinDate));
             }
         }
     }

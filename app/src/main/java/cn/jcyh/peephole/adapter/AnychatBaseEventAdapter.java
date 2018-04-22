@@ -2,9 +2,14 @@ package cn.jcyh.peephole.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.provider.Settings;
 
 import com.bairuitech.anychat.AnyChatBaseEvent;
 
+import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.http.HttpAction;
+import cn.jcyh.peephole.utils.ConstantUtil;
+import cn.jcyh.peephole.utils.SharePreUtil;
 import timber.log.Timber;
 
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_BASE_EVENT;
@@ -34,9 +39,17 @@ public class AnychatBaseEventAdapter implements AnyChatBaseEvent {
     public void OnAnyChatLoginMessage(int dwUserId, int dwErrorCode) {
         Timber.e("------OnAnyChatLoginMessage" + dwErrorCode);
         if (dwErrorCode == 0) {//登录成功
+            DoorBellControlCenter.sIsAnychatLogin = true;
             Timber.e("-----anychat登录成功！客户端dwUserId:" + dwUserId);
         } else {
+            DoorBellControlCenter.sIsAnychatLogin = false;
             Timber.e("-------anychat登录失败！错误码:" + dwErrorCode);
+            if (dwErrorCode == 205) {
+                String imei = SharePreUtil.getInstance(mContext).getString(ConstantUtil.IMEI,
+                        Settings.System.getString(mContext.getContentResolver(), Settings.System
+                                .ANDROID_ID));
+                HttpAction.getHttpAction(mContext).initDoorbell(imei, null);
+            }
         }
         Intent intent = new Intent(ACTION_ANYCHAT_LOGIN_RESULT_MSG);
         intent.putExtra("dwErrorCode", dwErrorCode);
@@ -84,10 +97,6 @@ public class AnychatBaseEventAdapter implements AnyChatBaseEvent {
         intent.setAction(ACTION_ANYCHAT_BASE_EVENT);
         intent.putExtra("type", TYPE_ANYCHAT_LINK_CLOSE);
         mContext.sendBroadcast(intent);
-//        if (dwErrorCode != 209) {
-//            final String uid = SharePreUtil.getInstance(getApplicationContext()).getString
-// (ConstansUtil.UID, "");
-//            connectAnyChat(uid);
-//        }
+
     }
 }

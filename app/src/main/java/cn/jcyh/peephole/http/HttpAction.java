@@ -60,24 +60,9 @@ public class HttpAction {
     }
 
     public void initDoorbell(String deviceId, final IDataListener<Boolean> listener) {
-//        Map<String, String> params = new HashMap<>();
-//        params.put("deviceId", deviceId);
-//        Volley.sendRequest(HttpUrlIble.INIT_DOORBELL_URL, params, HttpResult.class, new IDataListener<HttpResult>() {
-//            @Override
-//            public void onSuccess(HttpResult httpResult) {
-//                if (listener != null) {
-//                    if (httpResult.getCode() == 200)
-//                        listener.onSuccess(true);
-//                    else listener.onFailure(httpResult.getCode());
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(int errorCode) {
-//                if (listener != null)
-//                    listener.onFailure(errorCode);
-//            }
-//        });
+        Map<String, Object> params = new HashMap<>();
+        params.put("deviceId", deviceId);
+        request2(HttpUrlIble.INIT_DOORBELL_URL, params, listener);
 
     }
 
@@ -94,7 +79,8 @@ public class HttpAction {
 
                 TypeToken<List<User>> typeToken = new TypeToken<List<User>>() {
                 };
-                List<User> users = mGson.fromJson(httpResult.getData().toString(), typeToken.getType());
+                List<User> users = mGson.fromJson(httpResult.getData().toString(), typeToken
+                        .getType());
                 if (listener != null) {
                     listener.onSuccess(users);
                 }
@@ -115,7 +101,8 @@ public class HttpAction {
      * @param deviceId 猫眼id
      * @param type     设置类型 mode/monitor/sensor
      */
-    public void setDoorbellParams(String deviceId, String type, DoorbellParam value, final IDataListener<Boolean> listener) {
+    public void setDoorbellParams(String deviceId, String type, DoorbellParam value, final
+    IDataListener<Boolean> listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("deviceId", deviceId);
         params.put("type", type);
@@ -124,14 +111,16 @@ public class HttpAction {
         request2(HttpUrlIble.DOORBELL_PARAMS_SET_UTL, params, listener);
     }
 
-    public void getDoorbellParams(String deviceId, String type, final IDataListener<DoorbellParam> listener) {
+    public void getDoorbellParams(String deviceId, String type, final
+    IDataListener<DoorbellParam> listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("deviceId", deviceId);
         params.put("type", type);
         request(HttpUrlIble.DOORBELL_PARAMS_GET_UTL, params, new IDataListener<HttpResult>() {
             @Override
             public void onSuccess(HttpResult httpResult) {
-                DoorbellParam doorbellParam = mGson.fromJson(httpResult.getData().toString(), DoorbellParam.class);
+                DoorbellParam doorbellParam = mGson.fromJson(httpResult.getData().toString(),
+                        DoorbellParam.class);
                 if (listener != null) {
                     listener.onSuccess(doorbellParam);
                 }
@@ -146,11 +135,13 @@ public class HttpAction {
         });
     }
 
-    private void request(final String url, Map<String, Object> params, final IDataListener<HttpResult> listener) {
-        HttpUtil.getInstance(mContext).sendPostRequest(url, params, new HttpUtil.OnRequestListener() {
+    private void request(final String url, Map<String, Object> params, final
+    IDataListener<HttpResult> listener) {
+        HttpUtil.getInstance(mContext).sendPostRequest(url, params, new HttpUtil
+                .OnRequestListener() {
             @Override
             public void success(String result) {
-                Timber.e("-------result:" + result+"-->"+url);
+                Timber.e("-------result:" + result + "-->" + url);
                 if (listener != null) {
                     try {
                         HttpResult httpResult = mGson.fromJson(result, HttpResult.class);
@@ -175,11 +166,13 @@ public class HttpAction {
         });
     }
 
-    private void request2(final String url, Map<String, Object> params, final IDataListener<Boolean> listener) {
-        HttpUtil.getInstance(mContext).sendPostRequest(url, params, new HttpUtil.OnRequestListener() {
+    private void request2(final String url, Map<String, Object> params, final
+    IDataListener<Boolean> listener) {
+        HttpUtil.getInstance(mContext).sendPostRequest(url, params, new HttpUtil
+                .OnRequestListener() {
             @Override
             public void success(String result) {
-                Timber.e("-----------result:" + result+"-->"+url);
+                Timber.e("-----------result:" + result + "-->" + url);
                 HttpResult httpResult = mGson.fromJson(result, HttpResult.class);
                 if (listener != null) {
                     if (httpResult != null) {
@@ -200,7 +193,8 @@ public class HttpAction {
         });
     }
 
-    public void sendPostImg(final String url, String filePath, final Map<String, Object> params, final IDataListener listener) {
+    public void sendPostImg(final String url, String filePath, final Map<String, Object> params,
+                            final IDataListener listener) {
         MediaType type = MediaType.parse("image/jpeg");//"text/xml;charset=utf-8"
         File file = new File(filePath);
 //        RequestBody fileBody = RequestBody.create(type, file);

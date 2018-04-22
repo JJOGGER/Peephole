@@ -100,9 +100,7 @@ public class KeepBackLocalService extends Service implements AnyChatRecordEvent 
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_MAX);
         startForeground(startId, builder.build());
-        String imei = SharePreUtil.getInstance(this).getString(ConstantUtil.IMEI,
-                getAndroidIMEI());
-        connectAnyChat(imei);
+        connectAnyChat();
 //        DoorBellControlCenter.getInstance(this).login2DoorBell(new DoorBellControlCenter
 // .OnLoginDoorBellListener() {
 //            @Override
@@ -133,12 +131,14 @@ public class KeepBackLocalService extends Service implements AnyChatRecordEvent 
     /**
      * 连接anychat
      */
-    private void connectAnyChat(String uid) {
+    private void connectAnyChat() {
+        String imei = SharePreUtil.getInstance(this).getString(ConstantUtil.IMEI,
+                getAndroidIMEI());
         mAnyChat.Logout();
         mAnyChat.Release();
         mAnyChat = null;
         mAnyChat = AnyChatCoreSDK.getInstance(getApplicationContext());
-        mAnyChat.SetBaseEvent(new AnychatBaseEventAdapter(this));//anyChat基本事件接口
+        mAnyChat.SetBaseEvent(new MyBaseEventAdapter(this));//anyChat基本事件接口
         mAnyChat.SetUserInfoEvent(new AnyChatUserInfoEventAdapter(this));//更新设备信息
         mAnyChat.SetVideoCallEvent(new AnyChatVideoCallEventAdapter(this));//视频呼叫事件接口
         mAnyChat.SetTransDataEvent(new AnyChatTransDataEventAdapter(this));//数据传输通知接口
@@ -148,7 +148,7 @@ public class KeepBackLocalService extends Service implements AnyChatRecordEvent 
         configHelper.applyVideoConfig();//根据配置文件设置视频参数
         ConfigEntity configEntity = configHelper.LoadConfig();
         mAnyChat.Connect(configEntity.ip, configEntity.port);//连接anychat
-        mAnyChat.Login(uid, uid);
+        mAnyChat.Login(imei, imei);
     }
 
     private class MyBinder extends IMyAidlInterface.Stub {
@@ -176,7 +176,20 @@ public class KeepBackLocalService extends Service implements AnyChatRecordEvent 
             bindService(intent, mConnection, Context.BIND_IMPORTANT);
         }
     }
+    private class MyBaseEventAdapter extends AnychatBaseEventAdapter{
 
+        public MyBaseEventAdapter(Context context) {
+            super(context);
+        }
+
+        @Override
+        public void OnAnyChatLinkCloseMessage(int dwErrorCode) {
+            super.OnAnyChatLinkCloseMessage(dwErrorCode);
+            connectAnyChat();
+            //        if (dwErrorCode != 209) {
+//        }
+        }
+    }
     @Override
     public void OnAnyChatRecordEvent(int dwUserId, int dwErrorCode, String lpFileName, int
             dwElapse, int dwFlags, int dwParam, String lpUserStr) {

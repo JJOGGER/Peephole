@@ -335,6 +335,7 @@ public class DoorBellControlCenter {
         sendCommand(userId, commandJson);
     }
 
+//    public void sendChangeCameraResponse(int userId)
     /**
      * 图片请求响应
      */
@@ -349,7 +350,8 @@ public class DoorBellControlCenter {
             List<String> names = new ArrayList<>();
             final List<File> files = new ArrayList<>();
             for (int i = 0; i < baseFile.list().length; i++) {
-                File file = new File(baseFile.getAbsolutePath() + File.separator + baseFile.list()[i]);
+                File file = new File(baseFile.getAbsolutePath() + File.separator + baseFile.list
+                        ()[i]);
                 if (CommandJson.CommandType.DOORBELL_IMG_COMMAND.equals(command)) {
                     if (file.isDirectory() || !file.getName().endsWith(".jpg")) {
                         continue;
@@ -398,11 +400,13 @@ public class DoorBellControlCenter {
         FileUtil fileUtil = FileUtil.getInstance();
         if (CommandJson.CommandType.DOORBELL_IMG_COMMAND.equals(command)) {
             for (int i = 0; i < names.size(); i++) {
-                File file = new File(fileUtil.getDoorbellMediaPath() + File.separator + names.get(i));
+                File file = new File(fileUtil.getDoorbellMediaPath() + File.separator + names.get
+                        (i));
                 Timber.e("----------->filePath:" + file.getAbsolutePath());
                 if (file.exists()) {
                     Timber.e("--------已发送文件");
-                    mAnyChat.TransFile(userId, file.getAbsolutePath(), 0, CommandJson.CommandType.DOORBELL_MEDIA_PIC_PARAM, 0, new AnyChatOutParam());
+                    mAnyChat.TransFile(userId, file.getAbsolutePath(), 0, CommandJson.CommandType
+                            .DOORBELL_MEDIA_PIC_PARAM, 0, new AnyChatOutParam());
                 }
             }
         } else {
@@ -413,18 +417,23 @@ public class DoorBellControlCenter {
                     File thumbnailPath = new File(fileUtil.getDoorbellMediaThumbnailPath());
                     if (!thumbnailPath.exists())
                         thumbnailPath.mkdirs();
-                    String filePath = thumbnailPath + File.separator + names.get(i).replace(".mp4", ".jpg");
+                    String filePath = thumbnailPath + File.separator + names.get(i).replace("" +
+                            ".mp4", ".jpg");
                     File file = new File(filePath);
-                    Timber.e("----------->filePath:" + file.getAbsolutePath()+"--->userid:"+userId);
+                    Timber.e("----------->filePath:" + file.getAbsolutePath() + "--->userid:" +
+                            userId);
                     if (file.exists())
-                        mAnyChat.TransFile(userId, filePath, 0, CommandJson.CommandType.DOORBELL_MEDIA_THUMBNAIL_PARAM, 0, new AnyChatOutParam());
+                        mAnyChat.TransFile(userId, filePath, 0, CommandJson.CommandType
+                                .DOORBELL_MEDIA_THUMBNAIL_PARAM, 0, new AnyChatOutParam());
                     else {
-                        media.setDataSource(fileUtil.getDoorbellMediaPath() + File.separator + names.get(i));
+                        media.setDataSource(fileUtil.getDoorbellMediaPath() + File.separator +
+                                names.get(i));
                         Bitmap bitmap = media.getFrameAtTime();
                         fileUtil.saveBitmap2File(bitmap, filePath);
                         file = new File(filePath);
                         if (file.exists())
-                            mAnyChat.TransFile(userId, filePath, 0, CommandJson.CommandType.DOORBELL_MEDIA_THUMBNAIL_PARAM, 0, new AnyChatOutParam());
+                            mAnyChat.TransFile(userId, filePath, 0, CommandJson.CommandType
+                                    .DOORBELL_MEDIA_THUMBNAIL_PARAM, 0, new AnyChatOutParam());
                     }
                 }
             }
@@ -437,13 +446,15 @@ public class DoorBellControlCenter {
      * @param fileName .mp4
      */
     public void sendLastVideo(int userId, String fileName) {
-        File file = new File(FileUtil.getInstance().getDoorbellMediaPath() + File.separator + fileName);
+        File file = new File(FileUtil.getInstance().getDoorbellMediaPath() + File.separator +
+                fileName);
         CommandJson commandJson = new CommandJson();
         commandJson.setCommandType(CommandJson.CommandType.DOORBELL_LASTED_VIDEO_RESPONSE);
         Timber.e("---------->file:" + file.getAbsolutePath() + "-->" + file.exists());
         if (file.exists()) {
             AnyChatOutParam anyChatOutParam = new AnyChatOutParam();
-            mAnyChat.TransFile(userId, file.getAbsolutePath(), 0, CommandJson.CommandType.DOORBELL_MEDIA_VIDEO_PARAM, 0, anyChatOutParam);
+            mAnyChat.TransFile(userId, file.getAbsolutePath(), 0, CommandJson.CommandType
+                    .DOORBELL_MEDIA_VIDEO_PARAM, 0, anyChatOutParam);
             commandJson.setFlag2(1);//表示成功
             AnyChatTask anyChatTask = new AnyChatTask();
             anyChatTask.setName(fileName);
@@ -523,19 +534,21 @@ public class DoorBellControlCenter {
     /**
      * 发送视频呼叫消息
      *
-     * @param users 要通知的用户
-     * @param type  通知类型0：门铃 1报警
+     * @param users    要通知的用户
+     * @param type     通知类型0：门铃 1报警
+     * @param filePath
      */
-    public void sendVideoCall(List<User> users, int type) {
+    public void sendVideoCall(List<User> users, int type, String filePath) {
         if (users == null || users.size() == 0) return;
         CommandJson commandJson = new CommandJson();
         commandJson.setCommandType(CommandJson.CommandType.DOORBELL_NOTIFICATION);
-
         commandJson.setCommand(type == 1 ? CommandJson.CommandType.NOTIFICATION_DOORBELL_RING :
                 CommandJson.CommandType.NOTIFICATION_DOORBELL_ALARM);
+        commandJson.setFlag(filePath);
         String json = mGson.toJson(commandJson);
         for (int i = 0; i < users.size(); i++) {
-            mAnyChat.TransBuffer(Integer.valueOf(users.get(i).getAid()), json.getBytes(), json.getBytes().length);
+            mAnyChat.TransBuffer(Integer.valueOf(users.get(i).getAid()), json.getBytes(), json
+                    .getBytes().length);
             Timber.e("-----------通知报警的用户：" + users.get(i).getAccount());
         }
 

@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
 
+import java.util.Locale;
+
 import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseFragment;
@@ -53,13 +55,18 @@ public class MenuFragment extends BaseFragment {
                 break;
             case R.id.tv_browser:
                 intent.setAction("android.intent.action.VIEW");
-                Uri content_url = Uri.parse("http://www.baidu.com");
+                Uri content_url;
+                if (isZh()) {
+                    content_url= Uri.parse("http://www.baidu.com");
+                }else {
+                    content_url= Uri.parse("https://www.google.com");
+                }
                 intent.setData(content_url);
                 startActivity(intent);
                 break;
             case R.id.tv_file_manager:
-                intent.setComponent(new ComponentName("com.cyanogenmod.filemanager",
-                        "com.cyanogenmod.filemanager.activities.NavigationActivity"));
+                intent.setComponent(new ComponentName("com.android.filemanager",
+                        "com.android.filemanager.activities.NavigationActivity"));
                 startActivity(intent);
                 break;
             case R.id.tv_video:
@@ -70,5 +77,9 @@ public class MenuFragment extends BaseFragment {
                 break;
         }
     }
-
+    private boolean isZh() {
+        Locale locale = getResources().getConfiguration().locale;
+        String language = locale.getLanguage();
+        return language.endsWith("zh");
+    }
 }

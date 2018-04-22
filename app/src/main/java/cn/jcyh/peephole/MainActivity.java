@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v4.view.ViewPager;
+import android.util.DisplayMetrics;
 
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +14,6 @@ import java.util.Map;
 import butterknife.BindView;
 import cn.jcyh.peephole.adapter.MainPageAdapter;
 import cn.jcyh.peephole.base.BaseActivity;
-import cn.jcyh.peephole.bean.CommandJson;
 import cn.jcyh.peephole.bean.User;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
@@ -22,7 +22,6 @@ import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.service.KeepBackRemoteService;
 import cn.jcyh.peephole.service.VideoService;
 import cn.jcyh.peephole.ui.activity.PictureActivity;
-import cn.jcyh.peephole.utils.ToastUtil;
 import timber.log.Timber;
 
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_BASE_EVENT;
@@ -32,8 +31,6 @@ import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_VIDEO_CALL_EVEN
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_DOORBELL_SYSTEM_EVENT;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_ENTER_ROOM;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_FRIEND_STATUS;
-import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_TRANS_BUFFER;
-import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_TRANS_FILE;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_USER_INFO_UPDATE;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_FINISH;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_REPLY;
@@ -72,6 +69,11 @@ public class MainActivity extends BaseActivity {
         intentFilter.addAction(ACTION_DOORBELL_SYSTEM_EVENT);
         intentFilter.addAction(ACTION_ANYCHAT_TRANS_DATA_EVENT);
         registerReceiver(mReceiver, intentFilter);
+        DisplayMetrics displayMetrics=new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int heightPixels = displayMetrics.heightPixels;
+        int widthPixels=displayMetrics.widthPixels;
+        Timber.e("---->h:"+heightPixels+"---w:"+widthPixels);
     }
 
     @Override
@@ -114,7 +116,7 @@ public class MainActivity extends BaseActivity {
                     dealBaseEvent(intent);
                     break;
                 case ACTION_ANYCHAT_TRANS_DATA_EVENT:
-                    dealTansDataEvent(intent);
+//                    dealTansDataEvent(intent);
                     break;
             }
         }
@@ -123,32 +125,32 @@ public class MainActivity extends BaseActivity {
     /**
      * 处理文件传输事件
      */
-    private void dealTansDataEvent(Intent intent) {
-        String type = intent.getStringExtra("type");
-        if (TYPE_ANYCHAT_TRANS_BUFFER.equals(type)) {
-            CommandJson command = intent.getParcelableExtra("command");
-            int dwUserid = intent.getIntExtra("dwUserid", -1);
-            switch (command.getCommandType()) {
-                case CommandJson.CommandType.UNLOCK_DOORBELL_REQUEST:
-                    ToastUtil.showToast(getApplicationContext(), "执行解锁操作");
-                    command.setCommandType(CommandJson.CommandType.UNLOCK_DOORBELL_RESPONSE);
-                    command.setCommand("success");
-                    mControlCenter.sendUnlockResponse(dwUserid, command);
-                    break;
-                case CommandJson.CommandType.DOORBELL_CALL_IMG_REQUEST:
-                    //视频呼叫图片请求
-                    Timber.e("----------视频呼叫图片请求" + dwUserid + "---filepath:" + mFilePath);
-                    mControlCenter.sendVideoCallImg(dwUserid, mFilePath);
-                    break;
-                case CommandJson.CommandType.UNBIND_DOORBELL_COMPLETED:
-                    // TODO: 2018/2/26 有用户解绑成功
-                    Timber.e("---------收到用户解绑");
-                    break;
-            }
-        } else if (TYPE_ANYCHAT_TRANS_FILE.equals(type)) {
-
-        }
-    }
+//    private void dealTansDataEvent(Intent intent) {
+//        String type = intent.getStringExtra("type");
+//        if (TYPE_ANYCHAT_TRANS_BUFFER.equals(type)) {
+//            CommandJson command = intent.getParcelableExtra("command");
+//            int dwUserid = intent.getIntExtra("dwUserid", -1);
+//            switch (command.getCommandType()) {
+//                case CommandJson.CommandType.UNLOCK_DOORBELL_REQUEST:
+//                    ToastUtil.showToast(getApplicationContext(), "执行解锁操作");
+//                    command.setCommandType(CommandJson.CommandType.UNLOCK_DOORBELL_RESPONSE);
+//                    command.setCommand("success");
+//                    mControlCenter.sendUnlockResponse(dwUserid, command);
+//                    break;
+//                case CommandJson.CommandType.DOORBELL_CALL_IMG_REQUEST:
+//                    //视频呼叫图片请求
+//                    Timber.e("----------视频呼叫图片请求" + dwUserid + "---filepath:" + mFilePath);
+//                    mControlCenter.sendVideoCallImg(dwUserid, mFilePath);
+//                    break;
+//                case CommandJson.CommandType.UNBIND_DOORBELL_COMPLETED:
+//                    // TODO: 2018/2/26 有用户解绑成功
+//                    Timber.e("---------收到用户解绑");
+//                    break;
+//            }
+//        } else if (TYPE_ANYCHAT_TRANS_FILE.equals(type)) {
+//
+//        }
+//    }
 
     /**
      * 处理基本事件
@@ -232,7 +234,7 @@ public class MainActivity extends BaseActivity {
                     public void onSuccess(List<User> users) {
                         if (users != null && users.size() != 0) {
                             //通知用户
-                            mControlCenter.sendVideoCall(users, requestCode);
+                            mControlCenter.sendVideoCall(users, requestCode,mFilePath);
                         }
                     }
 
