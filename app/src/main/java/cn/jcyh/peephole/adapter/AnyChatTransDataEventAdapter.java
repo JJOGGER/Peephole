@@ -86,9 +86,7 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
         switch (commandJson.getCommandType()) {
             case CommandJson.CommandType.UNLOCK_DOORBELL_REQUEST:
                 ToastUtil.showToast(mContext, "执行解锁操作");
-                commandJson.setCommandType(CommandJson.CommandType.UNLOCK_DOORBELL_RESPONSE);
-                commandJson.setCommand("success");
-                mControlCenter.sendUnlockResponse(dwUserid, commandJson);
+                mControlCenter.sendUnlockResponse(dwUserid);
                 break;
             case CommandJson.CommandType.DOORBELL_CALL_IMG_REQUEST:
                 //视频呼叫图片请求
@@ -100,7 +98,8 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
                 Timber.e("---------收到用户解绑");
                 break;
             case CommandJson.CommandType.CHANGE_CAMERA_REQUEST:
-//                mControlCenter.sendCh
+//                由videoservice处理
+                mControlCenter.sendChangeCameraResponse(dwUserid);
                 break;
         }
     }

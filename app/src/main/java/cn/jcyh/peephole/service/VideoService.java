@@ -26,6 +26,7 @@ import com.bairuitech.anychat.AnyChatDefine;
 import java.lang.ref.WeakReference;
 
 import cn.jcyh.peephole.R;
+import cn.jcyh.peephole.bean.CommandJson;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.control.DoorbellVideoHelper;
 import cn.jcyh.peephole.utils.ConstantUtil;
@@ -204,20 +205,6 @@ public class VideoService extends Service {
         }).start();
     }
 
-//    private void initTimerShowTime() {
-//        if (mTimerShowVideoTime == null)
-//            mTimerShowVideoTime = new Timer();
-//        mTimerTask = new TimerTask() {
-//
-//            @Override
-//            public void run() {
-//                mHandler.sendEmptyMessage(MSG_TIMEUPDATE);
-//            }
-//        };
-//        mTimerShowVideoTime.schedule(mTimerTask, 100, 1000);
-//    }
-
-
     private class MyReceiver extends BroadcastReceiver {
 
         @Override
@@ -247,22 +234,10 @@ public class VideoService extends Service {
                     break;
                 case ConstantUtil.ACTION_ANYCHAT_TRANS_DATA_EVENT:
                     if (ConstantUtil.TYPE_ANYCHAT_TRANS_BUFFER.equals(type)) {
-                        String result = intent.getStringExtra("result");
-                        if ("success".equals(result)) {
-//                            ToastUtil.showToast(getApplicationContext(), R.string.open_door_succ);
-//                            ibtn_open_door.setImageResource(R.drawable.icon_lock_p);
-//                            tvVideoLock.setSelected(true);
-//                            lockTime = 0;
-//                            if (mLockTimer != null) {
-//                                mLockTimer.cancel();
-//                                mLockTimer.purge();
-//                            }
-////                            if (mLockTask != null) {
-////                                mLockTask.cancel();
-////                            }
-//                            mLockTimer = new Timer();
-//                            mLockTask = new LockTask();
-//                            mLockTimer.schedule(mLockTask, 0, 1000);
+                        CommandJson command = intent.getParcelableExtra("command");
+                        if (CommandJson.CommandType.CHANGE_CAMERA_REQUEST.equals(command.getCommandType())) {
+                            //切换摄像头
+                            mDoorbellVideoHelper.changeCamera();
                         }
                     }
                     break;

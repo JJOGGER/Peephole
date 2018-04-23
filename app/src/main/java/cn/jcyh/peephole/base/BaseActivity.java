@@ -107,6 +107,17 @@ public abstract class BaseActivity extends AppCompatActivity {
         startActivityForResult(intent, result);
     }
 
+    public void startNewActivityForResult(Class<? extends AppCompatActivity> cls, int result, String name, String value) {
+        Intent intent = new Intent(this, cls);
+        intent.putExtra(name, value);
+        startActivityForResult(intent, result);
+    }
+
+    public void startNewActivityForResult(Class<? extends AppCompatActivity> cls, int result, String name, int value) {
+        Intent intent = new Intent(this, cls);
+        intent.putExtra(name, value);
+        startActivityForResult(intent, result);
+    }
 
     /**
      * 弹出权限提示

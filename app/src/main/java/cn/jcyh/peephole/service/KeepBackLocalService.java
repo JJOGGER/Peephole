@@ -19,7 +19,6 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 
 import com.bairuitech.anychat.AnyChatCoreSDK;
-import com.bairuitech.anychat.AnyChatRecordEvent;
 import com.bairuitech.anychat.config.ConfigEntity;
 import com.bairuitech.anychat.config.ConfigHelper;
 import com.google.gson.Gson;
@@ -33,20 +32,18 @@ import cn.jcyh.peephole.adapter.AnyChatTransDataEventAdapter;
 import cn.jcyh.peephole.adapter.AnyChatUserInfoEventAdapter;
 import cn.jcyh.peephole.adapter.AnyChatVideoCallEventAdapter;
 import cn.jcyh.peephole.adapter.AnychatBaseEventAdapter;
+import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.utils.ConstantUtil;
 import cn.jcyh.peephole.utils.SharePreUtil;
 import timber.log.Timber;
-
-import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_RECORD_EVENT;
-import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_RECORD;
 
 
 /**
  * Created by jogger on 2017/12/4.
  */
 
-public class KeepBackLocalService extends Service implements AnyChatRecordEvent {
+public class KeepBackLocalService extends Service {
     private MyBinder mBinder;
     private MyServiceConnection mConnection;
     private AnyChatCoreSDK mAnyChat;
@@ -69,6 +66,7 @@ public class KeepBackLocalService extends Service implements AnyChatRecordEvent 
         super.onCreate();
         mGson = new Gson();
         mControlCenter = DoorBellControlCenter.getInstance(this);
+        DoorbellConfig doorbellConfig = mControlCenter.getDoorbellConfig();
         if (mBinder == null) mBinder = new MyBinder();
         mAnyChat = AnyChatCoreSDK.getInstance(getApplicationContext());
         mMyHandler = new MyHandler(this);
@@ -101,33 +99,13 @@ public class KeepBackLocalService extends Service implements AnyChatRecordEvent 
                 .setPriority(NotificationCompat.PRIORITY_MAX);
         startForeground(startId, builder.build());
         connectAnyChat();
-//        DoorBellControlCenter.getInstance(this).login2DoorBell(new DoorBellControlCenter
-// .OnLoginDoorBellListener() {
-//            @Override
-//            public void onSuccess(String uid) {
-//
-//                if (mFirstLogin) {
-//                    Intent intent = new Intent(ACTION_DOORBELL_LOGIN_RESULT);
-//                    intent.putExtra("errorCode", "0");
-//                    intent.putExtra("uid", uid);
-//                    sendBroadcast(intent);
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(String errorCode) {
-//                if (mFirstLogin) {//为true时还会走登录网关摇头机等操作
-//                    Intent intent = new Intent(ACTION_DOORBELL_LOGIN_RESULT);
-//                    intent.putExtra("errorCode", errorCode);
-//                    sendBroadcast(intent);
-//                }
-//            }
-//        });
         return START_STICKY;
     }
+
     private String getAndroidIMEI() {
         return android.provider.Settings.System.getString(getContentResolver(), android.provider.Settings.System.ANDROID_ID);
     }
+
     /**
      * 连接anychat
      */
@@ -142,7 +120,6 @@ public class KeepBackLocalService extends Service implements AnyChatRecordEvent 
         mAnyChat.SetUserInfoEvent(new AnyChatUserInfoEventAdapter(this));//更新设备信息
         mAnyChat.SetVideoCallEvent(new AnyChatVideoCallEventAdapter(this));//视频呼叫事件接口
         mAnyChat.SetTransDataEvent(new AnyChatTransDataEventAdapter(this));//数据传输通知接口
-        mAnyChat.SetRecordSnapShotEvent(KeepBackLocalService.this);//截图录制接口
         mAnyChat.InitSDK(Build.VERSION.SDK_INT, 0);
         ConfigHelper configHelper = ConfigHelper.getConfigHelper(KeepBackLocalService.this);
         configHelper.applyVideoConfig();//根据配置文件设置视频参数
@@ -176,7 +153,8 @@ public class KeepBackLocalService extends Service implements AnyChatRecordEvent 
             bindService(intent, mConnection, Context.BIND_IMPORTANT);
         }
     }
-    private class MyBaseEventAdapter extends AnychatBaseEventAdapter{
+
+    private class MyBaseEventAdapter extends AnychatBaseEventAdapter {
 
         public MyBaseEventAdapter(Context context) {
             super(context);
@@ -189,46 +167,6 @@ public class KeepBackLocalService extends Service implements AnyChatRecordEvent 
             //        if (dwErrorCode != 209) {
 //        }
         }
-    }
-    @Override
-    public void OnAnyChatRecordEvent(int dwUserId, int dwErrorCode, String lpFileName, int
-            dwElapse, int dwFlags, int dwParam, String lpUserStr) {
-        Timber.e("------OnAnyChatRecordEvent" + dwErrorCode);
-        Intent intent = new Intent();
-        intent.putExtra("dwErrorCode", dwErrorCode);
-        intent.putExtra("lpFileName", lpFileName);
-        intent.putExtra("dwUserId", dwUserId);
-        intent.putExtra("dwElapse", dwElapse);
-        intent.putExtra("dwFlags", dwFlags);
-        intent.putExtra("dwParam", dwParam);
-        intent.putExtra("lpUserStr", lpUserStr);
-        intent.setAction(ACTION_ANYCHAT_RECORD_EVENT);
-        intent.putExtra("type", TYPE_ANYCHAT_RECORD);
-        sendBroadcast(intent);
-    }
-
-    @Override
-    public void OnAnyChatSnapShotEvent(int dwUserId, int dwErrorCode, String lpFileName, int
-            dwFlags, int dwParam, String lpUserStr) {
-        Timber.e("------OnAnyChatSnapShotEvent" + dwErrorCode);
-//        Intent intent = new Intent();
-//        String fileName = "IMG_" + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date(System
-//                .currentTimeMillis())) + ".jpg";
-//        String targetPath = FileUtils.getInstance().getDoorBellRecordFileSrc(fileName);
-//        if (targetPath != null) {
-//            boolean b = FileUtils.getInstance().moveFile(lpFileName, targetPath);
-//            if (b) {
-//                intent.putExtra("dwErrorCode", dwErrorCode);
-//                intent.putExtra("targetPath", targetPath);
-//                intent.putExtra("dwUserId", dwUserId);
-//                intent.putExtra("dwFlags", dwFlags);
-//                intent.putExtra("dwParam", dwParam);
-//                intent.putExtra("lpUserStr", lpUserStr);
-//                intent.setAction(ACTION_ANYCHAT_RECORD_EVENT);
-//                intent.putExtra("type", TYPE_ANYCHAT_SNAP_SHOT);
-//                sendBroadcast(intent);
-//            }
-//        }
     }
 
 

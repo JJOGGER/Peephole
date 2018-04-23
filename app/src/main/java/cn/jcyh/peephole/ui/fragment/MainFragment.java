@@ -7,11 +7,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.AbsoluteSizeSpan;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -21,16 +23,14 @@ import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseFragment;
 import cn.jcyh.peephole.utils.LunarCalendar;
+import timber.log.Timber;
 
-/**
- * Created by jogger on 2018/1/17.
- */
+import static cn.jcyh.peephole.R.id.tv_time;
+
 
 public class MainFragment extends BaseFragment {
-    @BindView(R.id.tv_time)
+    @BindView(tv_time)
     TextView tvTime;
-    @BindView(R.id.tv_am_pm)
-    TextView tvAmPm;
     @BindView(R.id.tv_date)
     TextView tvDate;
     @BindView(R.id.tv_date2)
@@ -46,6 +46,7 @@ public class MainFragment extends BaseFragment {
     private Date mHourMinDate;
     private Date mSimpleDate;
     private TimeThread mTimeThread;
+    private String mAmPm;
 
     public static MainFragment getInstance(Bundle bundle) {
         if (sInstance == null)
@@ -64,10 +65,10 @@ public class MainFragment extends BaseFragment {
     public void init() {
         mHourMinDate = new Date();
         mSimpleDate = new Date();
-        mHmformat = new SimpleDateFormat("h:mm");
+        mHmformat = new SimpleDateFormat("hh:mm");
         mSimpleDateFormat = new SimpleDateFormat("yyyy" + getString(R.string.year)
                 + "MM" + getString(R.string.month) + "dd" + getString(R.string.day));
-        mHandler = new MyHandler(this);
+        mHandler = new MyHandler();
         mTimeThread = new TimeThread();
         mTimeThread.start();
     }
@@ -82,11 +83,9 @@ public class MainFragment extends BaseFragment {
         calendar.setTimeInMillis(time);
         int apm = calendar.get(Calendar.AM_PM);
         // apm=0 表示上午，apm=1表示下午。
-        tvAmPm.setText(apm == 0 ? R.string.am : R.string.pm);
-        tvDate.setText(mDate);
+        mAmPm = apm == 0 ? getString(R.string.am) : getString(R.string.pm);
         //星期
         setweek();
-        // 农历月数组
         // 农历月数组
         TypedArray a = getResources().obtainTypedArray(R.array.setting_month);
         int len0 = a.length();
@@ -180,29 +179,38 @@ public class MainFragment extends BaseFragment {
                 mDate += " " + getString(R.string.saturday);
                 break;
         }
+        Timber.e("---------date:" + mDate);
         tvDate.setText(mDate);
     }
 
 
-    private static class MyHandler extends Handler {
-        static final int WHAT = 0x001;
-        private WeakReference<MainFragment> mReference;
-
-        MyHandler(MainFragment fragment) {
-            mReference = new WeakReference<>(fragment);
-        }
+    private class MyHandler extends Handler {
+        private static final int WHAT = 0x001;
+        private SpannableStringBuilder mSpannableString;
+        private AbsoluteSizeSpan mSizeSpanTime;
+        private AbsoluteSizeSpan mSizeSpanAmPm;
 
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            MainFragment mainFragment = mReference.get();
-            if (mainFragment.isRemoving() || mainFragment.getActivity() == null || mainFragment
-                    .getActivity().isFinishing())
+            if (mActivity == null || mActivity.isFinishing() || mActivity.getFragmentManager() == null)
                 return;
             if (msg.what == WHAT) {
-                mainFragment.mHourMinDate.setTime(System.currentTimeMillis());
-                mainFragment.tvDate.setText(mainFragment.mHmformat.format(mainFragment
-                        .mHourMinDate));
+                mHourMinDate.setTime(System.currentTimeMillis());
+                String time = mHmformat.format(mHourMinDate);
+                if (mSpannableString == null) {
+                    mSpannableString = new SpannableStringBuilder(time + " " + mAmPm);
+                    Timber.e("----->" + (time + " " + mAmPm).length() + "-->" + time.length() + "-->" + mAmPm.length());
+                    mSizeSpanTime = new AbsoluteSizeSpan(40);
+                    mSizeSpanAmPm = new AbsoluteSizeSpan(20);
+                }
+                mSpannableString.clear();
+                mSpannableString.append(time).append(" ").append(mAmPm);
+                mSpannableString.setSpan(mSizeSpanTime, 0, time.length(),
+                        Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+                mSpannableString.setSpan(mSizeSpanAmPm, time.length(), time.length() + " ".length() + mAmPm.length(),
+                        Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+                tvTime.setText(mSpannableString, TextView.BufferType.SPANNABLE);
             }
         }
     }
@@ -215,9 +223,12 @@ public class MainFragment extends BaseFragment {
             while (true) {
                 try {
                     Thread.sleep(500);
-                    Message msg = new Message();
-                    msg.what = MyHandler.WHAT;
-                    mHandler.sendMessage(msg);
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mHandler.sendEmptyMessage(MyHandler.WHAT);
+                        }
+                    });
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

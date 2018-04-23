@@ -19,7 +19,10 @@ import java.util.List;
 import cn.jcyh.peephole.bean.AnyChatTask;
 import cn.jcyh.peephole.bean.CommandJson;
 import cn.jcyh.peephole.bean.User;
+import cn.jcyh.peephole.config.DoorbellConfig;
+import cn.jcyh.peephole.utils.ConstantUtil;
 import cn.jcyh.peephole.utils.FileUtil;
+import cn.jcyh.peephole.utils.SharePreUtil;
 import timber.log.Timber;
 
 /**
@@ -33,7 +36,7 @@ public class DoorBellControlCenter {
     public static final String DOORBELL_PARAMS_TYPE_MODE = "mode";
     public static final String DOORBELL_PARAMS_TYPE_MONITOR = "monitor";
     public static final String DOORBELL_PARAMS_TYPE_SENSOR = "sensor";
-    private static Context mContext;
+    private static Context sContext;
     public static boolean sIsAnychatLogin = false;//标记anychat是否登录
     public AnyChatCoreSDK mAnyChat;//单例的anychat，同一事件的话可以使用这个
     private MediaPlayer mMediaPlaer;
@@ -51,7 +54,7 @@ public class DoorBellControlCenter {
     }
 
     public static DoorBellControlCenter getInstance(Context context) {
-        mContext = context.getApplicationContext();
+        sContext = context.getApplicationContext();
         if (mDoorBellControlCenter == null) {
             synchronized (DoorBellControlCenter.class) {
                 if (mDoorBellControlCenter == null) {
@@ -79,65 +82,6 @@ public class DoorBellControlCenter {
 //        }
 //
 //    }
-//
-//    /**
-//     * 初始化在线好友数据
-//     *
-//     * @param isInit
-//     */
-//    public void initFriendDatas(int isInit) {
-//        if (mCurrentDoorBellUser == null) {
-//            return;
-//        }
-//        List<DoorBellBean> user_devices = mCurrentDoorBellUser.getUserDevices();
-//        if (user_devices == null || user_devices.size() == 0) {
-//            return;
-//        }
-//        mFriendItems.clear();
-//        mFriendItems.addAll(user_devices);
-//    }
-//
-//    public void initFriendDatas() {
-//        if (mFriendItems == null || mFriendItems.size() == 0) {
-//            return;
-//        }
-//        for (DoorBellBean doorbell :
-//                mFriendItems) {
-//            doorbell.setIsOnLine(0);
-//        }
-//    }
-//
-//    /***
-//     * 获取好友数据
-//     */
-//    public void getFriendDatas() {
-//        if (mCurrentDoorBellUser != null) {
-//            mFriendItems.clear();
-//            List<DoorBellBean> list = mCurrentDoorBellUser.getUserDevices();
-//            if (list == null || list.size() == 0) {
-//                return;
-//            }
-//            for (int i = 0; i < list.size(); i++) {
-//                //获取好友在线状态
-//                int device_anychat_id = list.get(i).getDevice_anychat_id();
-//                int onLineStatus = mAnyChat.GetFriendStatus(device_anychat_id);
-//                DoorBellBean doorBellBean = list.get(i);
-//                doorBellBean.setIsOnLine(onLineStatus);//设置在线状态
-//                mFriendItems.add(doorBellBean);
-//            }
-//
-//            //按用户在线和不在线排序
-//            int len = mFriendItems.size();
-//            for (int k = len - 1; k >= 0; k--) {
-//                if (mFriendItems.get(k).getIsOnLine() == 0) {
-//                    //把它调整到最后
-//                    mFriendItems.add(list.get(k));
-//                    mFriendItems.remove(k);
-//                }
-//            }
-//        }
-//    }
-//
 //    /***
 //     * 通过anychatid拿到猫眼
 //     */
@@ -232,24 +176,24 @@ public class DoorBellControlCenter {
 //        String strMessage = null;
 //        switch (dwErrorCode) {
 //            case ERRORCODE_SESSION_BUSY:
-//                strMessage = mContext.getString(R.string.str_returncode_bussiness);
+//                strMessage = sContext.getString(R.string.str_returncode_bussiness);
 //                break;
 //            case ERRORCODE_SESSION_REFUSE:
-//                strMessage = mContext
+//                strMessage = sContext
 //                        .getString(R.string.str_returncode_requestrefuse);
 //                break;
 //            case ERRORCODE_SESSION_OFFLINE:
-//                strMessage = mContext.getString(R.string.str_returncode_offline);
+//                strMessage = sContext.getString(R.string.str_returncode_offline);
 //                break;
 //            case ERRORCODE_SESSION_QUIT:
-//                strMessage = mContext
+//                strMessage = sContext
 //                        .getString(R.string.str_returncode_requestcancel);
 //                break;
 //            case ERRORCODE_SESSION_TIMEOUT:
-//                strMessage = mContext.getString(R.string.str_returncode_timeout);
+//                strMessage = sContext.getString(R.string.str_returncode_timeout);
 //                break;
 //            case ERRORCODE_SESSION_DISCONNECT:
-//                strMessage = mContext.getString(R.string.str_returncode_disconnect);
+//                strMessage = sContext.getString(R.string.str_returncode_disconnect);
 //                break;
 //            case ERRORCODE_SUCCESS:
 //                break;
@@ -257,7 +201,7 @@ public class DoorBellControlCenter {
 //                break;
 //        }
 //        if (strMessage != null) {
-//            ToastUtil.showToast(mContext, strMessage);
+//            ToastUtil.showToast(sContext, strMessage);
 //            stopSessionMis();
 //        }
 //
@@ -319,8 +263,18 @@ public class DoorBellControlCenter {
 
     /**
      * 绑定猫眼响应指令
+     *
+     * @param userId 用戶id
+     * @param imei   猫眼imei
+     * @param flag   是否接收 1接受 0拒绝 2 已绑定 3网络错误
+     * @param flag2  1双摄像头 其他：单摄像头
      */
-    public void sendBindResponse(int userId, CommandJson commandJson) {
+    public void sendBindResponse(int userId, String imei, String flag, int flag2) {
+        CommandJson commandJson = new CommandJson();
+        commandJson.setCommand(imei);
+        commandJson.setFlag(flag);
+        commandJson.setFlag2(flag2);
+        commandJson.setCommandType(CommandJson.CommandType.BIND_DOORBELL_RESPONSE);
         sendCommand(userId, commandJson);
     }
 
@@ -331,11 +285,22 @@ public class DoorBellControlCenter {
     /**
      * 解锁响应指令
      */
-    public void sendUnlockResponse(int userId, CommandJson commandJson) {
+    public void sendUnlockResponse(int userId) {
+        CommandJson commandJson = new CommandJson();
+        commandJson.setCommand("success");
+        commandJson.setCommandType(CommandJson.CommandType.UNLOCK_DOORBELL_RESPONSE);
         sendCommand(userId, commandJson);
     }
 
-//    public void sendChangeCameraResponse(int userId)
+    /**
+     * 切换摄像头响应
+     */
+    public void sendChangeCameraResponse(int userId) {
+        CommandJson commandJson = new CommandJson();
+        commandJson.setCommandType(CommandJson.CommandType.CHANGE_CAMERA_RESPONSE);
+        sendCommand(userId, commandJson);
+    }
+
     /**
      * 图片请求响应
      */
@@ -547,9 +512,9 @@ public class DoorBellControlCenter {
         commandJson.setFlag(filePath);
         String json = mGson.toJson(commandJson);
         for (int i = 0; i < users.size(); i++) {
-            mAnyChat.TransBuffer(Integer.valueOf(users.get(i).getAid()), json.getBytes(), json
+            mAnyChat.TransBuffer(users.get(i).getAid(), json.getBytes(), json
                     .getBytes().length);
-            Timber.e("-----------通知报警的用户：" + users.get(i).getAccount());
+            Timber.e("-----------通知报警的用户：" + users.get(i).getAccount()+"-->"+users.get(i).getAid());
         }
 
     }
@@ -589,27 +554,6 @@ public class DoorBellControlCenter {
 //        CommandJson.Command command = new CommandJson.Command();
 //        command.setType(ConstantUtil.REQUEST_SWITCH_CAMERA);
 //        transCommand(tUserId, command);
-//    }
-//
-//    /**
-//     * 截图
-//     */
-//    public void snapShot(int tUserId) {
-//        mAnyChat.SnapShot(tUserId, AnyChatDefine.ANYCHAT_RECORD_FLAGS_SNAPSHOT, 0);
-//    }
-//
-//    /**
-//     * 录屏
-//     */
-//    public void startRecord(int tUserId) {
-//        AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_RECORD_FILETYPE, 0);
-//        if (FileUtils.getInstance().getSDCardPath() != null) {
-//            AnyChatCoreSDK.SetSDKOptionString(AnyChatDefine.BRAC_SO_RECORD_TMPDIR, FileUtils
-// .getInstance().getSDCardPath() + Environment.DIRECTORY_DCIM);
-//        }
-//        int dwFlags = AnyChatDefine.ANYCHAT_RECORD_FLAGS_VIDEO + AnyChatDefine
-// .ANYCHAT_RECORD_FLAGS_AUDIO;
-//        mAnyChat.StreamRecordCtrlEx(tUserId, 1, dwFlags, 0, "");
 //    }
 //
 //    /**
@@ -691,5 +635,23 @@ public class DoorBellControlCenter {
 //        mAnyChat.TransBuffer(userId, comm.getBytes(), comm.getBytes().length);
 //    }
 
+    /**
+     * 保存猫眼初始化设置
+     */
+    public void saveDoorbellConfig(DoorbellConfig doorbellConfig) {
+        String config = mGson.toJson(doorbellConfig);
+        Timber.e("-----config:" + config);
+//        SharePreUtil.getInstance(sContext).setString(ConstantUtil.DOORBELL_CONFIG, config);
+    }
 
+    public DoorbellConfig getDoorbellConfig() {
+        DoorbellConfig config = mGson.fromJson(SharePreUtil.getInstance(sContext)
+                .getString(ConstantUtil.DOORBELL_CONFIG, ""), DoorbellConfig.class);
+        if (config == null) {
+            config = new DoorbellConfig();
+            saveDoorbellConfig(config);
+            //保存到服务器
+        }
+        return config;
+    }
 }

@@ -232,7 +232,7 @@ public class HttpAction {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 final String result = response.body().string();
-                Timber.e("--------result:" + result);
+                Timber.e("--------result:" + result+"-->"+url);
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {

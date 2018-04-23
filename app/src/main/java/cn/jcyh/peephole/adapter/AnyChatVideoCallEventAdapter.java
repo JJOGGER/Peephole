@@ -6,6 +6,8 @@ import android.content.Intent;
 import com.bairuitech.anychat.AnyChatDefine;
 import com.bairuitech.anychat.AnyChatVideoCallEvent;
 
+import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.service.VideoService;
 import timber.log.Timber;
 
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_VIDEO_CALL_EVENT;
@@ -20,9 +22,11 @@ import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_STAR
 
 public class AnyChatVideoCallEventAdapter implements AnyChatVideoCallEvent {
     private Context mContext;
+    private DoorBellControlCenter mControlCenter;
 
     public AnyChatVideoCallEventAdapter(Context context) {
         mContext = context;
+        mControlCenter = DoorBellControlCenter.getInstance(mContext);
     }
 
     @Override
@@ -35,6 +39,34 @@ public class AnyChatVideoCallEventAdapter implements AnyChatVideoCallEvent {
         intent.putExtra("dwParam", dwParam);
         String type = "";
         intent.putExtra("userStr", userStr);
+        switch (dwEventType) {
+            case AnyChatDefine.BRAC_VIDEOCALL_EVENT_REQUEST:// < 呼叫请求
+                Timber.e("----有人发呼叫请求过来了"+DoorBellControlCenter.sIsBinding);
+                if (DoorBellControlCenter.sIsBinding) {
+                    //正在绑定中，不能会话
+                    mControlCenter.rejectVideoCall(dwUserId);
+                } else {
+                    //猫眼端未打开摄像头/未在通话中，则接受请求
+                    mControlCenter.acceptVideoCall(dwUserId);
+                }
+                break;
+            case AnyChatDefine.BRAC_VIDEOCALL_EVENT_REPLY:// < 呼叫请求回复
+
+                break;
+            case AnyChatDefine.BRAC_VIDEOCALL_EVENT_START:// 视频呼叫会话开始事件
+                Timber.e("--------->开始进入会话窗口");
+                Intent videoIntent = new Intent(mContext, VideoService.class);
+                videoIntent.putExtra("roomId", dwParam);
+                videoIntent.putExtra("userId", dwUserId);
+                mContext.startService(videoIntent);
+                break;
+            case AnyChatDefine.BRAC_VIDEOCALL_EVENT_FINISH:// < 挂断（结束）呼叫会话
+//                        DialogFactory.getDialogFactory().dismiss();
+                Timber.e("--------结束通话");
+                mContext.stopService(new Intent(mContext, VideoService.class));
+                break;
+        }
+
         switch (dwEventType) {
             case AnyChatDefine.BRAC_VIDEOCALL_EVENT_REQUEST:// < 呼叫请求
                 Timber.e("----有人发呼叫请求过来了");

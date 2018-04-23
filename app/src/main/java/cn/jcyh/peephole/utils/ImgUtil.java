@@ -3,6 +3,7 @@ package cn.jcyh.peephole.utils;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -29,6 +30,7 @@ public class ImgUtil {
         return createWaterMaskBitmap(src, watermark,
                 dp2px(context, paddingLeft), dp2px(context, paddingTop));
     }
+
 
     private static Bitmap createWaterMaskBitmap(Bitmap src, Bitmap watermark,
                                                 int paddingLeft, int paddingTop) {
@@ -223,8 +225,7 @@ public class ImgUtil {
      * 覆盖原图
      */
     public static boolean createWaterMaskRightBottom2File(Context context, String filePath, Bitmap
-            src, Bitmap watermark,
-                                                          int paddingRight, int paddingBottom) {
+            src, Bitmap watermark, int paddingRight, int paddingBottom) {
         Bitmap waterMaskBitmap = createWaterMaskBitmap(src, watermark,
                 src.getWidth() - watermark.getWidth() - dp2px(context, paddingRight),
                 src.getHeight() - watermark.getHeight() - dp2px(context, paddingBottom));
@@ -233,6 +234,35 @@ public class ImgUtil {
         try {
             bos = new BufferedOutputStream(new FileOutputStream(file));
             waterMaskBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+            try {
+                bos.flush();
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            if (bos != null) {
+                try {
+                    bos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean createWaterMaskWidthText(Context context, String filePath, Bitmap
+            src, Bitmap watermark, String text) {
+        Bitmap waterMaskBitmap = createWaterMaskBitmap(src, watermark, 30, 24);
+        Bitmap bitmap = drawTextToRightBottom(context, waterMaskBitmap, text, 20, Color.WHITE, 30, 24);
+        File file = new File(filePath);
+        BufferedOutputStream bos = null;
+        try {
+            bos = new BufferedOutputStream(new FileOutputStream(file));
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
             try {
                 bos.flush();
                 return true;

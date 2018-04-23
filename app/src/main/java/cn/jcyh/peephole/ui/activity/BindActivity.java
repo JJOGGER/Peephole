@@ -146,20 +146,6 @@ public class BindActivity extends BaseActivity {
                             finish();
                             break;
                     }
-//                    if (result.equals(mDeviceNo)) {
-//                        dwTargetUserId = dwUserid;
-//                        //开始绑定设备
-//                        startBind();
-//                    } else if ("13".equals(result)) {
-//                        //拒绝绑定
-//                        if (mProgressDialog != null && mProgressDialog.isShowing())
-//                            mProgressDialog.dismiss();
-//                        ToastUtil.showToast(getApplicationContext(), getString(R.string
-// .reject_bind));
-//                    } else if ("14".equals(result)) {
-//                        //设备已经绑定
-//                        dwTargetUserId = dwUserid;
-//                    }
                 }
             } else if (ConstantUtil.ACTION_ANYCHAT_USER_INFO_EVENT.equals(intent.getAction())) {
                 String type = intent.getStringExtra("type");
@@ -183,10 +169,7 @@ public class BindActivity extends BaseActivity {
                                     users) {
                                 if (user.getAid() == dwUserid) {
                                     //已绑定
-                                    commandJson.setFlag("2");
-                                    commandJson.setCommandType(CommandJson.CommandType
-                                            .BIND_DOORBELL_RESPONSE);
-                                    mControlCenter.sendBindResponse(dwUserid, commandJson);
+                                    mControlCenter.sendBindResponse(dwUserid, IMEI, "2", -1);
                                     return;
                                 }
                             }
@@ -203,19 +186,15 @@ public class BindActivity extends BaseActivity {
                             @Override
                             public void onConfirm(boolean isConfirm) {
                                 if (isConfirm) {
-                                    commandJson.setFlag("1");
+                                    Timber.e("-------------camera:" + CameraProvider.hasFrontFacingCamera() + "-->" +
+                                            CameraProvider
+                                                    .hasBackFacingCamera());
                                     int flag2 = CameraProvider.hasFrontFacingCamera() &&
                                             CameraProvider
                                                     .hasBackFacingCamera() ? 1 : 0;
-                                    commandJson.setCommandType(CommandJson.CommandType
-                                            .BIND_DOORBELL_RESPONSE);
-                                    commandJson.setFlag2(flag2);
-                                    mControlCenter.sendBindResponse(dwUserid, commandJson);
+                                    mControlCenter.sendBindResponse(dwUserid, IMEI, "1", flag2);
                                 } else {
-                                    commandJson.setFlag("0");
-                                    commandJson.setCommandType(CommandJson.CommandType
-                                            .BIND_DOORBELL_RESPONSE);
-                                    mControlCenter.sendBindResponse(dwUserid, commandJson);
+                                    mControlCenter.sendBindResponse(dwUserid, IMEI, "0", -1);
                                 }
                                 mDialogHelper.dismiss();
                             }
@@ -226,9 +205,7 @@ public class BindActivity extends BaseActivity {
                     @Override
                     public void onFailure(int errorCode) {
                         //请求失败
-                        commandJson.setFlag("4");
-                        commandJson.setCommandType(CommandJson.CommandType.BIND_DOORBELL_RESPONSE);
-                        mControlCenter.sendBindResponse(dwUserid, commandJson);
+                        mControlCenter.sendBindResponse(dwUserid, IMEI, "3", -1);
                     }
                 });
     }

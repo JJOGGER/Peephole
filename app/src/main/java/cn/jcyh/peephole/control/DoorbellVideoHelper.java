@@ -74,13 +74,21 @@ public class DoorbellVideoHelper {
     public boolean isVideoOpen() {
         return getCameraState(-1) == 2 && getUserVideoWidth(-1) != 0;
     }
-    public void setVideoHolder(SurfaceView surfaceView){
+
+    public void setVideoHolder(SurfaceView surfaceView) {
         if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_VIDEOSHOW_DRIVERCTRL) != AnyChatDefine.VIDEOSHOW_DRIVER_JAVA) {
             surfaceView.getHolder().setFormat(PixelFormat.RGB_565);
-            surfaceView.getHolder().setFixedSize(getUserVideoWidth(-1),getUserVideoHeight(-1));
+            surfaceView.getHolder().setFixedSize(getUserVideoWidth(-1), getUserVideoHeight(-1));
         }
         Surface s = surfaceView.getHolder().getSurface();
         mAnyChat.SetVideoPos(-1, s, 0, 0, 0, 0);
+    }
+
+    /**
+     * 切换摄像头
+     */
+    public void changeCamera() {
+        AnyChatCoreSDK.mCameraHelper.SwitchCamera();
     }
 
     /**

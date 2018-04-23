@@ -6,88 +6,73 @@
 
     <ImageView
         android:id="@+id/iv_home"
-        android:layout_width="432px"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="8.5dp"
-        android:layout_marginLeft="7dp"
-        android:layout_marginRight="7dp"
-        android:layout_marginTop="7dp"
-        android:layout_weight="1"
+        android:layout_width="607px"
+        android:layout_height="449px"
+        android:layout_marginLeft="14px"
+        android:layout_marginRight="12px"
+        android:layout_marginTop="18px"
         android:scaleType="fitXY"
         android:src="@mipmap/photo"/>
 
     <LinearLayout
         android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="8.5dp"
-        android:layout_marginRight="7dp"
-        android:layout_marginTop="7dp"
+        android:layout_height="449px"
+        android:layout_marginRight="14px"
+        android:layout_marginTop="18px"
         android:layout_weight="1"
         android:background="@mipmap/bg_bar"
         android:orientation="vertical">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="68px"
-            >
-            <TextView
-                android:id="@+id/tv_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:includeFontPadding="false"
-                android:paddingLeft="12px"
-                android:text="12:30"
-                android:textColor="@color/white"
-                android:textSize="36px"
-                android:textStyle="bold"/>
-
-            <TextView
-                android:id="@+id/tv_am_pm"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_toRightOf="@id/tv_time"
-                android:includeFontPadding="false"
-                android:paddingLeft="5dp"
-                android:text="@string/am"
-                android:textColor="@color/white"
-                android:textSize="18px"/>
-        </RelativeLayout>
+        <TextView
+            android:id="@+id/tv_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:includeFontPadding="false"
+            android:paddingBottom="0dp"
+            android:paddingLeft="8px"
+            android:paddingTop="12px"
+            android:text="12:30"
+            android:textColor="@color/white"
+            android:textSize="40px"
+            android:textStyle="bold"/>
 
         <TextView
             android:id="@+id/tv_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:includeFontPadding="false"
-            android:paddingLeft="12px"
-            android:paddingTop="14px"
+            android:paddingLeft="8px"
             android:textColor="@color/gray_dedede"
-            android:textSize="20px"
-            android:textStyle="bold"/>
+            android:textSize="16px"/>
 
         <TextView
             android:id="@+id/tv_date2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:includeFontPadding="false"
-            android:paddingLeft="12px"
-            android:paddingTop="10px"
+            android:paddingLeft="8px"
+            android:paddingTop="8px"
             android:textColor="@color/gray_dedede"
-            android:textSize="20px"
-            android:textStyle="bold"/>
+            android:textSize="16px"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2px"
+            android:background="@mipmap/main_line"
+            android:paddingTop="10px"/>
 
         <RelativeLayout
             android:id="@+id/rl_media_record"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:paddingTop="30px">
+            android:paddingTop="4px"
+            >
 
             <ImageView
                 android:id="@+id/iv_media_record"
-                android:layout_width="50px"
-                android:layout_height="50px"
+                android:layout_width="41px"
+                android:layout_height="41px"
                 android:layout_centerHorizontal="true"
                 android:src="@mipmap/button_photo"/>
 
@@ -95,10 +80,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/iv_media_record"
-                android:paddingTop="8px"
+                android:includeFontPadding="false"
+                android:paddingTop="5px"
                 android:text="@string/media_record"
                 android:textColor="@color/white"
-                android:textSize="20px"/>
+                android:textSize="19px"/>
         </RelativeLayout>
 
         <RelativeLayout
@@ -106,12 +92,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:paddingTop="22px">
+            android:paddingTop="14px">
 
             <ImageView
                 android:id="@+id/iv_leave_message"
-                android:layout_width="50px"
-                android:layout_height="50px"
+                android:layout_width="41px"
+                android:layout_height="41px"
                 android:layout_centerHorizontal="true"
                 android:src="@mipmap/button_urse"/>
 
@@ -120,11 +106,11 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/iv_leave_message"
                 android:layout_gravity="center_horizontal"
-                android:drawablePadding="8px"
-                android:paddingTop="8px"
+                android:includeFontPadding="false"
+                android:paddingTop="5px"
                 android:text="@string/visitor_leave_msg"
                 android:textColor="@color/white"
-                android:textSize="20px"/>
+                android:textSize="19px"/>
         </RelativeLayout>
 
         <RelativeLayout
@@ -132,12 +118,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:paddingTop="22px">
+            android:paddingTop="14px">
 
             <ImageView
                 android:id="@+id/iv_monitor_switch"
-                android:layout_width="50px"
-                android:layout_height="50px"
+                android:layout_width="41px"
+                android:layout_height="41px"
                 android:layout_centerHorizontal="true"
                 android:src="@mipmap/button_jkkg"/>
 
@@ -146,11 +132,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/iv_monitor_switch"
-                android:drawablePadding="8px"
-                android:paddingTop="8px"
+                android:includeFontPadding="false"
+                android:paddingTop="5px"
                 android:text="@string/monitor_switch"
                 android:textColor="@color/white"
-                android:textSize="20px"/>
+                android:textSize="19px"/>
         </RelativeLayout>
 
         <RelativeLayout
@@ -158,12 +144,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:paddingTop="22px">
+            android:paddingTop="14px">
 
             <ImageView
                 android:id="@+id/iv_sos"
-                android:layout_width="50px"
-                android:layout_height="50px"
+                android:layout_width="41px"
+                android:layout_height="41px"
                 android:layout_centerHorizontal="true"
                 android:src="@mipmap/button_phone"/>
 
@@ -171,11 +157,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/iv_sos"
-                android:drawablePadding="8px"
-                android:paddingTop="8px"
+                android:includeFontPadding="false"
+                android:paddingTop="5px"
                 android:text="@string/sos_phone"
                 android:textColor="@color/white"
-                android:textSize="20px"/>
+                android:textSize="19px"/>
         </RelativeLayout>
     </LinearLayout>
 
