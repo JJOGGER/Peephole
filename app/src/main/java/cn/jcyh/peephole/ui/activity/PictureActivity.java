@@ -7,6 +7,7 @@ import android.hardware.Camera;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Environment;
+import android.util.DisplayMetrics;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -15,12 +16,19 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
+import cn.jcyh.peephole.bean.User;
 import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.http.HttpAction;
+import cn.jcyh.peephole.http.HttpUrlIble;
+import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.utils.ConstantUtil;
 import cn.jcyh.peephole.utils.FileUtil;
 import cn.jcyh.peephole.utils.ImgUtil;
@@ -66,7 +74,7 @@ public class PictureActivity extends BaseActivity {
 //
 //        mCamera.setParameters(parameters);
         Camera.Parameters parameters = mCamera.getParameters();
-        parameters.setPictureSize(1024, 600);
+        parameters.setPictureSize(480, 360);//1024, 600
         mCamera.setParameters(parameters);
         try {
             mCamera.setPreviewDisplay(mSurfaceView.getHolder());//进行预览
@@ -92,10 +100,14 @@ public class PictureActivity extends BaseActivity {
                 ".jpg";
         simpleDateFormat.applyPattern("yyyy/MM/dd HH:mm:ss");
         time = simpleDateFormat.format(date);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int heightPixels = displayMetrics.heightPixels;
+        int widthPixels = displayMetrics.widthPixels;
         boolean isCompleted = ImgUtil.createWaterMaskWidthText(getApplicationContext(),
                 tempPath, bitmap,
                 BitmapFactory.decodeResource(getResources(), R.mipmap.eagleking),
-                time);
+                time, heightPixels, widthPixels);
         Intent intent = getIntent();
         intent.putExtra("filePath", tempPath);
         setResult(RESULT_OK, intent);
@@ -105,12 +117,35 @@ public class PictureActivity extends BaseActivity {
                 //开启了录像
                 startRecord();
             } else {
-                finish();
+                endDeal(tempPath);
             }
         } else {
 
         }
 
+    }
+
+    private void endDeal(final String tempPath) {
+        //获取拍照的图片
+        Map<String, Object> params = new HashMap<>();
+        params.put("deviceId", IMEI);
+        params.put("type", 1);
+        HttpAction.getHttpAction(this).sendPostImg(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL,
+                tempPath, params, null);
+        HttpAction.getHttpAction(this).getBindUsers(IMEI, new IDataListener<List<User>>() {
+            @Override
+            public void onSuccess(List<User> users) {
+                if (users != null && users.size() != 0) {
+                    //通知用户
+                    DoorBellControlCenter.getInstance(getApplicationContext()).sendVideoCall(users, mType, tempPath);
+                }
+            }
+
+            @Override
+            public void onFailure(int errorCode) {
+                Timber.e("------errorCode" + errorCode);
+            }
+        });
     }
 
     private void startRecord() {

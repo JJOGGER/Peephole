@@ -4,8 +4,6 @@ import android.app.Application;
 import android.content.Context;
 import android.support.multidex.MultiDex;
 
-import cn.jcyh.peephole.utils.ConstantUtil;
-import cn.jcyh.peephole.utils.SharePreUtil;
 import cn.jcyh.peephole.utils.SystemUtil;
 import timber.log.Timber;
 
@@ -17,13 +15,7 @@ public class MyApp extends Application {
         super.onCreate();
         if (BuildConfig.DEBUG)
             Timber.plant(new Timber.DebugTree());
-        SharePreUtil.getInstance(this).setString(ConstantUtil.IMEI, getAndroidIMEI());
 //        HttpAction.getHttpAction().initDoorbell(sImei, null);
-    }
-
-
-    private String getAndroidIMEI() {
-        return android.provider.Settings.System.getString(getContentResolver(), android.provider.Settings.System.ANDROID_ID);
     }
 
     @Override

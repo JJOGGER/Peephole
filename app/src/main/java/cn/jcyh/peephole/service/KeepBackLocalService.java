@@ -34,8 +34,6 @@ import cn.jcyh.peephole.adapter.AnyChatVideoCallEventAdapter;
 import cn.jcyh.peephole.adapter.AnychatBaseEventAdapter;
 import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
-import cn.jcyh.peephole.utils.ConstantUtil;
-import cn.jcyh.peephole.utils.SharePreUtil;
 import timber.log.Timber;
 
 
@@ -110,8 +108,8 @@ public class KeepBackLocalService extends Service {
      * 连接anychat
      */
     private void connectAnyChat() {
-        String imei = SharePreUtil.getInstance(this).getString(ConstantUtil.IMEI,
-                getAndroidIMEI());
+        String imei = mControlCenter.getIMEI();
+        Timber.e("------imei:" + imei);
         mAnyChat.Logout();
         mAnyChat.Release();
         mAnyChat = null;

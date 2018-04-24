@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
+import android.provider.Settings;
+import android.text.TextUtils;
 
 import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
@@ -65,6 +67,14 @@ public class DoorBellControlCenter {
         return mDoorBellControlCenter;
     }
 
+    public String getIMEI() {
+        String imei = SharePreUtil.getInstance(sContext).getString(ConstantUtil.IMEI, "");
+        if (TextUtils.isEmpty(imei)) {
+            imei = Settings.System.getString(sContext.getContentResolver(), Settings.System.ANDROID_ID);
+            SharePreUtil.getInstance(sContext).setString(ConstantUtil.IMEI, imei);
+        }
+        return imei;
+    }
 //    /***
 //     * 停止播放
 //     */
@@ -514,9 +524,14 @@ public class DoorBellControlCenter {
         for (int i = 0; i < users.size(); i++) {
             mAnyChat.TransBuffer(users.get(i).getAid(), json.getBytes(), json
                     .getBytes().length);
-            Timber.e("-----------通知报警的用户：" + users.get(i).getAccount()+"-->"+users.get(i).getAid());
+            Timber.e("-----------通知报警的用户：" + users.get(i).getAccount() + "-->" + users.get(i).getAid());
         }
 
+    }
+
+    public void sendVideoCall(List<User> users, String ringAlarm, String filePath) {
+        int type = ConstantUtil.TYPE_DOORBELL_SYSTEM_RING.equals(ringAlarm) ? 1 : 2;
+        sendVideoCall(users, type, filePath);
     }
 
     /**

@@ -12,7 +12,7 @@ public interface HttpUrlIble {
     //119.23.58.28服务器
 //    http://mysmart.9cyh.cn/
     String EAGLERKING_IP = "http://119.23.58.28:8083/";
-//    String EAGLERKING_IP = "http://192.168.0.134:8083/";
+    //    String EAGLERKING_IP = "http://192.168.0.134:8083/";
     String INIT_DOORBELL_URL = EAGLERKING_IP + "Doorbell/InsertRegistNim";
     //获取绑定的用户列表
     String GET_BIND_USERS_URL = EAGLERKING_IP + "Doorbell/GetUsersByImei";
@@ -22,4 +22,7 @@ public interface HttpUrlIble {
     String DOORBELL_PARAMS_GET_UTL = EAGLERKING_IP + "Doorbell/GetSetting";
     //文件上传
     String UPLOAD_DOORBELL_ALARM_URL = EAGLERKING_IP + "Doorbell/DoorbellAlarm";
+    //设置猫眼配置
+    String DOORBELL_SET_CONFIG_URL = EAGLERKING_IP + "Doorbell/Setting";
+    String DOORBELL_GET_CONFIG_URL = EAGLERKING_IP + "Doorbell/GetSetting";
 }

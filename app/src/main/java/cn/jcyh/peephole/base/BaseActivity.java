@@ -6,16 +6,13 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.provider.Settings;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 
 import java.io.Serializable;
 
 import butterknife.ButterKnife;
-import cn.jcyh.peephole.utils.ConstantUtil;
-import cn.jcyh.peephole.utils.SharePreUtil;
+import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.utils.StatusUtil;
 
 /**
@@ -42,11 +39,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         if (isFullScreen()) {
             statusUtil.setActivityFullScreen(this);
         }
-        IMEI = SharePreUtil.getInstance(this).getString(ConstantUtil.IMEI, "");
-        if (TextUtils.isEmpty(IMEI)) {
-            String imei = Settings.System.getString(getContentResolver(), Settings.System.ANDROID_ID);
-            SharePreUtil.getInstance(this).getString(ConstantUtil.IMEI, imei);
-        }
+        IMEI = DoorBellControlCenter.getInstance(this).getIMEI();
         init();
         loadData();
     }

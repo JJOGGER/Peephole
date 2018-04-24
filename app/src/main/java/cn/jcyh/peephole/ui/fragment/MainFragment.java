@@ -1,5 +1,6 @@
 package cn.jcyh.peephole.ui.fragment;
 
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.TypedArray;
@@ -22,8 +23,12 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseFragment;
+import cn.jcyh.peephole.config.DoorbellConfig;
+import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.http.HttpAction;
+import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.utils.LunarCalendar;
-import timber.log.Timber;
+import cn.jcyh.peephole.utils.ToastUtil;
 
 import static cn.jcyh.peephole.R.id.tv_time;
 
@@ -37,7 +42,6 @@ public class MainFragment extends BaseFragment {
     TextView tvDate2;
     @BindView(R.id.iv_home)
     ImageView ivHome;
-    private final String IMAGE_TYPE = "image/*";
     private String mDate;
     private static MainFragment sInstance;
     private MyHandler mHandler;
@@ -47,6 +51,7 @@ public class MainFragment extends BaseFragment {
     private Date mSimpleDate;
     private TimeThread mTimeThread;
     private String mAmPm;
+    private ProgressDialog mProgressDialog;
 
     public static MainFragment getInstance(Bundle bundle) {
         if (sInstance == null)
@@ -71,6 +76,8 @@ public class MainFragment extends BaseFragment {
         mHandler = new MyHandler();
         mTimeThread = new TimeThread();
         mTimeThread.start();
+        mProgressDialog = new ProgressDialog(mActivity);
+        mProgressDialog.setMessage(getString(R.string.waitting));
     }
 
     @Override
@@ -125,6 +132,8 @@ public class MainFragment extends BaseFragment {
             case R.id.rl_leave_message:
                 break;
             case R.id.rl_monitor_switch:
+                if (mProgressDialog.isShowing()) return;
+                switchMonitor();
                 break;
             case R.id.rl_sos:
                 break;
@@ -133,6 +142,35 @@ public class MainFragment extends BaseFragment {
                 startActivity(intent);
                 break;
         }
+    }
+
+    private void switchMonitor() {
+        final DoorBellControlCenter controlCenter = DoorBellControlCenter.getInstance(mActivity);
+        final DoorbellConfig doorbellConfig = controlCenter.getDoorbellConfig();
+        doorbellConfig.setMonitorSwitch(1 - doorbellConfig.getMonitorSwitch());
+        HttpAction.getHttpAction(mActivity).setDoorbellConfig(controlCenter.getIMEI(), doorbellConfig, new IDataListener<Boolean>() {
+            @Override
+            public void onSuccess(Boolean aBoolean) {
+                controlCenter.saveDoorbellConfig(doorbellConfig);
+                if (doorbellConfig.getMonitorSwitch() == 1) {
+                    ToastUtil.showToast(mActivity, R.string.monitor_opened);
+                } else {
+                    ToastUtil.showToast(mActivity, R.string.monitor_closed);
+                }
+            }
+
+            @Override
+            public void onFailure(int errorCode) {
+                ToastUtil.showToast(mActivity, getString(R.string.set_failure) + errorCode);
+            }
+        });
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mProgressDialog != null && mProgressDialog.isShowing())
+            mProgressDialog.dismiss();
     }
 
     /**
@@ -179,7 +217,6 @@ public class MainFragment extends BaseFragment {
                 mDate += " " + getString(R.string.saturday);
                 break;
         }
-        Timber.e("---------date:" + mDate);
         tvDate.setText(mDate);
     }
 
@@ -200,7 +237,6 @@ public class MainFragment extends BaseFragment {
                 String time = mHmformat.format(mHourMinDate);
                 if (mSpannableString == null) {
                     mSpannableString = new SpannableStringBuilder(time + " " + mAmPm);
-                    Timber.e("----->" + (time + " " + mAmPm).length() + "-->" + time.length() + "-->" + mAmPm.length());
                     mSizeSpanTime = new AbsoluteSizeSpan(40);
                     mSizeSpanAmPm = new AbsoluteSizeSpan(20);
                 }
@@ -216,7 +252,7 @@ public class MainFragment extends BaseFragment {
     }
 
     // 时间线程
-    public class TimeThread extends Thread {
+    private class TimeThread extends Thread {
         @Override
         public void run() {
             super.run();

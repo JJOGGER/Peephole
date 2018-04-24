@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import cn.jcyh.peephole.bean.DoorbellParam;
 import cn.jcyh.peephole.bean.HttpResult;
 import cn.jcyh.peephole.bean.User;
+import cn.jcyh.peephole.config.DoorbellConfig;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -135,6 +136,37 @@ public class HttpAction {
         });
     }
 
+    /**
+     * 设置猫眼参数
+     */
+    public void setDoorbellConfig(String deviceId, DoorbellConfig config, IDataListener<Boolean> listener) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("deviceId", deviceId);
+        params.put("config", mGson.toJson(config));
+        request2(HttpUrlIble.DOORBELL_SET_CONFIG_URL, params, listener);
+    }
+
+    public void getDoorbellConfig(String deviceId, final IDataListener<DoorbellConfig> listener){
+        Map<String, Object> params = new HashMap<>();
+        params.put("deviceId", deviceId);
+        request(HttpUrlIble.DOORBELL_GET_CONFIG_URL, params, new IDataListener<HttpResult>() {
+            @Override
+            public void onSuccess(HttpResult httpResult) {
+                DoorbellConfig doorbellConfig = mGson.fromJson(httpResult.getData().toString(),
+                        DoorbellConfig.class);
+                if (listener != null) {
+                    listener.onSuccess(doorbellConfig);
+                }
+            }
+
+            @Override
+            public void onFailure(int errorCode) {
+                if (listener != null)
+                    listener.onFailure(errorCode);
+            }
+        });
+    }
+
     private void request(final String url, Map<String, Object> params, final
     IDataListener<HttpResult> listener) {
         HttpUtil.getInstance(mContext).sendPostRequest(url, params, new HttpUtil
@@ -232,7 +264,7 @@ public class HttpAction {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 final String result = response.body().string();
-                Timber.e("--------result:" + result+"-->"+url);
+                Timber.e("--------result:" + result + "-->" + url);
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {

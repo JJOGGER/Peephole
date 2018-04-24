@@ -7,19 +7,10 @@ import android.content.IntentFilter;
 import android.support.v4.view.ViewPager;
 import android.util.DisplayMetrics;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import butterknife.BindView;
 import cn.jcyh.peephole.adapter.MainPageAdapter;
 import cn.jcyh.peephole.base.BaseActivity;
-import cn.jcyh.peephole.bean.User;
-import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
-import cn.jcyh.peephole.http.HttpAction;
-import cn.jcyh.peephole.http.HttpUrlIble;
-import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.service.KeepBackRemoteService;
 import cn.jcyh.peephole.ui.activity.PictureActivity;
 import timber.log.Timber;
@@ -79,7 +70,7 @@ public class MainActivity extends BaseActivity {
                     if (TYPE_DOORBELL_SYSTEM_RING.equals(type)) {
                         // TODO: 2018/2/4 获取绑定猫眼的用户列表
 //  mControlCenter.sendVideoCall();
-                        startNewActivityForResult(PictureActivity.class, REQEUST_CAPTURE_RING, "type", TYPE_DOORBELL_SYSTEM_RING);
+
                     } else if (TYPE_DOORBELL_SYSTEM_ALARM.equals(type)) {
                         startNewActivityForResult(PictureActivity.class, REQEUST_CAPTURE_ALARM, "type", TYPE_DOORBELL_SYSTEM_ALARM);
                     }
@@ -94,28 +85,7 @@ public class MainActivity extends BaseActivity {
         Timber.e("-------------onActivityResult" + resultCode + "---" + requestCode);
         if (resultCode == RESULT_OK) {
             if (requestCode == REQEUST_CAPTURE_RING) {
-                //获取拍照的图片
-                mFilePath = data.getStringExtra("filePath");
-                Map<String, Object> params = new HashMap<>();
-                params.put("sn", IMEI);
-                params.put("type", 1);
-                HttpAction.getHttpAction(this).sendPostImg(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL,
-                        mFilePath, params, null);
-                DoorbellConfig doorbellConfig = mControlCenter.getDoorbellConfig();
-                HttpAction.getHttpAction(this).getBindUsers(IMEI, new IDataListener<List<User>>() {
-                    @Override
-                    public void onSuccess(List<User> users) {
-                        if (users != null && users.size() != 0) {
-                            //通知用户
-                            mControlCenter.sendVideoCall(users, requestCode, mFilePath);
-                        }
-                    }
 
-                    @Override
-                    public void onFailure(int errorCode) {
-                        Timber.e("------errorCode" + errorCode);
-                    }
-                });
 //                mControlCenter.sendVideoCall();
             } else if (requestCode == REQEUST_CAPTURE_ALARM) {
 

@@ -111,6 +111,8 @@
     <string name="monitor_opened">监控已打开</string>
     <string name="ready_connect">准备就绪，等待被连接</string>
     <string name="connecting">正在连接...</string>
+    <string name="waitting">请稍候...</string>
+    <string name="set_failure">设置失败</string>
     <!--<string name="date_week_format">%d年%d月%d日&#160;%s</string>-->
     <!--<string name="calendar_date_format">农历%d年%s月%s</string>-->
 </resources>

@@ -22,7 +22,7 @@ public class ConfigEntity {
     public int videoOverlay = 1;                            // 本地视频是否采用Overlay模式
     public int videorotatemode = 0;                            // 本地视频旋转模式
     public int videoCapDriver = 3;                            // 本地视频采集驱动（0 默认， 1 Linux驱动，3 Java驱动
-    public int fixcolordeviation = 1;                        // 修正本地视频采集偏色：0 关闭(默认）， 1 开启
+    public int fixcolordeviation = 0;                        // 修正本地视频采集偏色：0 关闭(默认）， 1 开启
     public int videoShowGPURender = 0;                        // 视频数据通过GPU直接渲染：0  关闭(默认)， 1 开启
     public int videoAutoRotation = 1;                        // 本地视频自动旋转控制（参数为int型， 0表示关闭， 1 开启[默认]，视频旋转时需要参考本地视频设备方向参数）
 

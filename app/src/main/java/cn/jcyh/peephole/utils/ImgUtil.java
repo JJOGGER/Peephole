@@ -14,6 +14,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import timber.log.Timber;
+
 /**
  * Created by Jogger on 2018/2/4.
  * 图片加logo
@@ -119,12 +121,12 @@ public class ImgUtil {
                                                        paddingBottom) {
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(color);
-        paint.setTextSize(dp2px(context, size));
+        paint.setTextSize(size);
         Rect bounds = new Rect();
         paint.getTextBounds(text, 0, text.length(), bounds);
         return drawTextToBitmap(context, bitmap, text, paint, bounds,
-                bitmap.getWidth() - bounds.width() - dp2px(context, paddingRight),
-                bitmap.getHeight() - dp2px(context, paddingBottom));
+                bitmap.getWidth() - bounds.width() - paddingRight,
+                bitmap.getHeight() - paddingBottom);
     }
 
     /**
@@ -255,7 +257,8 @@ public class ImgUtil {
     }
 
     public static boolean createWaterMaskWidthText(Context context, String filePath, Bitmap
-            src, Bitmap watermark, String text) {
+            src, Bitmap watermark, String text, int heightPixels, int widthPixels) {
+        Timber.e("---->h:" + heightPixels + "---w:" + widthPixels);
         Bitmap waterMaskBitmap = createWaterMaskBitmap(src, watermark, 30, 24);
         Bitmap bitmap = drawTextToRightBottom(context, waterMaskBitmap, text, 20, Color.WHITE, 30, 24);
         File file = new File(filePath);
