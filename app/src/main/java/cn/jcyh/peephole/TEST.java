@@ -8,11 +8,11 @@
 //import android.view.View.OnClickListener;
 //import android.widget.TextView;
 //
-//import com.spotmau.main.Manager;
+//import com.spotmau.main.BcManager;
 //
 //
 //public class TEST extends Activity implements OnClickListener {
-//	Manager mMgr = null;
+//	BcManager mMgr = null;
 //	TextView mTxtInfo=null;
 //
 //	@Override
@@ -20,7 +20,7 @@
 //		super.onCreate(savedInstanceState);
 //		setContentView(R.layout.activity_main);
 //		mTxtInfo = (TextView) findViewById(R.id.textView1);
-//		mMgr = new Manager(this);
+//		mMgr = new BcManager(this);
 //	}
 //
 //
@@ -144,16 +144,16 @@
 //			super.handleMessage(msg);
 //			switch (msg.what) {
 //				case 1:
-//					mMgr.setIntTurnOnScreen(Manager.INT_TYPE.OURDOOR_PRESS,true);//设置门铃送开亮屏     true为亮屏 false为不亮屏
+//					mMgr.setIntTurnOnScreen(BcManager.INT_TYPE.OURDOOR_PRESS,true);//设置门铃送开亮屏     true为亮屏 false为不亮屏
 //					break;
 //				case 2:
-//					mMgr.setIntTurnOnScreen(Manager.INT_TYPE.TAMPER,true);//设置防拆亮屏     true为亮屏 false为不亮屏
+//					mMgr.setIntTurnOnScreen(BcManager.INT_TYPE.TAMPER,true);//设置防拆亮屏     true为亮屏 false为不亮屏
 //					break;
 //				case 3:
-//					mMgr.setIntTurnOnScreen(Manager.INT_TYPE.INDOOR_PRESS,true);//设置门铃按下亮屏     true为亮屏 false为不亮屏
+//					mMgr.setIntTurnOnScreen(BcManager.INT_TYPE.INDOOR_PRESS,true);//设置门铃按下亮屏     true为亮屏 false为不亮屏
 //					break;
 //				case 4:
-//					mMgr.setIntTurnOnScreen(Manager.INT_TYPE.PIR,true);//设置人体感应亮屏     true为亮屏 false为不亮屏
+//					mMgr.setIntTurnOnScreen(BcManager.INT_TYPE.PIR,true);//设置人体感应亮屏     true为亮屏 false为不亮屏
 //					break;
 //
 //			}

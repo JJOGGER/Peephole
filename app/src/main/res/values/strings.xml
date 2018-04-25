@@ -113,6 +113,24 @@
     <string name="connecting">正在连接...</string>
     <string name="waitting">请稍候...</string>
     <string name="set_failure">设置失败</string>
+    <string name="doorbell_set_changed">门铃动作已更改</string>
+    <string name="bell_set">门铃设置</string>
+    <string name="number">号码</string>
+    <string name="master_number">主人号码</string>
+    <string name="sos_number">SOS号码</string>
+    <string name="other">其他</string>
+    <string name="rington_volume">铃声及音量</string>
+    <string name="ring_alarm_set_msg">设置门铃声、报警铃声及音量</string>
+    <string name="video_leave_msg_time">视频留言时间</string>
+    <string name="leave_message_time_msg">设置留言模式下视频留言的时间</string>
+    <string name="doorbell_videotap_time_set">猫眼录像时间设置</string>
+    <string name="doorbell_look_time">猫眼查看时间</string>
+    <string name="five_s">5s</string>
+    <string name="ten_s">10秒</string>
+    <string name="twenty_s">20秒</string>
+    <string name="fourty_s">40秒</string>
+    <string name="one_m">1分钟</string>
+    <string name="second">秒</string>
     <!--<string name="date_week_format">%d年%d月%d日&#160;%s</string>-->
     <!--<string name="calendar_date_format">农历%d年%s月%s</string>-->
 </resources>

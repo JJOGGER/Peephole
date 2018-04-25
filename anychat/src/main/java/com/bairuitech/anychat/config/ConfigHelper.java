@@ -34,7 +34,6 @@ public class ConfigHelper {
     public ConfigEntity LoadConfig() {
         ConfigEntity configEntity = new ConfigEntity();
         AnyChatSharePreUtil share = AnyChatSharePreUtil.getInstance(mContext);
-//        configEntity.ip = isZh() ? Constants.ADDRESS : Constants.ADDRESS2;// Constants.ADDRESS;//"demo.anychat.cn"
         configEntity.ip =Constants.ADDRESS;
         configEntity.port = Constants.PORT;//8906--anychat测试服务器端口
 
@@ -48,7 +47,7 @@ public class ConfigHelper {
         configEntity.videoOverlay = share.getInt("videoOverlay", 1);
         configEntity.videorotatemode = share.getInt("VideoRotateMode", 0);
         configEntity.videoCapDriver = share.getInt("VideoCapDriver", AnyChatDefine.VIDEOCAP_DRIVER_JAVA);
-        configEntity.fixcolordeviation = 1;//share.getInt("FixColorDeviation", 1);
+        configEntity.fixcolordeviation =share.getInt("FixColorDeviation", 0);
         configEntity.videoShowGPURender = share.getInt("videoShowGPURender", 0);
         configEntity.videoAutoRotation = share.getInt("videoAutoRotation", 1);
 

@@ -312,6 +312,20 @@ public class DoorBellControlCenter {
     }
 
     /**
+     * 切换参数设置响应
+     *
+     * @param command sensor/mode
+     * @param flag    1成功
+     */
+    public void sendDoorbellConfigResponse(int userId, String command, int flag) {
+        CommandJson commandJson = new CommandJson();
+        commandJson.setCommandType(CommandJson.CommandType.DOORBELL_PARAMS_RESPONSE);
+        commandJson.setCommand(command);
+        commandJson.setFlag2(flag);
+        sendCommand(userId, commandJson);
+    }
+
+    /**
      * 图片请求响应
      */
     public void sendLastedPicsNamesResponse(int userId, String command, int requestNum) {
@@ -656,7 +670,7 @@ public class DoorBellControlCenter {
     public void saveDoorbellConfig(DoorbellConfig doorbellConfig) {
         String config = mGson.toJson(doorbellConfig);
         Timber.e("-----config:" + config);
-//        SharePreUtil.getInstance(sContext).setString(ConstantUtil.DOORBELL_CONFIG, config);
+        SharePreUtil.getInstance(sContext).setString(ConstantUtil.DOORBELL_CONFIG, config);
     }
 
     public DoorbellConfig getDoorbellConfig() {

@@ -15,7 +15,6 @@ public class MyApp extends Application {
         super.onCreate();
         if (BuildConfig.DEBUG)
             Timber.plant(new Timber.DebugTree());
-//        HttpAction.getHttpAction().initDoorbell(sImei, null);
     }
 
     @Override

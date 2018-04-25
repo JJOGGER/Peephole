@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 /**
  * Created by it on 2017/3/8.
@@ -18,6 +19,8 @@ import butterknife.ButterKnife;
 
 public abstract class BaseDialogFragment extends DialogFragment {
     public Activity mActivity;
+    private Unbinder mBind;
+    public OnDialogListener mOnDialogListener;
 
     @Override
     public void onAttach(Context context) {
@@ -34,9 +37,9 @@ public abstract class BaseDialogFragment extends DialogFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-       // getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
+        // getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View view = inflater.inflate(getLayoutId(), container, true);
-        ButterKnife.bind(this, view);
+        mBind = ButterKnife.bind(this, view);
         init(view);
         return view;
     }
@@ -46,11 +49,14 @@ public abstract class BaseDialogFragment extends DialogFragment {
     protected void init(View view) {
 
     }
-    protected void setOnDialogListener(OnDialogListener onDialogListener) {
+
+    public void setOnDialogListener(OnDialogListener onDialogListener) {
+        mOnDialogListener = onDialogListener;
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        mBind.unbind();
     }
 }

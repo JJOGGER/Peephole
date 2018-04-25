@@ -1,19 +1,13 @@
 package cn.jcyh.peephole.config;
 
+import cn.jcyh.peephole.bean.DoorbellParam;
+
 /**
  * Created by Jogger on 2018/4/20.
  * 猫眼默认设置
  */
 
 public class DoorbellConfig {
-    //    private int netPush;
-//    private int videotap;
-//    private int videoCall;
-//    private int sendMsg;
-//    private int dial;
-//    private int leaveMessage;
-//    private int ringAlarm;
-//    private int monitor;
     //从本地取，如果为空，则去服务器取，如果有，存到本地，如果没有，创建，并保存到服务器
     private int doorbellNetPush = 1;
     private int doorbellVideoCall = 1;
@@ -28,9 +22,15 @@ public class DoorbellConfig {
     private int sensorSendMsg = 0;
     private int sensorDial = 0;
     private int sensorRingAlarm = 0;//铃声报警
-    private int videoTime = 5;//猫眼录制时间
-    private int doorbellSelect = 15;//猫眼查看时间
-    private int leaveMessageTime = 20;//猫眼留言时间
+    //    private int videoTime = 5;//猫眼录制时间
+//    private int doorbellSelect = 15;//猫眼查看时间
+//    private int leaveMessageTime = 20;//猫眼留言时间
+    private int autoSensorTime = 5;
+    private String masterNumber;//主人号码
+    private String sosNumber;//sos号码
+    private int videoLeaveMsgTime = 20;//猫眼留言时间
+    private int videotapTime = 5;//录像时间
+    private int doorbellLookTime = 15;//猫眼查看时间
 
     public int getDoorbellNetPush() {
         return doorbellNetPush;
@@ -96,6 +96,14 @@ public class DoorbellConfig {
         this.monitorSwitch = monitorSwitch;
     }
 
+    public int getAutoSensorTime() {
+        return autoSensorTime;
+    }
+
+    public void setAutoSensorTime(int autoSensorTime) {
+        this.autoSensorTime = autoSensorTime;
+    }
+
     public int getSensorNetPush() {
         return sensorNetPush;
     }
@@ -136,29 +144,63 @@ public class DoorbellConfig {
         this.sensorRingAlarm = sensorRingAlarm;
     }
 
-
-    public int getVideoTime() {
-        return videoTime;
+    public String getMasterNumber() {
+        return masterNumber;
     }
 
-    public void setVideoTime(int videoTime) {
-        this.videoTime = videoTime;
+    public void setMasterNumber(String masterNumber) {
+        this.masterNumber = masterNumber;
     }
 
-    public int getDoorbellSelect() {
-        return doorbellSelect;
+    public String getSosNumber() {
+        return sosNumber;
     }
 
-    public void setDoorbellSelect(int doorbellSelect) {
-        this.doorbellSelect = doorbellSelect;
+    public void setSosNumber(String sosNumber) {
+        this.sosNumber = sosNumber;
     }
 
-    public int getLeaveMessageTime() {
-        return leaveMessageTime;
+    public int getVideoLeaveMsgTime() {
+        return videoLeaveMsgTime;
     }
 
-    public void setLeaveMessageTime(int leaveMessageTime) {
-        this.leaveMessageTime = leaveMessageTime;
+    public void setVideoLeaveMsgTime(int videoLeaveMsgTime) {
+        this.videoLeaveMsgTime = videoLeaveMsgTime;
+    }
+
+    public int getVideotapTime() {
+        return videotapTime;
+    }
+
+    public void setVideotapTime(int videotapTime) {
+        this.videotapTime = videotapTime;
+    }
+
+    public int getDoorbellLookTime() {
+        return doorbellLookTime;
+    }
+
+    public void setDoorbellLookTime(int doorbellLookTime) {
+        this.doorbellLookTime = doorbellLookTime;
+    }
+
+    public void setDoorbellParams(DoorbellParam doorbellParams) {
+        this.doorbellNetPush = doorbellParams.getNetPush();
+        this.doorbellVideotap = doorbellParams.getVideotap();
+        this.doorbellDial = doorbellParams.getDial();
+        this.doorbellLeaveMessage = doorbellParams.getLeaveMessage();
+        this.doorbellVideoCall = doorbellParams.getVideoCall();
+        this.doorbellSendMsg = doorbellParams.getSendMsg();
+    }
+
+    public void setMonitorParams(DoorbellParam doorbellParams) {
+        this.sensorNetPush = doorbellParams.getNetPush();
+        this.sensorVideotap = doorbellParams.getVideotap();
+        this.sensorDial = doorbellParams.getDial();
+        this.sensorRingAlarm = doorbellParams.getRingAlarm();
+        this.sensorVideoCall = doorbellParams.getVideoCall();
+        this.sensorSendMsg = doorbellParams.getSendMsg();
+        this.monitorSwitch = doorbellParams.getMonitor();
     }
 
     @Override
@@ -177,9 +219,12 @@ public class DoorbellConfig {
                 ", sensorSendMsg=" + sensorSendMsg +
                 ", sensorDial=" + sensorDial +
                 ", sensorRingAlarm=" + sensorRingAlarm +
-                ", videoTime=" + videoTime +
-                ", doorbellSelect=" + doorbellSelect +
-                ", leaveMessageTime=" + leaveMessageTime +
+                ", autoSensorTime=" + autoSensorTime +
+                ", masterNumber='" + masterNumber + '\'' +
+                ", sosNumber='" + sosNumber + '\'' +
+                ", videoLeaveMsgTime=" + videoLeaveMsgTime +
+                ", videotapTime=" + videotapTime +
+                ", doorbellLookTime=" + doorbellLookTime +
                 '}';
     }
 }

@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import java.io.Serializable;
 
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.utils.ScreenUtil;
 
@@ -23,6 +24,7 @@ import cn.jcyh.peephole.utils.ScreenUtil;
 
 public abstract class BaseFragment extends Fragment{
     public Activity mActivity;
+    private Unbinder mBind;
 
     @Override
     public void onAttach(Context context) {
@@ -41,7 +43,7 @@ public abstract class BaseFragment extends Fragment{
         } else {
             view = inflater.inflate(getLayoutId(), null);
         }
-        ButterKnife.bind(this, view);
+        mBind = ButterKnife.bind(this, view);
         //沉浸式状态栏
         if (mActivity instanceof BaseActivity) {
             BaseActivity baseActivity = (BaseActivity) mActivity;
@@ -127,5 +129,6 @@ public abstract class BaseFragment extends Fragment{
     public void onDestroyView() {
         super.onDestroyView();
 //        MyApp.getRefWatcher().watch(this);
+        mBind.unbind();
     }
 }

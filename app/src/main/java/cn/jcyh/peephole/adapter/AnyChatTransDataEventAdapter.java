@@ -9,8 +9,13 @@ import com.google.gson.reflect.TypeToken;
 
 import java.util.List;
 
+import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.bean.CommandJson;
+import cn.jcyh.peephole.bean.DoorbellParam;
+import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.http.HttpAction;
+import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.utils.ConstantUtil;
 import cn.jcyh.peephole.utils.ToastUtil;
 import timber.log.Timber;
@@ -97,9 +102,12 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
                 // TODO: 2018/2/26 有用户解绑成功
                 Timber.e("---------收到用户解绑");
                 break;
-            case CommandJson.CommandType.CHANGE_CAMERA_REQUEST:
+            case CommandJson.CommandType.CHANGE_CAMERA_REQUEST://切换摄像头
 //                由videoservice处理
                 mControlCenter.sendChangeCameraResponse(dwUserid);
+                break;
+            case CommandJson.CommandType.DOORBELL_PARAMS_REQUEST://参数设置
+                configParams(commandJson, dwUserid);
                 break;
         }
     }
@@ -113,5 +121,34 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
     @Override
     public void OnAnyChatSDKFilterData(byte[] lpBuf, int dwLen) {
         Timber.e("-----------OnAnyChatSDKFilterData");
+    }
+
+    /**
+     * 设置参数
+     */
+    private void configParams(CommandJson commandJson, final int dwUserid) {
+        final String command = commandJson.getCommand();
+        final DoorbellConfig doorbellConfig = mControlCenter.getDoorbellConfig();
+        if (DoorBellControlCenter.DOORBELL_PARAMS_TYPE_MODE.equals(command)) {
+            DoorbellParam doorbellParam = mGson.fromJson(commandJson.getFlag(), DoorbellParam.class);
+            doorbellConfig.setDoorbellParams(doorbellParam);
+        } else if (DoorBellControlCenter.DOORBELL_PARAMS_TYPE_SENSOR.equals(command)) {
+            DoorbellParam doorbellParam = mGson.fromJson(commandJson.getFlag(), DoorbellParam.class);
+            doorbellConfig.setMonitorParams(doorbellParam);
+        }
+        HttpAction.getHttpAction(mContext).setDoorbellConfig(mControlCenter.getIMEI(), doorbellConfig, new IDataListener<Boolean>() {
+            @Override
+            public void onSuccess(Boolean aBoolean) {
+                mControlCenter.saveDoorbellConfig(doorbellConfig);
+                mControlCenter.sendDoorbellConfigResponse(dwUserid, command, 1);
+                ToastUtil.showToast(mContext, R.string.doorbell_set_changed);
+                // TODO: 2018/4/25 如果当前在设置界面，应更新
+            }
+
+            @Override
+            public void onFailure(int errorCode) {
+                mControlCenter.sendDoorbellConfigResponse(dwUserid, command, 0);
+            }
+        });
     }
 }

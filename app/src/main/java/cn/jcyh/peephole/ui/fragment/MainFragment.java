@@ -24,6 +24,7 @@ import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseFragment;
 import cn.jcyh.peephole.config.DoorbellConfig;
+import cn.jcyh.peephole.control.BcManager;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
@@ -157,6 +158,7 @@ public class MainFragment extends BaseFragment {
                 } else {
                     ToastUtil.showToast(mActivity, R.string.monitor_closed);
                 }
+                BcManager.getManager(mActivity).setPIRSensorOn(doorbellConfig.getMonitorSwitch() == 1);
             }
 
             @Override

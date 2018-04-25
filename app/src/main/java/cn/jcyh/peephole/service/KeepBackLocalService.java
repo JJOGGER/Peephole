@@ -21,7 +21,6 @@ import android.support.v7.app.NotificationCompat;
 import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.config.ConfigEntity;
 import com.bairuitech.anychat.config.ConfigHelper;
-import com.google.gson.Gson;
 import com.szjcyh.mysmart.IMyAidlInterface;
 
 import java.lang.ref.WeakReference;
@@ -33,6 +32,7 @@ import cn.jcyh.peephole.adapter.AnyChatUserInfoEventAdapter;
 import cn.jcyh.peephole.adapter.AnyChatVideoCallEventAdapter;
 import cn.jcyh.peephole.adapter.AnychatBaseEventAdapter;
 import cn.jcyh.peephole.config.DoorbellConfig;
+import cn.jcyh.peephole.control.BcManager;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import timber.log.Timber;
 
@@ -50,7 +50,6 @@ public class KeepBackLocalService extends Service {
     private static int sLockTime;//记录锁屏时间
     private MyHandler mMyHandler;
     private MyReceiver mReceiver;
-    private Gson mGson;
     private DoorBellControlCenter mControlCenter;
 
     @Nullable
@@ -62,9 +61,8 @@ public class KeepBackLocalService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        mGson = new Gson();
         mControlCenter = DoorBellControlCenter.getInstance(this);
-        DoorbellConfig doorbellConfig = mControlCenter.getDoorbellConfig();
+        initConfig();
         if (mBinder == null) mBinder = new MyBinder();
         mAnyChat = AnyChatCoreSDK.getInstance(getApplicationContext());
         mMyHandler = new MyHandler(this);
@@ -78,6 +76,13 @@ public class KeepBackLocalService extends Service {
         intentFilter.addAction(Intent.ACTION_SCREEN_ON);
         registerReceiver(mReceiver, intentFilter);
 //        intentFilter.addAction("android.intent.action.USER_PRESENT");
+    }
+
+    private void initConfig() {
+        //初始化配置
+        BcManager manager = BcManager.getManager(getApplicationContext());
+        DoorbellConfig doorbellConfig = mControlCenter.getDoorbellConfig();
+        manager.setPIRSensorOn(doorbellConfig.getMonitorSwitch() == 1);
     }
 
     @Override

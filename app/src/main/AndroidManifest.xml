@@ -65,7 +65,9 @@
         </activity>
         <activity android:name=".ui.activity.BindActivity">
         </activity>
-        <activity android:name=".ui.activity.PictureActivity">
+        <activity
+            android:name=".ui.activity.PictureActivity"
+            android:launchMode="singleTask">
         </activity>
         <activity android:name=".ui.activity.AboutActivity">
         </activity>

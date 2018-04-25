@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import java.io.Serializable;
 
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.utils.StatusUtil;
 
@@ -22,6 +23,7 @@ import cn.jcyh.peephole.utils.StatusUtil;
 public abstract class BaseActivity extends AppCompatActivity {
     private static final int STATUS_COLOR = Color.parseColor("#3f000000");
     public String IMEI;
+    private Unbinder mBind;
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -29,7 +31,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(getLayoutId());
 //        getWindow().setBackgroundDrawable(null);
-        ButterKnife.bind(this);
+        mBind = ButterKnife.bind(this);
         //开启沉浸式状态栏
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         StatusUtil statusUtil = new StatusUtil();
@@ -168,5 +170,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mBind.unbind();
     }
 }

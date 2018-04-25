@@ -100,6 +100,9 @@ public class CommandJson implements Parcelable {
         public static final String UNLOCK_DOORBELL_REQUEST = "unlock_doorbell_request";//解锁请求
         public static final String UNLOCK_DOORBELL_RESPONSE = "unlock_doorbell_response";//解锁响应
 
+        public static final String DOORBELL_PARAMS_REQUEST = "doorbell_params_request";//参数设置
+        public static final String DOORBELL_PARAMS_RESPONSE = "doorbell_params_response";//参数设置响应
+
         public static final String CHANGE_CAMERA_REQUEST = "change_camera_request";//切换摄像头
         public static final String CHANGE_CAMERA_RESPONSE = "change_camera_response";
 

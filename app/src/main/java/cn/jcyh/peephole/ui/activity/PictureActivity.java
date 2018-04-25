@@ -113,14 +113,14 @@ public class PictureActivity extends BaseActivity {
         setResult(RESULT_OK, intent);
         closeCamera();
         if (ConstantUtil.TYPE_DOORBELL_SYSTEM_RING.equals(mType)) {
-            if (mDoorbellConfig.getDoorbellVideotap() == 0) {
+            if (mDoorbellConfig.getDoorbellVideotap() == 1) {
                 //开启了录像
                 startRecord();
             } else {
                 endDeal(tempPath);
             }
         } else {
-
+            endDeal(tempPath);
         }
 
     }
@@ -181,7 +181,7 @@ public class PictureActivity extends BaseActivity {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(mDoorbellConfig.getVideoTime() * 1000);
+                    Thread.sleep(mDoorbellConfig.getVideotapTime() * 1000);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

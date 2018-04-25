@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="6dp"
+        android:text="@string/auto_sensor_time"
+        android:textColor="@color/colorPrimary"
+        android:textSize="18sp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorPrimary"/>
+
+    <RelativeLayout
+        android:id="@+id/rl_sensor_5s"
+        android:layout_width="match_parent"
+        android:layout_height="40dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:paddingLeft="16dp"
+            android:text="@string/five_s"
+            android:textColor="@color/black_333333"
+            android:textSize="14sp"/>
+
+        <RadioButton
+            android:id="@+id/rb_5s"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="16dp"
+            android:enabled="false"/>
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/gray_dedede"/>
+
+    <RelativeLayout
+        android:id="@+id/rl_sensor_10s"
+        android:layout_width="match_parent"
+        android:layout_height="40dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:paddingLeft="16dp"
+            android:text="@string/ten_s"
+            android:textColor="@color/black_333333"
+            android:textSize="14sp"/>
+
+        <RadioButton
+            android:id="@+id/rb_10s"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="16dp"
+            android:enabled="false"/>
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/gray_dedede"/>
+
+    <RelativeLayout
+        android:id="@+id/rl_sensor_20s"
+        android:layout_width="match_parent"
+        android:layout_height="40dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:paddingLeft="16dp"
+            android:text="@string/twenty_s"
+            android:textColor="@color/black_333333"
+            android:textSize="14sp"/>
+
+        <RadioButton
+            android:id="@+id/rb_20s"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="16dp"
+            android:enabled="false"/>
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/gray_dedede"/>
+
+    <RelativeLayout
+        android:id="@+id/rl_sensor_40s"
+        android:layout_width="match_parent"
+        android:layout_height="40dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:paddingLeft="16dp"
+            android:text="@string/fourty_s"
+            android:textColor="@color/black_333333"
+            android:textSize="14sp"/>
+
+        <RadioButton
+            android:id="@+id/rb_40s"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="16dp"
+            android:enabled="false"/>
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/gray_dedede"/>
+
+    <RelativeLayout
+        android:id="@+id/rl_sensor_1m"
+        android:layout_width="match_parent"
+        android:layout_height="40dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:paddingLeft="16dp"
+            android:text="@string/one_m"
+            android:textColor="@color/black_333333"
+            android:textSize="14sp"/>
+
+        <RadioButton
+            android:id="@+id/rb_1m"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="16dp"
+            android:enabled="false"/>
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/gray_dedede"/>
+
+    <TextView
+        android:id="@+id/tv_cancel"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:text="@string/cancel"
+        android:textColor="@color/black_333333"
+        android:textSize="14sp"/>
+</LinearLayout>
