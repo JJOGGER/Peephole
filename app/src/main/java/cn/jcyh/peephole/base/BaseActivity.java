@@ -13,6 +13,7 @@ import java.io.Serializable;
 
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import cn.jcyh.peephole.control.ActivityCollector;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.utils.StatusUtil;
 
@@ -32,6 +33,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         setContentView(getLayoutId());
 //        getWindow().setBackgroundDrawable(null);
         mBind = ButterKnife.bind(this);
+        ActivityCollector.addActivity(this);
         //开启沉浸式状态栏
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         StatusUtil statusUtil = new StatusUtil();
@@ -170,6 +172,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        ActivityCollector.removeActivity(this);
         mBind.unbind();
     }
 }

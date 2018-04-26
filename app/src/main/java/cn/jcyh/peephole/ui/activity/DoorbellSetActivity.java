@@ -1,7 +1,6 @@
 package cn.jcyh.peephole.ui.activity;
 
 import android.view.View;
-import android.widget.CheckBox;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -11,22 +10,23 @@ import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
+import cn.jcyh.peephole.widget.MyDeviceParam;
 import timber.log.Timber;
 
 //门铃设置
 public class DoorbellSetActivity extends BaseActivity {
-    @BindView(R.id.cb_net_push)
-    CheckBox cbNetPush;
-    @BindView(R.id.cb_videotape)
-    CheckBox cbVideotape;
-    @BindView(R.id.cb_video_call)
-    CheckBox cbVideoCall;
-    @BindView(R.id.cb_send_msg)
-    CheckBox cbSendMsg;
-    @BindView(R.id.cb_dial)
-    CheckBox cbDial;
-    @BindView(R.id.cb_leave_message)
-    CheckBox cbLeaveMessage;
+    @BindView(R.id.my_net_push)
+    MyDeviceParam myNetPush;
+    @BindView(R.id.my_leave_message)
+    MyDeviceParam myLeaveMessage;
+    @BindView(R.id.my_video_call)
+    MyDeviceParam myVideoCall;
+    @BindView(R.id.my_dial)
+    MyDeviceParam myDial;
+    @BindView(R.id.my_send_msg)
+    MyDeviceParam mySendMsg;
+    @BindView(R.id.my_videotap)
+    MyDeviceParam myVideotap;
     private DoorbellConfig mDoorbellConfig;
 
 
@@ -42,41 +42,132 @@ public class DoorbellSetActivity extends BaseActivity {
     }
 
     private void initView() {
-        cbNetPush.setChecked(mDoorbellConfig.getDoorbellNetPush() == 1);
-        cbVideotape.setChecked(mDoorbellConfig.getDoorbellVideotap() == 1);
-        cbVideoCall.setChecked(mDoorbellConfig.getDoorbellVideoCall() == 1);
-        cbSendMsg.setChecked(mDoorbellConfig.getDoorbellSendMsg() == 1);
-        cbDial.setChecked(mDoorbellConfig.getDoorbellDial() == 1);
-        cbLeaveMessage.setChecked(mDoorbellConfig.getDoorbellLeaveMessage() == 1);
+        myNetPush.setCheck(mDoorbellConfig.getDoorbellNetPush() == 1);
+        myVideotap.setCheck(mDoorbellConfig.getDoorbellVideotap() == 1);
+
+        boolean leaveMessage = mDoorbellConfig.getDoorbellLeaveMessage() == 1;
+        myLeaveMessage.setCheck(leaveMessage);
+        myVideoCall.setCheckable(!leaveMessage);
+        myVideotap.setCheckable(!leaveMessage);
+
+        boolean sendMsg = mDoorbellConfig.getDoorbellSendMsg() == 1;
+        mySendMsg.setCheck(sendMsg);
+        myDial.setCheckable(!sendMsg);
+
+        boolean dial = mDoorbellConfig.getDoorbellDial() == 1;
+        myDial.setCheck(dial);
+        myVideoCall.setCheckable(!dial);
+        mySendMsg.setCheckable(!dial);
+
+        boolean videoCall = mDoorbellConfig.getDoorbellVideoCall() == 1;
+        myVideoCall.setCheck(videoCall);
+        myLeaveMessage.setCheckable(!videoCall);
     }
 
-    @OnClick({R.id.rl_net_push, R.id.rl_videotape, R.id.rl_video_call, R.id.rl_send_msg,
-            R.id.rl_dial, R.id.rl_leave_message})
+    @OnClick({R.id.my_net_push, R.id.my_videotap, R.id.my_video_call, R.id.my_send_msg,
+            R.id.my_dial, R.id.my_leave_message})
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.rl_net_push:
-                cbNetPush.setChecked(!cbNetPush.isChecked());
-                mDoorbellConfig.setDoorbellNetPush(cbNetPush.isChecked() ? 1 : 0);
+            case R.id.my_net_push:
+                myNetPush.setCheck(!myNetPush.isChecked());
+                mDoorbellConfig.setDoorbellNetPush(myNetPush.isChecked() ? 1 : 0);
                 break;
-            case R.id.rl_videotape:
-                cbVideotape.setChecked(!cbVideotape.isChecked());
-                mDoorbellConfig.setDoorbellVideotap(cbVideotape.isChecked() ? 1 : 0);
+            case R.id.my_videotap:
+                if (myVideotap.isChecked()) {
+                    myVideotap.setCheck(false);
+                    myLeaveMessage.setCheckable(true);
+                    mDoorbellConfig.setDoorbellVideotap(0);
+                } else {
+                    myVideotap.setCheck(true);
+                    myVideotap.setCheckable(true);
+                    myLeaveMessage.setCheck(false);
+                    myLeaveMessage.setCheckable(false);
+                    mDoorbellConfig.setDoorbellVideotap(1);
+                    mDoorbellConfig.setDoorbellLeaveMessage(0);
+                }
                 break;
-            case R.id.rl_video_call:
-                cbVideoCall.setChecked(!cbVideoCall.isChecked());
-                mDoorbellConfig.setDoorbellVideoCall(cbVideoCall.isChecked() ? 1 : 0);
+            case R.id.my_video_call:
+                if (myVideoCall.isChecked()) {
+                    myVideoCall.setCheck(false);
+                    if (!myVideotap.isChecked())
+                        myLeaveMessage.setCheckable(true);
+                    mDoorbellConfig.setDoorbellVideoCall(0);
+                } else {
+                    myVideoCall.setCheck(true);
+                    myVideoCall.setCheckable(true);
+                    if (myLeaveMessage.isChecked()) {
+                        myLeaveMessage.setCheck(false);
+                    }
+                    myLeaveMessage.setCheckable(false);
+                    myVideotap.setCheckable(true);
+                    myDial.setCheck(false);
+                    if (!mySendMsg.isChecked())
+                        myDial.setCheckable(true);
+                    mySendMsg.setCheckable(true);
+                    mDoorbellConfig.setDoorbellVideoCall(1);
+                    mDoorbellConfig.setDoorbellLeaveMessage(0);
+                    mDoorbellConfig.setDoorbellDial(0);
+                }
                 break;
-            case R.id.rl_send_msg:
-                cbSendMsg.setChecked(!cbSendMsg.isChecked());
-                mDoorbellConfig.setDoorbellSendMsg(cbSendMsg.isChecked() ? 1 : 0);
+            case R.id.my_send_msg:
+                if (mySendMsg.isChecked()) {
+                    mySendMsg.setCheck(false);
+                    myDial.setCheckable(true);
+                    mDoorbellConfig.setDoorbellSendMsg(0);
+                } else {
+                    mySendMsg.setCheck(true);
+                    mySendMsg.setCheckable(true);
+                    myDial.setCheck(false);
+                    myDial.setCheckable(false);
+                    if (!myLeaveMessage.isChecked())
+                        myVideoCall.setCheckable(true);
+                    mDoorbellConfig.setDoorbellSendMsg(1);
+                    mDoorbellConfig.setDoorbellDial(0);
+                }
                 break;
-            case R.id.rl_dial:
-                cbDial.setChecked(!cbDial.isChecked());
-                mDoorbellConfig.setDoorbellDial(cbDial.isChecked() ? 1 : 0);
+            case R.id.my_dial:
+                if (myDial.isChecked()) {
+                    myDial.setCheck(false);
+                    mySendMsg.setCheckable(true);
+                    if (!myLeaveMessage.isChecked())
+                        myVideoCall.setCheckable(true);
+                    mDoorbellConfig.setDoorbellDial(0);
+                } else {
+                    myDial.setCheck(true);
+                    myDial.setCheckable(true);
+                    if (mySendMsg.isChecked()) {
+                        mySendMsg.setCheck(false);
+                    }
+                    mySendMsg.setCheckable(false);
+                    if (myVideoCall.isChecked()) {
+                        myVideoCall.setCheck(false);
+                    }
+                    myVideoCall.setCheckable(false);
+                    myLeaveMessage.setCheckable(true);
+                    mDoorbellConfig.setDoorbellDial(1);
+                    mDoorbellConfig.setDoorbellSendMsg(0);
+                    mDoorbellConfig.setDoorbellVideoCall(0);
+                }
                 break;
-            case R.id.rl_leave_message:
-                cbLeaveMessage.setChecked(!cbLeaveMessage.isChecked());
-                mDoorbellConfig.setDoorbellLeaveMessage(cbLeaveMessage.isChecked() ? 1 : 0);
+            case R.id.my_leave_message:
+                if (myLeaveMessage.isChecked()) {
+                    myLeaveMessage.setCheck(false);
+                    if (!myDial.isChecked())
+                        myVideoCall.setCheckable(true);
+                    myVideotap.setCheckable(true);
+                    mDoorbellConfig.setDoorbellLeaveMessage(0);
+                } else {
+                    myLeaveMessage.setCheck(true);
+                    myLeaveMessage.setCheckable(true);
+                    myVideoCall.setCheck(false);
+                    if (!myDial.isChecked())
+                        myVideoCall.setCheckable(false);
+                    myVideotap.setCheck(false);
+                    myVideotap.setCheckable(false);
+                    mDoorbellConfig.setDoorbellLeaveMessage(1);
+                    mDoorbellConfig.setDoorbellVideoCall(0);
+                    mDoorbellConfig.setDoorbellVideotap(0);
+                }
                 break;
         }
         setParam();

@@ -9,18 +9,7 @@
     android:orientation="vertical"
     tools:context="cn.jcyh.peephole.ui.activity.SetActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:text="@string/smart_doorbell"
-        android:textColor="@color/black_333333"
-        android:textSize="14sp"/>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="@color/colorPrimary"/>
+    <include layout="@layout/doorbell_title_layout"/>
 
     <ScrollView
         android:layout_width="match_parent"

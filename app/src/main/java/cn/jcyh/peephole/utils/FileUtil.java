@@ -1,7 +1,9 @@
 package cn.jcyh.peephole.utils;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Environment;
+import android.os.storage.StorageManager;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -14,7 +16,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+
+import timber.log.Timber;
 
 /**
  * Created by Jogger on 2018/2/4.
@@ -52,6 +61,42 @@ public class FileUtil {
                 .DIRECTORY_DCIM).getAbsolutePath() + File.separator + "Camera" + File.separator + "thumbnail";
     }
 
+    /**
+     * Return the paths of sdcard.
+     *
+     * @param removable True to return the paths of removable sdcard, false otherwise.
+     * @return the paths of sdcard
+     */
+    public List<String> getSDCardPaths(Context context, final boolean removable) {
+        List<String> paths = new ArrayList<>();
+        StorageManager sm = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
+        try {
+            Class<?> storageVolumeClazz = Class.forName("android.os.storage.StorageVolume");
+            Method getVolumeList = StorageManager.class.getMethod("getVolumeList");
+            Method getPath = storageVolumeClazz.getMethod("getPath");
+            Method isRemovable = storageVolumeClazz.getMethod("isRemovable");
+            Object result = getVolumeList.invoke(sm);
+            final int length = Array.getLength(result);
+            for (int i = 0; i < length; i++) {
+                Object storageVolumeElement = Array.get(result, i);
+                String path = (String) getPath.invoke(storageVolumeElement);
+                boolean res = (Boolean) isRemovable.invoke(storageVolumeElement);
+                if (removable == res) {
+                    paths.add(path);
+                }
+            }
+            Timber.e("-----------path:" + paths);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return paths;
+    }
 
     /**
      * 获取sd卡路径

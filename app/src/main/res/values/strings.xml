@@ -39,7 +39,7 @@
     <string name="sensor_set">感应设置</string>
     <string name="sensor_set_msg">设置感应到人后的执行的动作</string>
     <string name="net_push">网络推送</string>
-    <string name="videotape">录像</string>
+    <string name="videotap">录像</string>
     <string name="video_call">视频呼叫</string>
     <string name="send_msg">发送短信</string>
     <string name="dial">拨打电话</string>

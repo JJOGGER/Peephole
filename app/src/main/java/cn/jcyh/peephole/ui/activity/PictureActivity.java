@@ -120,7 +120,11 @@ public class PictureActivity extends BaseActivity {
                 endDeal(tempPath);
             }
         } else {
-            endDeal(tempPath);
+            if (mDoorbellConfig.getSensorVideotap() == 1) {
+                startRecord();
+            } else {
+                endDeal(tempPath);
+            }
         }
 
     }
@@ -130,7 +134,8 @@ public class PictureActivity extends BaseActivity {
         Map<String, Object> params = new HashMap<>();
         params.put("deviceId", IMEI);
         params.put("type", 1);
-        HttpAction.getHttpAction(this).sendPostImg(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL,
+        HttpAction.getHttpAction(
+                this).sendPostImg(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL,
                 tempPath, params, null);
         HttpAction.getHttpAction(this).getBindUsers(IMEI, new IDataListener<List<User>>() {
             @Override
@@ -162,6 +167,11 @@ public class PictureActivity extends BaseActivity {
         //设置图像的编码格式
         mRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
         File saveFile = null;
+        if (ConstantUtil.TYPE_DOORBELL_SYSTEM_RING.equals(mType)) {
+
+        }else {
+
+        }
         try {
             saveFile = new File(Environment.getExternalStorageDirectory()
                     .getCanonicalFile() + "/myvideo.mp4");

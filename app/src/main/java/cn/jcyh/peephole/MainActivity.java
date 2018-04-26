@@ -7,12 +7,16 @@ import android.content.IntentFilter;
 import android.support.v4.view.ViewPager;
 import android.util.DisplayMetrics;
 
+import java.io.File;
+import java.util.List;
+
 import butterknife.BindView;
 import cn.jcyh.peephole.adapter.MainPageAdapter;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.service.KeepBackRemoteService;
 import cn.jcyh.peephole.ui.activity.PictureActivity;
+import cn.jcyh.peephole.utils.FileUtil;
 import timber.log.Timber;
 
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_DOORBELL_SYSTEM_EVENT;
@@ -49,6 +53,12 @@ public class MainActivity extends BaseActivity {
         int heightPixels = displayMetrics.heightPixels;
         int widthPixels = displayMetrics.widthPixels;
         Timber.e("---->h:" + heightPixels + "---w:" + widthPixels);
+        List<String> sdCardPaths1 = FileUtil.getInstance().getSDCardPaths(getApplicationContext(), true);
+        File file = new File(sdCardPaths1.get(0));
+        Timber.e("--------file" + file.exists());
+        List<String> sdCardPaths = FileUtil.getInstance().getSDCardPaths(getApplicationContext(), false);
+         file = new File(sdCardPaths.get(0));
+        Timber.e("--------file" + file.exists());
     }
 
     @Override

@@ -51,7 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:paddingLeft="16dp"
-            android:text="@string/videotape"
+            android:text="@string/videotap"
             android:textColor="@color/white"
             android:textSize="14sp"/>
 

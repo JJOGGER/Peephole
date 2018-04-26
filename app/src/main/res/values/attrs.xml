@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="text" format="string"/>
+    <attr name="is_selected" format="boolean"/>
+    <attr name="text_size" format="dimension"/>
+    <attr name="text_color" format="color"/>
+    <declare-styleable name="MyDeviceParam">
+        <attr name="text"/>
+        <attr name="is_selected"/>
+        <attr name="text_size"/>
+        <attr name="text_color"/>
+    </declare-styleable>
+</resources>

@@ -13,12 +13,14 @@ import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.bean.DoorbellParam;
 import cn.jcyh.peephole.config.DoorbellConfig;
+import cn.jcyh.peephole.control.BcManager;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.ui.dialog.AutoSensorTimeDialog;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.OnDialogListener;
+import cn.jcyh.peephole.utils.ToastUtil;
 
 public class SetActivity extends BaseActivity {
     @BindView(R.id.cb_monitor)
@@ -63,6 +65,10 @@ public class SetActivity extends BaseActivity {
         cbMonitor.setChecked(isMonitor);
         tvSensorTimeTitle.setEnabled(isMonitor);
         tvSensorTime.setEnabled(isMonitor);
+        if (mDoorbellConfig.getAutoSensorTime() == 60)
+            tvSensorTime.setText(R.string.one_m);
+        else
+            tvSensorTime.setText(mDoorbellConfig.getAutoSensorTime() + getString(R.string.second));
         tvSensorSetTitle.setEnabled(isMonitor);
         tvSensorSet.setEnabled(isMonitor);
         rlSensorSet.setEnabled(isMonitor);
@@ -83,8 +89,8 @@ public class SetActivity extends BaseActivity {
                 startActivityForResult(intent, SENSOR_SET_REQUEST);
                 break;
             case R.id.rl_monitor:
-                cbMonitor.setChecked(!cbMonitor.isChecked());
-                mDoorbellConfig.setMonitorSwitch(cbMonitor.isChecked() ? 1 : 0);
+                switchMonitor();
+
                 HttpAction.getHttpAction(getApplicationContext()).setDoorbellConfig(IMEI, mDoorbellConfig, new IDataListener<Boolean>() {
                     @Override
                     public void onSuccess(Boolean aBoolean) {
@@ -104,6 +110,24 @@ public class SetActivity extends BaseActivity {
         }
     }
 
+    private void switchMonitor() {
+        final DoorbellConfig doorbellConfig = mControlCenter.getDoorbellConfig();
+        cbMonitor.setChecked(!cbMonitor.isChecked());
+        mDoorbellConfig.setMonitorSwitch(cbMonitor.isChecked() ? 1 : 0);
+        HttpAction.getHttpAction(this).setDoorbellConfig(IMEI, doorbellConfig, new IDataListener<Boolean>() {
+            @Override
+            public void onSuccess(Boolean aBoolean) {
+                mControlCenter.saveDoorbellConfig(mDoorbellConfig);
+                BcManager.getManager(getApplicationContext()).setPIRSensorOn(mDoorbellConfig.getMonitorSwitch() == 1);
+            }
+
+            @Override
+            public void onFailure(int errorCode) {
+                ToastUtil.showToast(getApplicationContext(), getString(R.string.set_failure) + errorCode);
+            }
+        });
+    }
+
     /**
      * 自动感应设置
      */
@@ -117,14 +141,13 @@ public class SetActivity extends BaseActivity {
             autoSensorTimeDialog.setOnDialogListener(new OnDialogListener() {
                 @Override
                 public void onConfirm(Object isConfirm) {
-                    if ((int)isConfirm == 60)
+                    if ((int) isConfirm == 60)
                         tvSensorTime.setText(R.string.one_m);
                     else
                         tvSensorTime.setText(isConfirm + getString(R.string.second));
                 }
             });
             mAutoSensorTimeDialog = new DialogHelper(this, autoSensorTimeDialog);
-        }else {
         }
         mAutoSensorTimeDialog.commit();
 
