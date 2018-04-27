@@ -37,7 +37,7 @@ public class MenuFragment extends BaseFragment {
     }
 
     @OnClick({R.id.tv_doorbell_set, R.id.tv_system_set, R.id.tv_file_manager,
-            R.id.tv_calendar, R.id.tv_browser, R.id.tv_video, R.id.tv_bind})
+            R.id.tv_calendar,R.id.tv_browser, R.id.tv_video, R.id.tv_bind})
     public void onClick(View v) {
         Intent intent = new Intent();
         switch (v.getId()) {
@@ -57,9 +57,9 @@ public class MenuFragment extends BaseFragment {
                 intent.setAction("android.intent.action.VIEW");
                 Uri content_url;
                 if (isZh()) {
-                    content_url = Uri.parse("http://www.baidu.com");
-                } else {
-                    content_url = Uri.parse("https://www.google.com");
+                    content_url= Uri.parse("http://www.baidu.com");
+                }else {
+                    content_url= Uri.parse("https://www.google.com");
                 }
                 intent.setData(content_url);
                 startActivity(intent);
@@ -68,6 +68,10 @@ public class MenuFragment extends BaseFragment {
                 ComponentName componentName = new ComponentName("com.mediatek.filemanager",
                         "com.mediatek.filemanager.FileManagerOperationActivity");
                 intent.setComponent(componentName);
+//                intent.setComponent(new ComponentName("com.cyanogenmod.filemanager",
+//                        "com.cyanogenmod.filemanager.activities.NavigationActivity"));
+//                startActivity(intent);
+//                Intent intent = new Intent(Intent.ACTION_MAIN);
                 startActivity(intent);
                 break;
             case R.id.tv_video:
@@ -78,7 +82,6 @@ public class MenuFragment extends BaseFragment {
                 break;
         }
     }
-
     private boolean isZh() {
         Locale locale = getResources().getConfiguration().locale;
         String language = locale.getLanguage();

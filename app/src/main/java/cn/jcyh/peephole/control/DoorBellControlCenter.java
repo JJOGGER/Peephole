@@ -38,6 +38,8 @@ public class DoorBellControlCenter {
     public static final String DOORBELL_PARAMS_TYPE_MODE = "mode";
     public static final String DOORBELL_PARAMS_TYPE_MONITOR = "monitor";
     public static final String DOORBELL_PARAMS_TYPE_SENSOR = "sensor";
+    public static final int DOORBELL_TYPE_RING=0;
+    public static final int DOORBELL_TYPE_ALARM=1;
     private static Context sContext;
     public static boolean sIsAnychatLogin = false;//标记anychat是否登录
     public AnyChatCoreSDK mAnyChat;//单例的anychat，同一事件的话可以使用这个

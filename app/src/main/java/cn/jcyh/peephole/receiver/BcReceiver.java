@@ -24,7 +24,8 @@ public class BcReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        mSensorTime = DoorBellControlCenter.getInstance(context).getDoorbellConfig().getAutoSensorTime();
+        mSensorTime = DoorBellControlCenter.getInstance(context).getDoorbellConfig()
+                .getAutoSensorTime();
         String act = intent.getAction();
         switch (act) {
             case "kphone.intent.action.LOCK_DETECT": { // TAMPER
@@ -39,7 +40,7 @@ public class BcReceiver extends BroadcastReceiver {
             case "kphone.intent.action.PIR": {// PIR
                 String extAct = intent.getStringExtra("value");
                 if (extAct.equals("PeopleIn")) {
-                    Timber.e("------->mTimer:"+mTimer+"-->PIR中断:有人来了");
+                    Timber.e("------->mTimer:" + mTimer + "-->PIR中断:有人来了");
                     if (mTimer != null && mTimerTask != null) {
                         return;
                     }
@@ -56,14 +57,14 @@ public class BcReceiver extends BroadcastReceiver {
             }
             case "kphone.intent.action.RING": { // OURDOOR_PRESS
                 String extAct = intent.getStringExtra("value");
-                if (extAct.equals("pressed")) {
+                if (extAct.equals("pressed") && !DoorBellControlCenter.sIsVideo) {
+                    DoorBellControlCenter.sIsVideo = true;
                     showToast(context, "RING中断:按下门铃键");
                     intent = new Intent(context, PictureActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.putExtra("type", TYPE_DOORBELL_SYSTEM_RING);
                     context.startActivity(intent);
                 } else if (extAct.equals("released")) {
-                    showToast(context, "RING中断:放开门铃键");
                 }
 //		}else if (act.equals("kphone.intent.action.HOME_PRESS")) { // INDOOR_PRESS
 //			String extAct = intent.getStringExtra("value");

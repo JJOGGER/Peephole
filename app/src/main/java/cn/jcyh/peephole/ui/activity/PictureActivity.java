@@ -26,7 +26,6 @@ import cn.jcyh.peephole.bean.User;
 import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
-import cn.jcyh.peephole.http.HttpUrlIble;
 import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.utils.ConstantUtil;
 import cn.jcyh.peephole.utils.FileUtil;
@@ -50,6 +49,7 @@ public class PictureActivity extends BaseActivity {
 
     @Override
     protected void init() {
+        DoorBellControlCenter.sIsVideo = true;
         mSurfaceView.getHolder().addCallback(mCallback);
         mType = getIntent().getStringExtra("type");
         mDoorbellConfig = DoorBellControlCenter.getInstance(this).getDoorbellConfig();
@@ -115,10 +115,15 @@ public class PictureActivity extends BaseActivity {
         //获取拍照的图片
         Map<String, Object> params = new HashMap<>();
         params.put("deviceId", IMEI);
-        params.put("type", 1);
-        HttpAction.getHttpAction(
-                this).sendPostImg(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL,
-                mImgPath, params, null);
+        params.put("type", mType);
+        int type = 0;
+        if (ConstantUtil.TYPE_DOORBELL_SYSTEM_RING.equals(mType)) {
+            type = DoorBellControlCenter.DOORBELL_TYPE_RING;
+        } else if (ConstantUtil.TYPE_DOORBELL_SYSTEM_ALARM.equals(mType)) {
+            type = DoorBellControlCenter.DOORBELL_TYPE_ALARM;
+        }
+        HttpAction.getHttpAction(this).sendDoorbellImg(IMEI, type,
+                mImgPath, null);
         if (ConstantUtil.TYPE_DOORBELL_SYSTEM_RING.equals(mType)) {
             if (mDoorbellConfig.getDoorbellVideotap() == 1) {
                 //开启了录像
@@ -173,7 +178,8 @@ public class PictureActivity extends BaseActivity {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
         Date date = new Date(System.currentTimeMillis());
         String time = simpleDateFormat.format(date);
-        final String tempPath = FileUtil.getInstance().getDoorbellVideoPath() + File.separator + "VID_" + time +
+        final String tempPath = FileUtil.getInstance().getDoorbellVideoPath() + File.separator +
+                "VID_" + time +
                 ".mp4";
         saveFile = new File(tempPath);
         mRecorder.setOutputFile(saveFile.getAbsolutePath());
@@ -224,7 +230,8 @@ public class PictureActivity extends BaseActivity {
             public void onSuccess(List<User> users) {
                 if (users != null && users.size() != 0) {
                     //通知用户
-                    DoorBellControlCenter.getInstance(getApplicationContext()).sendVideoCall(users, mType, mImgPath);
+                    DoorBellControlCenter.getInstance(getApplicationContext()).sendVideoCall
+                            (users, mType, mImgPath);
                     finish();
                 }
             }
@@ -292,4 +299,10 @@ public class PictureActivity extends BaseActivity {
             Timber.e("----------->c:");
         }
     };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        DoorBellControlCenter.sIsVideo = false;
+    }
 }

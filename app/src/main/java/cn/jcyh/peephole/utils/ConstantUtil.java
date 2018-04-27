@@ -36,6 +36,7 @@ public class ConstantUtil {
     public static final String ACTION_DOORBELL_LOGIN_RESULT = "cn.jcyh.eagleking.doorbell_login_result";//首次登录
     public static final String ACTION_ANYCHAT_LOGIN_RESULT_MSG = "cn.jcyh.eagleking.login_result_msg";//登录anychat
     public static final String ACTION_ANYCHAT_BASE_EVENT = "cn.jcyh.eagleking.base_event";
+    public static final String TYPE_ANYCHAT_LOGIN_STATE = "type_anychat_login_state";
     public static final String TYPE_ANYCHAT_ENTER_ROOM = "type_anychat_enter_room";
     public static final String TYPE_ANYCHAT_ONLINE_USER = "type_anychat_online_user";
     public static final String TYPE_ANYCHAT_LINK_CLOSE = "type_anychat_link_close";

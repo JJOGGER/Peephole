@@ -10,7 +10,7 @@ import cn.jcyh.peephole.http.HttpAction;
 import timber.log.Timber;
 
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_BASE_EVENT;
-import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_LOGIN_RESULT_MSG;
+import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_LOGIN_STATE;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_ENTER_ROOM;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_LINK_CLOSE;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_ONLINE_USER;
@@ -30,6 +30,10 @@ public class AnychatBaseEventAdapter implements AnyChatBaseEvent {
     @Override
     public void OnAnyChatConnectMessage(boolean bSuccess) {
         Timber.e("------OnAnyChatConnectMessage" + bSuccess);
+        Intent intent = new Intent(ACTION_ANYCHAT_BASE_EVENT);
+        intent.putExtra("dwErrorCode", bSuccess ? 1 : -1);
+        intent.putExtra("type",TYPE_ANYCHAT_LOGIN_STATE);
+        mContext.sendBroadcast(intent);
     }
 
     @Override
@@ -42,10 +46,12 @@ public class AnychatBaseEventAdapter implements AnyChatBaseEvent {
             DoorBellControlCenter.sIsAnychatLogin = false;
             Timber.e("-------anychat登录失败！错误码:" + dwErrorCode);
             if (dwErrorCode == 205) {
-                HttpAction.getHttpAction(mContext).initDoorbell(DoorBellControlCenter.getInstance(mContext).getIMEI(), null);
+                HttpAction.getHttpAction(mContext).initDoorbell(DoorBellControlCenter.getInstance
+                        (mContext).getIMEI(), null);
             }
         }
-        Intent intent = new Intent(ACTION_ANYCHAT_LOGIN_RESULT_MSG);
+        Intent intent = new Intent(ACTION_ANYCHAT_BASE_EVENT);
+        intent.putExtra("type",TYPE_ANYCHAT_LOGIN_STATE);
         intent.putExtra("dwErrorCode", dwErrorCode);
         mContext.sendBroadcast(intent);
     }

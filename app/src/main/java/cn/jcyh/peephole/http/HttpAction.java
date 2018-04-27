@@ -166,6 +166,12 @@ public class HttpAction {
             }
         });
     }
+    public void sendDoorbellImg(String deviceId,int type,String filePath,final IDataListener<Boolean>listener){
+        Map<String, Object> params = new HashMap<>();
+        params.put("deviceId", deviceId);
+        params.put("type", type);
+        sendPostImg(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL,filePath,params,listener);
+    }
 
     private void request(final String url, Map<String, Object> params, final
     IDataListener<HttpResult> listener) {
@@ -225,7 +231,7 @@ public class HttpAction {
         });
     }
 
-    public void sendPostImg(final String url, String filePath, final Map<String, Object> params,
+    private void sendPostImg(final String url, String filePath, final Map<String, Object> params,
                             final IDataListener listener) {
         MediaType type = MediaType.parse("image/jpeg");//"text/xml;charset=utf-8"
         File file = new File(filePath);

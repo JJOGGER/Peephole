@@ -3,6 +3,8 @@ package cn.jcyh.peephole.ui.fragment;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,8 +18,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -30,6 +34,7 @@ import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.utils.LunarCalendar;
 import cn.jcyh.peephole.utils.ToastUtil;
+import timber.log.Timber;
 
 import static cn.jcyh.peephole.R.id.tv_time;
 
@@ -132,13 +137,21 @@ public class MainFragment extends BaseFragment {
                 break;
             case R.id.rl_leave_message:
                 Intent intent = new Intent();
-//                        ComponentName componentName = new ComponentName("com.android.gallery3d", "com.android" +
+//                        ComponentName componentName = new ComponentName("com.android
+// .gallery3d", "com.android" +
 //                                ".gallery3d.app.GalleryActivity");
 //                intent.setComponent(componentName);
-                ComponentName comp = new ComponentName("com.android.camera", "com.android.camera.VideoPlayer.GalleryPicker");
-                intent.setComponent(comp);
-                intent.setAction("android.intent.action.VIEW");
-                startActivity(intent);
+//                ComponentName comp = new ComponentName("com.android.camera", "com.android
+// .camera.VideoPlayer.GalleryPicker");
+//                intent.setComponent(comp);
+//                intent.setAction("android.intent.action.VIEW");
+//                startActivity(intent);
+                Intent i = new Intent();
+//                intent.setAction(Intent.ACTION_GET_CONTENT);
+                String allApps = getAllApps();
+                i.setPackage(allApps);
+                Timber.e("-------->"+allApps);
+                startActivity(i);
                 break;
             case R.id.rl_monitor_switch:
                 if (mProgressDialog.isShowing()) return;
@@ -153,11 +166,42 @@ public class MainFragment extends BaseFragment {
         }
     }
 
+    /**
+     * 查询手机内系统应用
+     *
+     */
+    public String getAllApps() {
+        String packagename="";
+        List<PackageInfo> apps = new ArrayList<PackageInfo>();
+        PackageManager pManager = mActivity.getPackageManager();
+        //获取手机内所有应用
+        List<PackageInfo> paklist = pManager.getInstalledPackages(0);
+        for (int i = 0; i < paklist.size(); i++) {
+            PackageInfo pak = (PackageInfo) paklist.get(i);
+            //判断系统预装的应用程序
+            if (!((pak.applicationInfo.flags & pak.applicationInfo.FLAG_SYSTEM) <= 0)) {
+                apps.add(pak);
+            }
+        }
+        for (int i = 0; i < apps.size(); i++) {
+            PackageInfo pinfo = apps.get(i);
+            //set Application Name
+            String a = pManager.getApplicationLabel(pinfo.applicationInfo).toString();
+            Timber.e("---------" + a);
+            if (a.contains("图库")) {
+                packagename = pinfo.packageName;
+                break;
+            }
+        }
+        return packagename;
+    }
+
     private void switchMonitor() {
         final DoorBellControlCenter controlCenter = DoorBellControlCenter.getInstance(mActivity);
         final DoorbellConfig doorbellConfig = controlCenter.getDoorbellConfig();
         doorbellConfig.setMonitorSwitch(1 - doorbellConfig.getMonitorSwitch());
-        HttpAction.getHttpAction(mActivity).setDoorbellConfig(controlCenter.getIMEI(), doorbellConfig, new IDataListener<Boolean>() {
+        HttpAction.getHttpAction(mActivity).setDoorbellConfig(controlCenter.getIMEI(),
+                doorbellConfig, new IDataListener<Boolean>() {
             @Override
             public void onSuccess(Boolean aBoolean) {
                 controlCenter.saveDoorbellConfig(doorbellConfig);
@@ -166,7 +210,8 @@ public class MainFragment extends BaseFragment {
                 } else {
                     ToastUtil.showToast(mActivity, R.string.monitor_closed);
                 }
-                BcManager.getManager(mActivity).setPIRSensorOn(doorbellConfig.getMonitorSwitch() == 1);
+                BcManager.getManager(mActivity).setPIRSensorOn(doorbellConfig.getMonitorSwitch()
+                        == 1);
             }
 
             @Override
@@ -187,11 +232,13 @@ public class MainFragment extends BaseFragment {
      * 打开系统相册
      */
     public void openAlbum() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-//        intent.addCategory(Intent.ACTION_MAIN);
-//        ComponentName componentName = new ComponentName("com.android.gallery3d", "com.android" +
-//                ".gallery3d.app.GalleryActivity");
-//        intent.setComponent(componentName);
+//        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media
+//                .EXTERNAL_CONTENT_URI);
+        Intent intent=new Intent(Intent.ACTION_PICK_ACTIVITY,MediaStore.Images.Media.EXTERNAL_CONTENT_URI );
+        intent.addCategory(Intent.ACTION_MAIN);
+        ComponentName componentName = new ComponentName("com.android.gallery3d", "com.android" +
+                ".gallery3d.app.GalleryActivity");
+        intent.setComponent(componentName);
         startActivity(intent);
     }
 
@@ -240,7 +287,8 @@ public class MainFragment extends BaseFragment {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            if (mActivity == null || mActivity.isFinishing() || mActivity.getFragmentManager() == null)
+            if (mActivity == null || mActivity.isFinishing() || mActivity.getFragmentManager() ==
+                    null)
                 return;
             if (msg.what == WHAT) {
                 mHourMinDate.setTime(System.currentTimeMillis());
@@ -254,7 +302,8 @@ public class MainFragment extends BaseFragment {
                 mSpannableString.append(time).append(" ").append(mAmPm);
                 mSpannableString.setSpan(mSizeSpanTime, 0, time.length(),
                         Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-                mSpannableString.setSpan(mSizeSpanAmPm, time.length(), time.length() + " ".length() + mAmPm.length(),
+                mSpannableString.setSpan(mSizeSpanAmPm, time.length(), time.length() + " ".length
+                                () + mAmPm.length(),
                         Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
                 tvTime.setText(mSpannableString, TextView.BufferType.SPANNABLE);
             }
