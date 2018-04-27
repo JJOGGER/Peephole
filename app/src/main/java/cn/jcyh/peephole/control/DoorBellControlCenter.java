@@ -329,7 +329,7 @@ public class DoorBellControlCenter {
      * 图片请求响应
      */
     public void sendLastedPicsNamesResponse(int userId, String command, int requestNum) {
-        File baseFile = new File(FileUtil.getInstance().getDoorbellMediaPath());
+        File baseFile = new File(FileUtil.getInstance().getDoorbellImgPath());
         CommandJson commandJson = new CommandJson();
         commandJson.setCommand(command);
         if (!baseFile.exists() || baseFile.list() == null || baseFile.list().length == 0) {
@@ -389,7 +389,7 @@ public class DoorBellControlCenter {
         FileUtil fileUtil = FileUtil.getInstance();
         if (CommandJson.CommandType.DOORBELL_IMG_COMMAND.equals(command)) {
             for (int i = 0; i < names.size(); i++) {
-                File file = new File(fileUtil.getDoorbellMediaPath() + File.separator + names.get
+                File file = new File(fileUtil.getDoorbellImgPath() + File.separator + names.get
                         (i));
                 Timber.e("----------->filePath:" + file.getAbsolutePath());
                 if (file.exists()) {
@@ -415,7 +415,7 @@ public class DoorBellControlCenter {
                         mAnyChat.TransFile(userId, filePath, 0, CommandJson.CommandType
                                 .DOORBELL_MEDIA_THUMBNAIL_PARAM, 0, new AnyChatOutParam());
                     else {
-                        media.setDataSource(fileUtil.getDoorbellMediaPath() + File.separator +
+                        media.setDataSource(fileUtil.getDoorbellImgPath() + File.separator +
                                 names.get(i));
                         Bitmap bitmap = media.getFrameAtTime();
                         fileUtil.saveBitmap2File(bitmap, filePath);
@@ -435,7 +435,7 @@ public class DoorBellControlCenter {
      * @param fileName .mp4
      */
     public void sendLastVideo(int userId, String fileName) {
-        File file = new File(FileUtil.getInstance().getDoorbellMediaPath() + File.separator +
+        File file = new File(FileUtil.getInstance().getDoorbellImgPath() + File.separator +
                 fileName);
         CommandJson commandJson = new CommandJson();
         commandJson.setCommandType(CommandJson.CommandType.DOORBELL_LASTED_VIDEO_RESPONSE);
@@ -554,9 +554,10 @@ public class DoorBellControlCenter {
      * @param aId anychatid
      */
     public void sendVideoCallImg(int aId, String filePath) {
-        // TODO: 2018/2/4 判断视频呼叫已打开
+        AnyChatOutParam anyChatOutParam = new AnyChatOutParam();
         mAnyChat.TransFile(aId, filePath, 0, CommandJson.CommandType.DOORBELL_VIDEO_CALL_PARAM,
-                0, new AnyChatOutParam());
+                0, anyChatOutParam);
+        Timber.e("--------->aId"+aId+"-->"+filePath+"--"+anyChatOutParam);
     }
 
     //

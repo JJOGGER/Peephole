@@ -60,11 +60,18 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
         Intent intent = new Intent();
         intent.putExtra("dwUserid", dwUserid);
         intent.putExtra("result", result);
+        Timber.e("-----OnAnyChatTransBuffer" + result + "---dwUserid:" + dwUserid);
         intent.setAction(ACTION_ANYCHAT_TRANS_DATA_EVENT);
         intent.putExtra("type", TYPE_ANYCHAT_TRANS_BUFFER);
-        CommandJson commandJson = mGson.fromJson(result, CommandJson.class);
+        CommandJson commandJson = null;
+        try {
+            commandJson = mGson.fromJson(result, CommandJson.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Timber.e("-----e:"+e.getMessage());
+        }
+        if (commandJson == null) return;
         intent.putExtra("command", commandJson);
-        Timber.e("-----OnAnyChatTransBuffer" + result + "---dwUserid:" + dwUserid);
         mContext.sendBroadcast(intent);
         switch (commandJson.getCommandType()) {
             case CommandJson.CommandType.DOORBELL_LASTED_IMG_NAMES_REQUEST:

@@ -131,6 +131,14 @@ public class MainFragment extends BaseFragment {
                 openAlbum();
                 break;
             case R.id.rl_leave_message:
+                Intent intent = new Intent();
+//                        ComponentName componentName = new ComponentName("com.android.gallery3d", "com.android" +
+//                                ".gallery3d.app.GalleryActivity");
+//                intent.setComponent(componentName);
+                ComponentName comp = new ComponentName("com.android.camera", "com.android.camera.VideoPlayer.GalleryPicker");
+                intent.setComponent(comp);
+                intent.setAction("android.intent.action.VIEW");
+                startActivity(intent);
                 break;
             case R.id.rl_monitor_switch:
                 if (mProgressDialog.isShowing()) return;
@@ -139,7 +147,7 @@ public class MainFragment extends BaseFragment {
             case R.id.rl_sos:
                 break;
             case R.id.iv_home:
-                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);// 启动系统相机
+                intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);// 启动系统相机
                 startActivity(intent);
                 break;
         }
@@ -179,11 +187,11 @@ public class MainFragment extends BaseFragment {
      * 打开系统相册
      */
     public void openAlbum() {
-        Intent intent = new Intent();
-        intent.addCategory(Intent.ACTION_MAIN);
-        ComponentName componentName = new ComponentName("com.android.gallery3d", "com.android" +
-                ".gallery3d.app.GalleryActivity");
-        intent.setComponent(componentName);
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//        intent.addCategory(Intent.ACTION_MAIN);
+//        ComponentName componentName = new ComponentName("com.android.gallery3d", "com.android" +
+//                ".gallery3d.app.GalleryActivity");
+//        intent.setComponent(componentName);
         startActivity(intent);
     }
 

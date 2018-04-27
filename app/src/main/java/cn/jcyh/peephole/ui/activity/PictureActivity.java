@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
 import android.os.Build;
-import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -42,6 +41,7 @@ public class PictureActivity extends BaseActivity {
     private MediaRecorder mRecorder;
     private DoorbellConfig mDoorbellConfig;
     private boolean mIsRecording = false;
+    private String mImgPath;
 
     @Override
     public int getLayoutId() {
@@ -96,7 +96,7 @@ public class PictureActivity extends BaseActivity {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
         Date date = new Date(System.currentTimeMillis());
         String time = simpleDateFormat.format(date);
-        final String tempPath = FileUtil.getInstance().getDoorbellMediaPath() + File.separator + "IMG_" + time +
+        mImgPath = FileUtil.getInstance().getDoorbellImgPath() + File.separator + "IMG_" + time +
                 ".jpg";
         simpleDateFormat.applyPattern("yyyy/MM/dd HH:mm:ss");
         time = simpleDateFormat.format(date);
@@ -105,54 +105,57 @@ public class PictureActivity extends BaseActivity {
         int heightPixels = displayMetrics.heightPixels;
         int widthPixels = displayMetrics.widthPixels;
         boolean isCompleted = ImgUtil.createWaterMaskWidthText(getApplicationContext(),
-                tempPath, bitmap,
+                mImgPath, bitmap,
                 BitmapFactory.decodeResource(getResources(), R.mipmap.eagleking),
                 time, heightPixels, widthPixels);
         Intent intent = getIntent();
-        intent.putExtra("filePath", tempPath);
+        intent.putExtra("filePath", mImgPath);
         setResult(RESULT_OK, intent);
         closeCamera();
-        if (ConstantUtil.TYPE_DOORBELL_SYSTEM_RING.equals(mType)) {
-            if (mDoorbellConfig.getDoorbellVideotap() == 1) {
-                //开启了录像
-                startRecord();
-            } else {
-                endDeal(tempPath);
-            }
-        } else {
-            if (mDoorbellConfig.getSensorVideotap() == 1) {
-                startRecord();
-            } else {
-                endDeal(tempPath);
-            }
-        }
-
-    }
-
-    private void endDeal(final String tempPath) {
         //获取拍照的图片
         Map<String, Object> params = new HashMap<>();
         params.put("deviceId", IMEI);
         params.put("type", 1);
         HttpAction.getHttpAction(
                 this).sendPostImg(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL,
-                tempPath, params, null);
-        HttpAction.getHttpAction(this).getBindUsers(IMEI, new IDataListener<List<User>>() {
-            @Override
-            public void onSuccess(List<User> users) {
-                if (users != null && users.size() != 0) {
-                    //通知用户
-                    DoorBellControlCenter.getInstance(getApplicationContext()).sendVideoCall(users, mType, tempPath);
+                mImgPath, params, null);
+        if (ConstantUtil.TYPE_DOORBELL_SYSTEM_RING.equals(mType)) {
+            if (mDoorbellConfig.getDoorbellVideotap() == 1) {
+                //开启了录像
+                startRecord();
+            } else {
+                if (mDoorbellConfig.getDoorbellLeaveMessage() == 1) {
+                    startRecord();
+                } else {
+                    endDeal();
                 }
             }
-
-            @Override
-            public void onFailure(int errorCode) {
-                Timber.e("------errorCode" + errorCode);
+        } else {
+            if (mDoorbellConfig.getSensorVideotap() == 1) {
+                startRecord();
+            } else {
+                endDeal();
             }
-        });
+        }
+
     }
 
+    private void endDeal() {
+        if (ConstantUtil.TYPE_DOORBELL_SYSTEM_RING.equals(mType)) {
+            if (mDoorbellConfig.getDoorbellVideoCall() == 1) {
+                sendVideoCall();
+            }
+        } else {
+            if (mDoorbellConfig.getSensorVideoCall() == 1) {
+                sendVideoCall();
+            }
+        }
+
+    }
+
+    /**
+     * 录像(停留报警，按门铃/留言)
+     */
     private void startRecord() {
         mSurfaceView.getHolder().setFixedSize(1024, 600);
         mSurfaceView.getHolder().setKeepScreenOn(true);
@@ -167,17 +170,12 @@ public class PictureActivity extends BaseActivity {
         //设置图像的编码格式
         mRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
         File saveFile = null;
-        if (ConstantUtil.TYPE_DOORBELL_SYSTEM_RING.equals(mType)) {
-
-        }else {
-
-        }
-        try {
-            saveFile = new File(Environment.getExternalStorageDirectory()
-                    .getCanonicalFile() + "/myvideo.mp4");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+        Date date = new Date(System.currentTimeMillis());
+        String time = simpleDateFormat.format(date);
+        final String tempPath = FileUtil.getInstance().getDoorbellVideoPath() + File.separator + "VID_" + time +
+                ".mp4";
+        saveFile = new File(tempPath);
         mRecorder.setOutputFile(saveFile.getAbsolutePath());
         mRecorder.setPreviewDisplay(mSurfaceView.getHolder().getSurface());
         try {
@@ -191,12 +189,21 @@ public class PictureActivity extends BaseActivity {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(mDoorbellConfig.getVideotapTime() * 1000);
+                    if (ConstantUtil.TYPE_DOORBELL_SYSTEM_RING.equals(mType)) {
+                        if (mDoorbellConfig.getSensorVideotap() == 1) {
+                            Thread.sleep(mDoorbellConfig.getVideotapTime() * 1000);
+                        } else {
+                            //留言
+                            Thread.sleep(mDoorbellConfig.getVideoLeaveMsgTime() * 1000);
+                        }
+                    } else {
+                        Thread.sleep(mDoorbellConfig.getVideotapTime() * 1000);
+                    }
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             mRecorder.stop();
-                            finish();
+                            endDeal();
                         }
                     });
                 } catch (InterruptedException e) {
@@ -204,6 +211,30 @@ public class PictureActivity extends BaseActivity {
                 }
             }
         }).start();
+
+    }
+
+    /**
+     * 发视频推送
+     */
+    private void sendVideoCall() {
+        //发视频推送
+        HttpAction.getHttpAction(this).getBindUsers(IMEI, new IDataListener<List<User>>() {
+            @Override
+            public void onSuccess(List<User> users) {
+                if (users != null && users.size() != 0) {
+                    //通知用户
+                    DoorBellControlCenter.getInstance(getApplicationContext()).sendVideoCall(users, mType, mImgPath);
+                    finish();
+                }
+            }
+
+            @Override
+            public void onFailure(int errorCode) {
+                Timber.e("------errorCode" + errorCode);
+                finish();
+            }
+        });
 
     }
 

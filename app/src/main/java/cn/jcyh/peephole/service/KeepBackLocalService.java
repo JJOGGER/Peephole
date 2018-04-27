@@ -105,10 +105,6 @@ public class KeepBackLocalService extends Service {
         return START_STICKY;
     }
 
-    private String getAndroidIMEI() {
-        return android.provider.Settings.System.getString(getContentResolver(), android.provider.Settings.System.ANDROID_ID);
-    }
-
     /**
      * 连接anychat
      */

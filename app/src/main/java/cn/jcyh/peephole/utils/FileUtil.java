@@ -51,14 +51,22 @@ public class FileUtil {
     /**
      * 猫眼图片路径
      */
-    public String getDoorbellMediaPath() {
+    public String getDoorbellImgPath() {
         return Environment.getExternalStoragePublicDirectory(Environment
-                .DIRECTORY_DCIM).getAbsolutePath() + File.separator + "Camera";
+                .DIRECTORY_DCIM).getAbsolutePath();
+    }
+
+    /**
+     * 猫眼图片路径
+     */
+    public String getDoorbellVideoPath() {
+        return Environment.getExternalStoragePublicDirectory(Environment
+                .DIRECTORY_MOVIES).getAbsolutePath();
     }
 
     public String getDoorbellMediaThumbnailPath() {
         return Environment.getExternalStoragePublicDirectory(Environment
-                .DIRECTORY_DCIM).getAbsolutePath() + File.separator + "Camera" + File.separator + "thumbnail";
+                .DIRECTORY_MOVIES).getAbsolutePath() + File.separator + "thumbnail";
     }
 
     /**

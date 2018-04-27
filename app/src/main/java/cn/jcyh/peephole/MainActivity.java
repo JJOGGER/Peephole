@@ -15,13 +15,10 @@ import cn.jcyh.peephole.adapter.MainPageAdapter;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.service.KeepBackRemoteService;
-import cn.jcyh.peephole.ui.activity.PictureActivity;
 import cn.jcyh.peephole.utils.FileUtil;
 import timber.log.Timber;
 
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_DOORBELL_SYSTEM_EVENT;
-import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_DOORBELL_SYSTEM_ALARM;
-import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_DOORBELL_SYSTEM_RING;
 
 //按门铃，发消息--》app收到消息--》发起视频通话
 public class MainActivity extends BaseActivity {
@@ -74,18 +71,15 @@ public class MainActivity extends BaseActivity {
         public void onReceive(Context context, Intent intent) {
             if (isFinishing() || getSupportFragmentManager() == null || intent.getAction() == null)
                 return;
-            switch (intent.getAction()) {
-                case ACTION_DOORBELL_SYSTEM_EVENT:
-                    String type = intent.getStringExtra("type");
-                    if (TYPE_DOORBELL_SYSTEM_RING.equals(type)) {
-                        // TODO: 2018/2/4 获取绑定猫眼的用户列表
-//  mControlCenter.sendVideoCall();
-
-                    } else if (TYPE_DOORBELL_SYSTEM_ALARM.equals(type)) {
-                        startNewActivityForResult(PictureActivity.class, REQEUST_CAPTURE_ALARM, "type", TYPE_DOORBELL_SYSTEM_ALARM);
-                    }
-                    break;
-            }
+//            switch (intent.getAction()) {
+//                case ACTION_DOORBELL_SYSTEM_EVENT:
+//                    String type = intent.getStringExtra("type");
+//                    if (TYPE_DOORBELL_SYSTEM_RING.equals(type)) {
+//                    } else if (TYPE_DOORBELL_SYSTEM_ALARM.equals(type)) {
+//                        startNewActivityForResult(PictureActivity.class, REQEUST_CAPTURE_ALARM, "type", TYPE_DOORBELL_SYSTEM_ALARM);
+//                    }
+//                    break;
+//            }
         }
     }
 
