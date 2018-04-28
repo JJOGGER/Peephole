@@ -107,6 +107,7 @@ public class BcManager {
      * @param on
      */
     public void setPIRSensorOn(boolean on) {
+        if (ics==null) return;
         if (on) {
             try {
                 ics.writeSysFileStatusInt(Utils.PIR_EN_STATE, 1);

@@ -51,11 +51,35 @@ public class MainActivity extends BaseActivity {
         int widthPixels = displayMetrics.widthPixels;
         Timber.e("---->h:" + heightPixels + "---w:" + widthPixels);
         List<String> sdCardPaths1 = FileUtil.getInstance().getSDCardPaths(getApplicationContext(), true);
-        File file = new File(sdCardPaths1.get(0));
-        Timber.e("--------file" + file.exists());
+        File file;
+        if (sdCardPaths1 != null && sdCardPaths1.size() > 0) {
+            file = new File(sdCardPaths1.get(0));
+            Timber.e("--------file" + file.exists() + "--sdCardPaths1：" + sdCardPaths1);
+        }
         List<String> sdCardPaths = FileUtil.getInstance().getSDCardPaths(getApplicationContext(), false);
-         file = new File(sdCardPaths.get(0));
-        Timber.e("--------file" + file.exists());
+        if (sdCardPaths != null && sdCardPaths.size() > 0) {
+            file = new File(sdCardPaths.get(0));
+            Timber.e("--------file" + file.exists() + "--sdCardPaths：" + sdCardPaths);
+        }
+        String sdCardPath = "/protect_s/prod_info";
+        Timber.e("----------sd:" + sdCardPath);
+        File file1 = new File(sdCardPath);
+        Timber.e("----------path:" + file1.exists());
+        searchFile(file1);
+//        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+//        if(bluetoothAdapter != null){
+//            bluetoothAdapter.enable();
+//        }
+    }
+
+    private void searchFile(File file) {
+        if (file.isDirectory() && file.list() != null) {
+            for (int i = 0; i < file.list().length; i++) {
+                Timber.e("--------file:" + file.list()[i]);
+                File file2 = new File(file.getAbsolutePath() + File.separator + file.list()[i]);
+                searchFile(file2);
+            }
+        }
     }
 
     @Override
@@ -89,7 +113,6 @@ public class MainActivity extends BaseActivity {
         Timber.e("-------------onActivityResult" + resultCode + "---" + requestCode);
         if (resultCode == RESULT_OK) {
             if (requestCode == REQEUST_CAPTURE_RING) {
-
 //                mControlCenter.sendVideoCall();
             } else if (requestCode == REQEUST_CAPTURE_ALARM) {
 

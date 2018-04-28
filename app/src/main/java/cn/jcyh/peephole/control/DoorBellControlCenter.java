@@ -559,7 +559,6 @@ public class DoorBellControlCenter {
         AnyChatOutParam anyChatOutParam = new AnyChatOutParam();
         mAnyChat.TransFile(aId, filePath, 0, CommandJson.CommandType.DOORBELL_VIDEO_CALL_PARAM,
                 0, anyChatOutParam);
-        Timber.e("--------->aId"+aId+"-->"+filePath+"--"+anyChatOutParam);
     }
 
     //

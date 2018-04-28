@@ -2,16 +2,20 @@ package cn.jcyh.peephole.ui.fragment;
 
 import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.telephony.TelephonyManager;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.style.AbsoluteSizeSpan;
 import android.view.View;
 import android.widget.ImageView;
@@ -58,6 +62,7 @@ public class MainFragment extends BaseFragment {
     private TimeThread mTimeThread;
     private String mAmPm;
     private ProgressDialog mProgressDialog;
+    private DoorbellConfig mDoorbellConfig;
 
     public static MainFragment getInstance(Bundle bundle) {
         if (sInstance == null)
@@ -84,6 +89,7 @@ public class MainFragment extends BaseFragment {
         mTimeThread.start();
         mProgressDialog = new ProgressDialog(mActivity);
         mProgressDialog.setMessage(getString(R.string.waitting));
+        mDoorbellConfig = DoorBellControlCenter.getInstance(mActivity).getDoorbellConfig();
     }
 
     @Override
@@ -150,7 +156,7 @@ public class MainFragment extends BaseFragment {
 //                intent.setAction(Intent.ACTION_GET_CONTENT);
                 String allApps = getAllApps();
                 i.setPackage(allApps);
-                Timber.e("-------->"+allApps);
+                Timber.e("-------->" + allApps);
                 startActivity(i);
                 break;
             case R.id.rl_monitor_switch:
@@ -158,6 +164,7 @@ public class MainFragment extends BaseFragment {
                 switchMonitor();
                 break;
             case R.id.rl_sos:
+                calSOS();
                 break;
             case R.id.iv_home:
                 intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);// 启动系统相机
@@ -166,12 +173,39 @@ public class MainFragment extends BaseFragment {
         }
     }
 
+    private void calSOS() {
+        //检查是否有手机卡可用
+        TelephonyManager telMgr = (TelephonyManager)
+                mActivity.getSystemService(Context.TELEPHONY_SERVICE);
+        int simState = telMgr.getSimState();
+        boolean result = true;
+        switch (simState) {
+            case TelephonyManager.SIM_STATE_ABSENT:
+                result = false; // 没有SIM卡
+                break;
+            case TelephonyManager.SIM_STATE_UNKNOWN:
+                result = false;
+                break;
+        }
+        if (!result) {
+            ToastUtil.showToast(mActivity, getString(R.string.no_sim_msg));
+            return;
+        }
+        if (!TextUtils.isEmpty(mDoorbellConfig.getSosNumber())) {
+            Intent intent = new Intent(Intent.ACTION_CALL);
+            Uri data = Uri.parse("tel:" + mDoorbellConfig.getSosNumber());
+            intent.setData(data);
+            startActivity(intent);
+        } else {
+            ToastUtil.showToast(mActivity, getString(R.string.no_sos_number));
+        }
+    }
+
     /**
      * 查询手机内系统应用
-     *
      */
     public String getAllApps() {
-        String packagename="";
+        String packagename = "";
         List<PackageInfo> apps = new ArrayList<PackageInfo>();
         PackageManager pManager = mActivity.getPackageManager();
         //获取手机内所有应用
@@ -202,23 +236,23 @@ public class MainFragment extends BaseFragment {
         doorbellConfig.setMonitorSwitch(1 - doorbellConfig.getMonitorSwitch());
         HttpAction.getHttpAction(mActivity).setDoorbellConfig(controlCenter.getIMEI(),
                 doorbellConfig, new IDataListener<Boolean>() {
-            @Override
-            public void onSuccess(Boolean aBoolean) {
-                controlCenter.saveDoorbellConfig(doorbellConfig);
-                if (doorbellConfig.getMonitorSwitch() == 1) {
-                    ToastUtil.showToast(mActivity, R.string.monitor_opened);
-                } else {
-                    ToastUtil.showToast(mActivity, R.string.monitor_closed);
-                }
-                BcManager.getManager(mActivity).setPIRSensorOn(doorbellConfig.getMonitorSwitch()
-                        == 1);
-            }
+                    @Override
+                    public void onSuccess(Boolean aBoolean) {
+                        controlCenter.saveDoorbellConfig(doorbellConfig);
+                        if (doorbellConfig.getMonitorSwitch() == 1) {
+                            ToastUtil.showToast(mActivity, R.string.monitor_opened);
+                        } else {
+                            ToastUtil.showToast(mActivity, R.string.monitor_closed);
+                        }
+                        BcManager.getManager(mActivity).setPIRSensorOn(doorbellConfig.getMonitorSwitch()
+                                == 1);
+                    }
 
-            @Override
-            public void onFailure(int errorCode) {
-                ToastUtil.showToast(mActivity, getString(R.string.set_failure) + errorCode);
-            }
-        });
+                    @Override
+                    public void onFailure(int errorCode) {
+                        ToastUtil.showToast(mActivity, getString(R.string.set_failure) + errorCode);
+                    }
+                });
     }
 
     @Override
@@ -234,7 +268,7 @@ public class MainFragment extends BaseFragment {
     public void openAlbum() {
 //        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media
 //                .EXTERNAL_CONTENT_URI);
-        Intent intent=new Intent(Intent.ACTION_PICK_ACTIVITY,MediaStore.Images.Media.EXTERNAL_CONTENT_URI );
+        Intent intent = new Intent(Intent.ACTION_PICK_ACTIVITY, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         intent.addCategory(Intent.ACTION_MAIN);
         ComponentName componentName = new ComponentName("com.android.gallery3d", "com.android" +
                 ".gallery3d.app.GalleryActivity");
@@ -305,7 +339,8 @@ public class MainFragment extends BaseFragment {
                 mSpannableString.setSpan(mSizeSpanAmPm, time.length(), time.length() + " ".length
                                 () + mAmPm.length(),
                         Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-                tvTime.setText(mSpannableString, TextView.BufferType.SPANNABLE);
+                if (tvTime != null)
+                    tvTime.setText(mSpannableString, TextView.BufferType.SPANNABLE);
             }
         }
     }

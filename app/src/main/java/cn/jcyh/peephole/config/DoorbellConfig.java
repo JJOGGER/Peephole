@@ -145,7 +145,7 @@ public class DoorbellConfig {
     }
 
     public String getMasterNumber() {
-        return masterNumber;
+        return masterNumber == null ? "" : masterNumber;
     }
 
     public void setMasterNumber(String masterNumber) {
@@ -153,7 +153,7 @@ public class DoorbellConfig {
     }
 
     public String getSosNumber() {
-        return sosNumber;
+        return sosNumber == null ? "" : sosNumber;
     }
 
     public void setSosNumber(String sosNumber) {

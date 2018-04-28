@@ -82,7 +82,8 @@ public class KeepBackLocalService extends Service {
         //初始化配置
         BcManager manager = BcManager.getManager(getApplicationContext());
         DoorbellConfig doorbellConfig = mControlCenter.getDoorbellConfig();
-        manager.setPIRSensorOn(doorbellConfig.getMonitorSwitch() == 1);
+        if (manager != null)
+            manager.setPIRSensorOn(doorbellConfig.getMonitorSwitch() == 1);
     }
 
     @Override

@@ -131,6 +131,16 @@
     <string name="fourty_s">40秒</string>
     <string name="one_m">1分钟</string>
     <string name="second">秒</string>
+    <string name="volume">音量</string>
+    <string name="rington_volume_set_msg">设置门铃及报警声音的音量</string>
+    <string name="ring">铃声</string>
+    <string name="doorbell_ring">门铃铃声</string>
+    <string name="alarm_ring">报警铃声</string>
+    <string name="input_no_null">输入不能为空</string>
+    <string name="regex_phone">^1[34578]\\d{9}$</string>
+    <string name="phone_no_regex">手机号码不匹配</string>
+    <string name="no_sim_msg">未检测到SIM卡</string>
+    <string name="no_sos_number">SOS号码未设置</string>
     <!--<string name="date_week_format">%d年%d月%d日&#160;%s</string>-->
     <!--<string name="calendar_date_format">农历%d年%s月%s</string>-->
 </resources>
