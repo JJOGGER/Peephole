@@ -30,6 +30,7 @@ import cn.jcyh.peephole.bean.CommandJson;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.control.DoorbellVideoHelper;
 import cn.jcyh.peephole.utils.ConstantUtil;
+import cn.jcyh.peephole.utils.ToastUtil;
 import timber.log.Timber;
 
 /**
@@ -265,6 +266,7 @@ public class VideoService extends Service {
      * 结束视频
      */
     private void finishVideoCall() {
+        ToastUtil.showToast(getApplicationContext(), String.format(getString(R.string._finish_video_format), DoorBellControlCenter.sCurrentVideoUserAccount));
         stopSelf();
     }
 

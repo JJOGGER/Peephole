@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="cn.jcyh.peephole">
+
     <!-- 权限声明 -->
     <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
     <!-- 访问网络状态 -->
@@ -19,7 +20,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-    <!--<uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW"/>-->
+    <!-- <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW"/> -->
     <uses-permission android:name="android.permission.BLUETOOTH"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
 
@@ -78,6 +79,10 @@
         <activity android:name=".ui.activity.DoorbellSetActivity">
         </activity>
         <activity android:name=".ui.activity.SensorSetActivity">
+        </activity>
+        <activity android:name=".ui.activity.VideoMenuActivity">
+        </activity>
+        <activity android:name=".ui.activity.BindUsersActivity">
         </activity>
     </application>
 

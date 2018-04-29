@@ -13,7 +13,10 @@ import java.util.List;
 import butterknife.BindView;
 import cn.jcyh.peephole.adapter.MainPageAdapter;
 import cn.jcyh.peephole.base.BaseActivity;
+import cn.jcyh.peephole.bean.User;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.http.HttpAction;
+import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.service.KeepBackRemoteService;
 import cn.jcyh.peephole.utils.FileUtil;
 import timber.log.Timber;
@@ -66,6 +69,20 @@ public class MainActivity extends BaseActivity {
         File file1 = new File(sdCardPath);
         Timber.e("----------path:" + file1.exists());
         searchFile(file1);
+        HttpAction.getHttpAction(getApplicationContext()).getBindUsers(IMEI, new IDataListener<List<User>>() {
+            @Override
+            public void onSuccess(List<User> users) {
+                if (users != null && users.size() > 0) {
+                    DoorBellControlCenter.getInstance(getApplicationContext()).saveBindUsers(users);
+                }
+                Timber.e("---user:" + users);
+            }
+
+            @Override
+            public void onFailure(int errorCode) {
+
+            }
+        });
 //        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 //        if(bluetoothAdapter != null){
 //            bluetoothAdapter.enable();

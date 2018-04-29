@@ -3,21 +3,32 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/immersive"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="cn.jcyh.peephole.ui.activity.VideoServiceActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="42dp"
-        android:layout_gravity="center_horizontal"
-        android:gravity="center"
-        android:text="@string/video_service"
-        android:textColor="@color/black_333333"
-        android:textSize="20sp"
-        android:textStyle="bold"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp">
+
+        <ImageButton
+            android:id="@+id/ibtn_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="16dp"
+            android:background="@mipmap/cc_menu"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="42dp"
+            android:layout_centerHorizontal="true"
+            android:gravity="center"
+            android:text="@string/video_service"
+            android:textColor="@color/black_333333"
+            android:textSize="24sp"/>
+    </RelativeLayout>
 
     <TextView
         android:id="@+id/tv_device_number"
@@ -26,7 +37,8 @@
         android:layout_gravity="center_horizontal"
         android:gravity="center"
         android:text="@string/device_no_"
-        android:textSize="16sp"/>
+        android:textColor="@color/black_333333"
+        android:textSize="18sp"/>
 
     <View
         android:layout_width="wrap_content"
@@ -35,8 +47,8 @@
 
     <Button
         android:id="@+id/btn_exit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="50dp"
+        android:layout_height="30dp"
         android:layout_gravity="center_horizontal"
         android:background="@color/colorPrimary"
         android:text="@string/exit"
@@ -47,7 +59,6 @@
         android:id="@+id/tv_state"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
         android:layout_marginTop="10dp"
         android:background="@color/colorPrimary"
         android:gravity="center"
@@ -56,4 +67,12 @@
         android:textColor="@color/white"
         android:textSize="16sp"/>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="2dp"
+        android:paddingTop="4dp"
+        android:text="v1.0.5"
+        android:textColor="@color/black_333333"/>
 </LinearLayout>

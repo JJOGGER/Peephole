@@ -11,6 +11,7 @@ import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
 import com.bairuitech.anychat.AnyChatOutParam;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import cn.jcyh.peephole.bean.AnyChatTask;
 import cn.jcyh.peephole.bean.CommandJson;
 import cn.jcyh.peephole.bean.User;
 import cn.jcyh.peephole.config.DoorbellConfig;
+import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.utils.ConstantUtil;
 import cn.jcyh.peephole.utils.FileUtil;
 import cn.jcyh.peephole.utils.SharePreUtil;
@@ -38,8 +40,8 @@ public class DoorBellControlCenter {
     public static final String DOORBELL_PARAMS_TYPE_MODE = "mode";
     public static final String DOORBELL_PARAMS_TYPE_MONITOR = "monitor";
     public static final String DOORBELL_PARAMS_TYPE_SENSOR = "sensor";
-    public static final int DOORBELL_TYPE_RING=0;
-    public static final int DOORBELL_TYPE_ALARM=1;
+    public static final int DOORBELL_TYPE_RING = 0;
+    public static final int DOORBELL_TYPE_ALARM = 1;
     private static Context sContext;
     public static boolean sIsAnychatLogin = false;//标记anychat是否登录
     public AnyChatCoreSDK mAnyChat;//单例的anychat，同一事件的话可以使用这个
@@ -48,6 +50,7 @@ public class DoorBellControlCenter {
     private Gson mGson;
     public static boolean sIsVideo;//标记是否正在视频通话中
     public static boolean sIsBinding;//标记是否正在绑定中
+    public static String sCurrentVideoUserAccount;
 
 
     //    public static Map<String, Object> pushFlagMap;
@@ -682,7 +685,38 @@ public class DoorBellControlCenter {
             config = new DoorbellConfig();
             saveDoorbellConfig(config);
             //保存到服务器
+            HttpAction.getHttpAction(sContext).setDoorbellConfig(getIMEI(), config, null);
         }
         return config;
+    }
+
+    public void saveBindUsers(List<User> bindUsers) {
+        String users;
+        if (bindUsers == null || bindUsers.size() == 0)
+            users = "";
+        else
+            users = mGson.toJson(bindUsers);
+        SharePreUtil.getInstance(sContext).setString(ConstantUtil.DOORBELL_BIND_USERS, users);
+    }
+
+    /**
+     * 获取绑定猫眼的用户列表
+     */
+    public List<User> getBindUsers() {
+        return mGson.fromJson(SharePreUtil.getInstance(sContext)
+                .getString(ConstantUtil.DOORBELL_BIND_USERS, ""), new TypeToken<List<User>>() {
+        }.getType());
+    }
+
+    public String getUserAccountByAId(int aId) {
+        List<User> bindUsers = getBindUsers();
+        if (bindUsers != null) {
+            for (int i = 0; i < bindUsers.size(); i++) {
+                if (aId == bindUsers.get(i).getAid()) {
+                    return bindUsers.get(i).getAccount();
+                }
+            }
+        }
+        return null;
     }
 }

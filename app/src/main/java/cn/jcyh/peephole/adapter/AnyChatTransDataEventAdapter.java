@@ -12,6 +12,7 @@ import java.util.List;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.bean.CommandJson;
 import cn.jcyh.peephole.bean.DoorbellParam;
+import cn.jcyh.peephole.bean.User;
 import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
@@ -68,7 +69,7 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
             commandJson = mGson.fromJson(result, CommandJson.class);
         } catch (Exception e) {
             e.printStackTrace();
-            Timber.e("-----e:"+e.getMessage());
+            Timber.e("-----e:" + e.getMessage());
         }
         if (commandJson == null) return;
         intent.putExtra("command", commandJson);
@@ -106,8 +107,17 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
                 mControlCenter.sendVideoCallImg(dwUserid, commandJson.getFlag());
                 break;
             case CommandJson.CommandType.UNBIND_DOORBELL_COMPLETED:
-                // TODO: 2018/2/26 有用户解绑成功
-                Timber.e("---------收到用户解绑");
+                HttpAction.getHttpAction(mContext).getBindUsers(DoorBellControlCenter.getInstance(mContext).getIMEI(), new IDataListener<List<User>>() {
+                    @Override
+                    public void onSuccess(List<User> users) {
+                        DoorBellControlCenter.getInstance(mContext).saveBindUsers(users);
+                    }
+
+                    @Override
+                    public void onFailure(int errorCode) {
+
+                    }
+                });
                 break;
             case CommandJson.CommandType.CHANGE_CAMERA_REQUEST://切换摄像头
 //                由videoservice处理

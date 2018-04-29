@@ -5,9 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.TextView;
 
 import butterknife.BindView;
+import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
@@ -15,7 +17,7 @@ import cn.jcyh.peephole.utils.ConstantUtil;
 
 public class VideoServiceActivity extends BaseActivity {
     @BindView(R.id.tv_state)
-    TextView tv_state;
+    TextView tvState;
     @BindView(R.id.tv_device_number)
     TextView tvDeviceNumber;
     private int mRoomId;
@@ -34,12 +36,12 @@ public class VideoServiceActivity extends BaseActivity {
     protected void init() {
         tvDeviceNumber.setText(String.format(getString(R.string.device_no_), IMEI));
         if (DoorBellControlCenter.sIsAnychatLogin) {
-            if (DoorBellControlCenter.sIsVideo)
-                tv_state.setText("正在与" + mUserId + "通话中");
-            else
-                tv_state.setText(R.string.ready_connect);
+            if (DoorBellControlCenter.sIsVideo) {
+                tvState.setText(String.format(getString(R.string.video_with_user_format), DoorBellControlCenter.sCurrentVideoUserAccount));
+            } else
+                tvState.setText(R.string.ready_connect);
         } else {
-            tv_state.setText(R.string.connecting);
+            tvState.setText(R.string.connecting);
         }
         mControlCenter = DoorBellControlCenter.getInstance(this);
         mReceiver = new MyReceiver();
@@ -53,6 +55,18 @@ public class VideoServiceActivity extends BaseActivity {
         unregisterReceiver(mReceiver);
     }
 
+    @OnClick({R.id.ibtn_menu, R.id.btn_exit})
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.ibtn_menu:
+                startNewActivity(VideoMenuActivity.class);
+                break;
+            case R.id.btn_exit:
+                finish();
+                break;
+        }
+    }
+
     private class MyReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -62,21 +76,27 @@ public class VideoServiceActivity extends BaseActivity {
             switch (action) {
                 case ConstantUtil.ACTION_ANYCHAT_VIDEO_CALL_EVENT:
                     if (ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_START.equals(type)) {
-                        // TODO: 2018/4/27 猫眼需把用户列表数据存储下来，绑定和解绑时需更新，在此可取得手机号并显示
+                        String account = DoorBellControlCenter.getInstance(getApplicationContext()).getUserAccountByAId(intent.getIntExtra("dwUserId", -1));
+                        if (!TextUtils.isEmpty(account)) {
+                            tvState.setText(String.format(getString(R.string.video_with_user_format), account));
+                        }
                     } else if (ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_FINISH.equals(type)) {
-                        tv_state.setText(getText(R.string.connecting));
+                        if (DoorBellControlCenter.sIsAnychatLogin)
+                            tvState.setText(R.string.ready_connect);
+                        else
+                            tvState.setText(getText(R.string.connecting));
                     }
                     break;
                 case ConstantUtil.ACTION_ANYCHAT_BASE_EVENT:
                     if (ConstantUtil.TYPE_ANYCHAT_LOGIN_STATE.equals(type)) {
                         int errorCode = intent.getIntExtra("dwErrorCode", -1);
                         if (errorCode > 0) {
-                            tv_state.setText(getText(R.string.ready_connect));
+                            tvState.setText(getText(R.string.ready_connect));
                         } else {
-                            tv_state.setText(getText(R.string.connecting));
+                            tvState.setText(getText(R.string.connecting));
                         }
                     } else if (ConstantUtil.TYPE_ANYCHAT_LINK_CLOSE.equals(type)) {
-                        tv_state.setText(getText(R.string.connecting));
+                        tvState.setText(getText(R.string.connecting));
                     }
                     break;
             }

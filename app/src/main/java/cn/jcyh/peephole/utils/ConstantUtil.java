@@ -15,6 +15,7 @@ public class ConstantUtil {
     public static final String LAST_DOOR_BELL_NO = "last_door_bell_no";
     public static final String DOORBELL_RING_PARAMS = "doorbell_ring_params";
     public static final String DOORBELL_SENSOR_PARAMS = "doorbell_sensor_params";
+    public static final String DOORBELL_BIND_USERS="doorbell_bind_users";
 
     //猫眼动作
     public static final String REQUEST_SWITCH_CAMERA = "requestSwitchCamera";//请求切换摄像头

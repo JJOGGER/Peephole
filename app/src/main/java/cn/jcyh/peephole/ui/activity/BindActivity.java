@@ -141,9 +141,22 @@ public class BindActivity extends BaseActivity {
                         case CommandJson.CommandType.BIND_DOORBELL_COMPLETED:
                             //绑定猫眼成功
                             Timber.e("-------------绑定猫眼成功，刷新列表");
-                            // TODO: 2018/2/26  绑定猫眼成功，刷新列表
-                            ToastUtil.showToast(getApplicationContext(), R.string.bind_succ);
-                            finish();
+                            HttpAction.getHttpAction(getApplicationContext()).getBindUsers(IMEI, new IDataListener<List<User>>() {
+                                @Override
+                                public void onSuccess(List<User> users) {
+                                    if (users != null) {
+                                        DoorBellControlCenter.getInstance(getApplicationContext()).saveBindUsers(users);
+                                        ToastUtil.showToast(getApplicationContext(), R.string.bind_succ);
+                                        finish();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(int errorCode) {
+                                    ToastUtil.showToast(getApplicationContext(), R.string.bind_succ);
+                                    finish();
+                                }
+                            });
                             break;
                     }
                 }
@@ -186,9 +199,6 @@ public class BindActivity extends BaseActivity {
                             @Override
                             public void onConfirm(boolean isConfirm) {
                                 if (isConfirm) {
-                                    Timber.e("-------------camera:" + CameraProvider.hasFrontFacingCamera() + "-->" +
-                                            CameraProvider
-                                                    .hasBackFacingCamera());
                                     int flag2 = CameraProvider.hasFrontFacingCamera() &&
                                             CameraProvider
                                                     .hasBackFacingCamera() ? 1 : 0;

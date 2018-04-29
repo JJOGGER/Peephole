@@ -94,11 +94,11 @@ public class KeepBackLocalService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, mIntent, PendingIntent
                 .FLAG_UPDATE_CURRENT);
         builder.setContentIntent(pendingIntent)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.mipmap.push_layout)
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
                 .setAutoCancel(true)
-                .setContentTitle(getString(R.string.app_name))
-                .setContentText("正在运行")
+                .setContentTitle(getString(R.string.video_service))
+                .setContentText(getString(R.string.running))
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_MAX);
         startForeground(startId, builder.build());

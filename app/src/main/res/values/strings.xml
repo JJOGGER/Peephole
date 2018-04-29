@@ -141,6 +141,14 @@
     <string name="phone_no_regex">手机号码不匹配</string>
     <string name="no_sim_msg">未检测到SIM卡</string>
     <string name="no_sos_number">SOS号码未设置</string>
+    <string name="menu">菜单</string>
+    <string name="binded_user_list">已绑定用户列表</string>
+    <string name="bind_user_number_max">绑定用户数已达到最大值</string>
+    <string name="videoing_no_bind_msg">正在视频通话中，不能进行用户绑定</string>
+    <string name="_finish_video_format">%s挂断了与您的通话</string>
+    <string name="video_with_user_format">正在与%s视频通话中</string>
+    <string name="unbind_user_msg">您确定要取消绑定设备么？</string>
+    <string name="running">正在运行</string>
     <!--<string name="date_week_format">%d年%d月%d日&#160;%s</string>-->
     <!--<string name="calendar_date_format">农历%d年%s月%s</string>-->
 </resources>
