@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import cn.jcyh.peephole.MainActivity;
+import timber.log.Timber;
 
 /**
  * Created by jogger on 2018/1/16.
@@ -13,10 +14,11 @@ import cn.jcyh.peephole.MainActivity;
 public class BootBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        if(intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)){
-            Intent bootActivityIntent=new Intent(context,MainActivity.class);
+        Timber.e("------------>onReceive" + intent.getAction());
+        if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
+            Intent bootActivityIntent = new Intent(context, MainActivity.class);
             bootActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(intent);
+            context.startActivity(bootActivityIntent);
         }
     }
 }
