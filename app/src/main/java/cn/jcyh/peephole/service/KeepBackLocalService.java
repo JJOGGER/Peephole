@@ -1,5 +1,6 @@
 package cn.jcyh.peephole.service;
 
+import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -15,6 +16,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 
@@ -47,6 +49,7 @@ import cn.jcyh.peephole.adapter.AnychatBaseEventAdapter;
 import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.BcManager;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.receiver.AlarmReceiver;
 import cn.jcyh.peephole.utils.FileUtil;
 import timber.log.Timber;
 
@@ -71,6 +74,7 @@ public class KeepBackLocalService extends Service {
     private Date mDate;
     private Timer mTimer;
     private TimerTask mTimerTask;
+    private int mUserId;
 
     @Nullable
     @Override
@@ -129,6 +133,7 @@ public class KeepBackLocalService extends Service {
                 }
             }
         };
+
         mTimer.schedule(mTimerTask, 0, 5000);
     }
 
@@ -158,29 +163,12 @@ public class KeepBackLocalService extends Service {
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_MAX);
         startForeground(startId, builder.build());
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        mCount += 5;
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    try {
-                        mWriter.write("\n");
-                        mDate.setTime(System.currentTimeMillis());
-                        mWriter.write("-------time:" + mSimpleDateFormat.format(mDate) +
-                                "---------" + mCount);
-                        mWriter.flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }).start();
         connectAnyChat();
+        //注册闹钟广播
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        Intent intentAlarm = new Intent(this, AlarmReceiver.class);
+        PendingIntent pi = PendingIntent.getBroadcast(this, 0, intentAlarm, 0);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 1000 * 60, pi);
         return START_STICKY;
     }
 
@@ -268,6 +256,7 @@ public class KeepBackLocalService extends Service {
         @Override
         public void OnAnyChatLoginMessage(int dwUserId, int dwErrorCode) {
             super.OnAnyChatLoginMessage(dwUserId, dwErrorCode);
+            mUserId = dwUserId;
             try {
                 mWriter.write("\n");
                 mDate.setTime(System.currentTimeMillis());
@@ -301,7 +290,7 @@ public class KeepBackLocalService extends Service {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (Intent.ACTION_SCREEN_ON.equals(action)) {
-                Timber.e("---------ACTION_SCREEN_ON"+DoorBellControlCenter.sIsAnychatLogin);
+                Timber.e("---------ACTION_SCREEN_ON" + DoorBellControlCenter.sIsAnychatLogin);
                 sIsClock = false;
                 sLockTime = 0;
             } else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
