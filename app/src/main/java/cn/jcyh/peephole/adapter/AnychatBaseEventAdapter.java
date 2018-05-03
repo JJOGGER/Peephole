@@ -32,7 +32,7 @@ public class AnychatBaseEventAdapter implements AnyChatBaseEvent {
         Timber.e("------OnAnyChatConnectMessage" + bSuccess);
         Intent intent = new Intent(ACTION_ANYCHAT_BASE_EVENT);
         intent.putExtra("dwErrorCode", bSuccess ? 1 : -1);
-        intent.putExtra("type",TYPE_ANYCHAT_LOGIN_STATE);
+        intent.putExtra("type", TYPE_ANYCHAT_LOGIN_STATE);
         mContext.sendBroadcast(intent);
     }
 
@@ -51,7 +51,7 @@ public class AnychatBaseEventAdapter implements AnyChatBaseEvent {
             }
         }
         Intent intent = new Intent(ACTION_ANYCHAT_BASE_EVENT);
-        intent.putExtra("type",TYPE_ANYCHAT_LOGIN_STATE);
+        intent.putExtra("type", TYPE_ANYCHAT_LOGIN_STATE);
         intent.putExtra("dwErrorCode", dwErrorCode);
         mContext.sendBroadcast(intent);
     }
@@ -92,6 +92,7 @@ public class AnychatBaseEventAdapter implements AnyChatBaseEvent {
     @Override
     public void OnAnyChatLinkCloseMessage(int dwErrorCode) {
         Timber.e("------OnAnyChatLinkCloseMessage" + dwErrorCode);
+        DoorBellControlCenter.sIsAnychatLogin = false;
         Intent intent = new Intent();
         intent.putExtra("dwErrorCode", dwErrorCode);
         intent.setAction(ACTION_ANYCHAT_BASE_EVENT);

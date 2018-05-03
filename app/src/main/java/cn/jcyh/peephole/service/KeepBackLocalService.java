@@ -121,11 +121,11 @@ public class KeepBackLocalService extends Service {
         mTimerTask = new TimerTask() {
             @Override
             public void run() {
-                mCount += 5;
+                mCount += 10;
                 try {
                     mWriter.write("\n");
                     mDate.setTime(System.currentTimeMillis());
-                    mWriter.write("------TimerTask-time:" + mSimpleDateFormat.format(mDate) +
+                    mWriter.write("------time:" + mSimpleDateFormat.format(mDate) +
                             "---------" + mCount);
                     mWriter.flush();
                 } catch (IOException e) {
@@ -134,7 +134,7 @@ public class KeepBackLocalService extends Service {
             }
         };
 
-        mTimer.schedule(mTimerTask, 0, 5000);
+        mTimer.schedule(mTimerTask, 0, 10000);
     }
 
     private void initConfig() {
@@ -169,6 +169,15 @@ public class KeepBackLocalService extends Service {
         Intent intentAlarm = new Intent(this, AlarmReceiver.class);
         PendingIntent pi = PendingIntent.getBroadcast(this, 0, intentAlarm, 0);
         alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 1000 * 60, pi);
+        try {
+            mWriter.write("\n");
+            mDate.setTime(System.currentTimeMillis());
+            mWriter.write("------onstartcommand:" + mSimpleDateFormat.format(mDate) +
+                    "---------" + mCount);
+            mWriter.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return START_STICKY;
     }
 
@@ -241,7 +250,7 @@ public class KeepBackLocalService extends Service {
             try {
                 mWriter.write("\n");
                 mDate.setTime(System.currentTimeMillis());
-                mWriter.write(mSimpleDateFormat.format(mDate) + "----->OnAnyChatLinkCloseMessage"
+                mWriter.write(mSimpleDateFormat.format(mDate) + "-----LinkCloseMessage"
                         + dwErrorCode);
                 mWriter.flush();
             } catch (IOException e) {
