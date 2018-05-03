@@ -28,18 +28,21 @@ public class AlarmReceiver extends BroadcastReceiver {
             //获取电源管理器对象
             PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
             //获取PowerManager.WakeLock对象,后面的参数|表示同时传入两个值,最后的是LogCat里用的Tag
+            assert pm != null;
             PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP |
                     PowerManager.PARTIAL_WAKE_LOCK, "bright");
             //点亮屏幕
-            wl.acquire();
-            wl.release();
-
+            wl.acquire(20000);
             context.startService(new Intent(context, KeepBackLocalService.class));
+            wl.release();
         } else {
-            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context
+                    .ALARM_SERVICE);
             Intent intentAlarm = new Intent(context, AlarmReceiver.class);
             PendingIntent pi = PendingIntent.getBroadcast(context, 0, intentAlarm, 0);
-            alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 1000 * 60, pi);
+            assert alarmManager != null;
+            alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()
+                    + 1000 * 60, pi);
         }
     }
 }
