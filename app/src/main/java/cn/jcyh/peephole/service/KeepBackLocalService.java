@@ -104,6 +104,9 @@ public class KeepBackLocalService extends Service {
         try {
             File file = new File(FileUtil.getInstance().getSDCardPath() + File.separator +
                     "anychatlog.txt");
+            if (file.exists()) {
+                file.delete();
+            }
             mWriter = new OutputStreamWriter(new
                     BufferedOutputStream(new FileOutputStream(file)));
             mReader = new InputStreamReader(new BufferedInputStream(new FileInputStream(file)));
