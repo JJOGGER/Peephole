@@ -61,5 +61,5 @@ public class ConstantUtil {
     public static final String ACTION_ANYCHAT_RECORD_EVENT = "cn.jcyh.eagleking.record_event";
     public static final String TYPE_ANYCHAT_RECORD = "type_anychat_record";
     public static final String TYPE_ANYCHAT_SNAP_SHOT = "type_anychat_snap_shot";
-    public static final String IMEI = "system_imei";
+    public static final String SYSTEM_IMEI = "system_imei";
 }

@@ -330,22 +330,30 @@
             android:layout_marginTop="2dp"
             android:background="@color/gray_dedede"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="16dp"
-            android:paddingTop="4dp"
-            android:text="@string/video_leave_msg_time"
-            android:textColor="@color/black_333333"
-            android:textSize="16sp"/>
+        <RelativeLayout
+            android:id="@+id/rl_doorbell_leavel_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="16dp"
-            android:text="@string/leave_message_time_msg"
-            android:textColor="@color/gray_555555"
-            android:textSize="12sp"/>
+            <TextView
+                android:id="@+id/tv_leavel_time_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="16dp"
+                android:paddingTop="4dp"
+                android:text="@string/video_leave_msg_time"
+                android:textColor="@color/black_333333"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_leavel_time_title"
+                android:paddingLeft="16dp"
+                android:text="@string/leave_message_time_msg"
+                android:textColor="@color/gray_555555"
+                android:textSize="12sp"/>
+        </RelativeLayout>
 
         <View
             android:layout_width="match_parent"

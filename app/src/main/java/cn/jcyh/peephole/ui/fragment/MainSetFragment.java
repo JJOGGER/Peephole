@@ -9,27 +9,32 @@ import android.widget.CheckBox;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.OnClick;
 import cn.jcyh.peephole.R;
+import cn.jcyh.peephole.adapter.ChooseSetAdapter;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.base.BaseFragment;
-import cn.jcyh.peephole.bean.DoorbellParam;
 import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.BcManager;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.ui.dialog.AutoSensorTimeDialog;
+import cn.jcyh.peephole.ui.dialog.ChooseSetDialog;
 import cn.jcyh.peephole.ui.dialog.CommonEditDialog;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.OnDialogListener;
 import cn.jcyh.peephole.utils.ToastUtil;
 
-import static cn.jcyh.peephole.utils.ConstantUtil.IMEI;
 
 /**
  * Created by jogger on 2018/4/28.
+ * 猫眼设置
  */
 
 public class MainSetFragment extends BaseFragment {
@@ -57,12 +62,10 @@ public class MainSetFragment extends BaseFragment {
     TextView tvDoorbellVideotapTime;
     @BindView(R.id.tv_doorbell_look_time)
     TextView tvDoorbellLookTime;
-    private static final int SENSOR_SET_REQUEST = 0X001;
-    private DoorbellParam mDoorbellParam;
     private DoorbellConfig mDoorbellConfig;
     private DoorBellControlCenter mControlCenter;
     private DialogHelper mAutoSensorTimeDialog, mMasterNumberDialog, mSOSNumberDialog,
-            mVideotapTimeDialog, mDoorbellLookDialog;
+            mVideotapTimeDialog, mDoorbellLookDialog, mDoorbellLeavelTimeDialog;
     private FragmentManager mFragmentManager;
 
     @Override
@@ -80,7 +83,7 @@ public class MainSetFragment extends BaseFragment {
     }
 
     @OnClick({R.id.rl_doorbell_set, R.id.rl_sensor_set, R.id.rl_monitor, R.id.rl_sensor_time,
-            R.id.rl_ring_volume, R.id.rl_master_number, R.id.rl_sos_number, R.id.rl_doorbell_videotap_time,
+            R.id.rl_ring_volume, R.id.rl_master_number, R.id.rl_sos_number, R.id.rl_doorbell_leavel_time, R.id.rl_doorbell_videotap_time,
             R.id.rl_doorbell_look_time})
     public void onClick(View v) {
         switch (v.getId()) {
@@ -117,6 +120,9 @@ public class MainSetFragment extends BaseFragment {
             case R.id.rl_sos_number:
                 showSOSDialog();
                 break;
+            case R.id.rl_doorbell_leavel_time:
+                showLeavelTimeDialog();
+                break;
             case R.id.rl_doorbell_videotap_time:
                 showVideoTimeDialog();
                 break;
@@ -124,6 +130,28 @@ public class MainSetFragment extends BaseFragment {
                 showLookTimeDialog();
                 break;
         }
+    }
+
+    /**
+     * 猫眼留言时间
+     */
+    private void showLeavelTimeDialog() {
+        if (mDoorbellLeavelTimeDialog == null) {
+            ChooseSetDialog chooseSetDialog = new ChooseSetDialog();
+            chooseSetDialog.setTitle(getString(R.string.video_leave_msg_time));
+            List<String> datas = new ArrayList<>();
+            String[] stringArray = getResources().getStringArray(R.array.leave_time);
+            Collections.addAll(datas, stringArray);
+            ChooseSetAdapter adapter = new ChooseSetAdapter(datas);
+            chooseSetDialog.setAdapter(adapter);
+            adapter.setOnItemClickListener(new ChooseSetAdapter.OnItemClickListener() {
+                @Override
+                public void onItemClick(String data, int pos) {
+
+                }
+            });
+        }
+        mDoorbellLeavelTimeDialog.commit();
     }
 
     /**
@@ -137,8 +165,16 @@ public class MainSetFragment extends BaseFragment {
             commonEditDialog.setOnDialogListener(new OnDialogListener() {
                 @Override
                 public void onConfirm(Object o) {
-                    mDoorbellConfig.setDoorbellLookTime(Integer.parseInt(o.toString()));
-                    tvDoorbellLookTime.setText(o.toString());
+                    int time = Integer.parseInt(o.toString());
+                    if (time > 300) {
+                        ToastUtil.showToast(mActivity, getString(R.string.more_than_time_msg));
+                        time = 300;
+                    } else if (time < 5) {
+                        ToastUtil.showToast(mActivity, getString(R.string.low_than_time_msg));
+                        time = 5;
+                    }
+                    mDoorbellConfig.setDoorbellLookTime(time);
+                    tvDoorbellLookTime.setText(String.valueOf(time));
                     DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
                 }
             });
@@ -158,8 +194,16 @@ public class MainSetFragment extends BaseFragment {
             commonEditDialog.setOnDialogListener(new OnDialogListener() {
                 @Override
                 public void onConfirm(Object o) {
-                    mDoorbellConfig.setVideotapTime(Integer.parseInt(o.toString()));
-                    tvDoorbellVideotapTime.setText(o.toString());
+                    int time = Integer.parseInt(o.toString());
+                    if (time > 300) {
+                        ToastUtil.showToast(mActivity, getString(R.string.more_than_time_msg));
+                        time = 300;
+                    } else if (time < 5) {
+                        ToastUtil.showToast(mActivity, getString(R.string.low_than_time_msg));
+                        time = 5;
+                    }
+                    mDoorbellConfig.setVideotapTime(time);
+                    tvDoorbellVideotapTime.setText(String.valueOf(time));
                     DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
                 }
             });
@@ -181,6 +225,10 @@ public class MainSetFragment extends BaseFragment {
             commonEditDialog.setOnDialogListener(new OnDialogListener() {
                 @Override
                 public void onConfirm(Object o) {
+                    if (!o.toString().matches(getString(R.string.regex_phone))) {
+                        ToastUtil.showToast(mActivity, getString(R.string.phone_no_regex));
+                        return;
+                    }
                     mDoorbellConfig.setMasterNumber(o.toString());
                     tvMasterNumber.setText(o.toString());
                     DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
@@ -197,13 +245,17 @@ public class MainSetFragment extends BaseFragment {
     private void showSOSDialog() {
         if (mSOSNumberDialog == null) {
             CommonEditDialog commonEditDialog = new CommonEditDialog();
-            commonEditDialog.setTitle(getString(R.string.master_number));
+            commonEditDialog.setTitle(getString(R.string.sos_number));
             if (!TextUtils.isEmpty(mDoorbellConfig.getSosNumber())) {
                 commonEditDialog.setContent(mDoorbellConfig.getSosNumber());
             }
             commonEditDialog.setOnDialogListener(new OnDialogListener() {
                 @Override
                 public void onConfirm(Object o) {
+                    if (!o.toString().matches(getString(R.string.regex_phone))) {
+                        ToastUtil.showToast(mActivity, getString(R.string.phone_no_regex));
+                        return;
+                    }
                     mDoorbellConfig.setSosNumber(o.toString());
                     tvSOSNumber.setText(o.toString());
                     DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
@@ -220,7 +272,7 @@ public class MainSetFragment extends BaseFragment {
     private void switchMonitor() {
         cbMonitor.setChecked(!cbMonitor.isChecked());
         mDoorbellConfig.setMonitorSwitch(cbMonitor.isChecked() ? 1 : 0);
-        HttpAction.getHttpAction(mActivity).setDoorbellConfig(IMEI, mDoorbellConfig, new IDataListener<Boolean>() {
+        HttpAction.getHttpAction(mActivity).setDoorbellConfig(DoorBellControlCenter.getIMEI(mActivity), mDoorbellConfig, new IDataListener<Boolean>() {
             @Override
             public void onSuccess(Boolean aBoolean) {
                 mControlCenter.saveDoorbellConfig(mDoorbellConfig);
@@ -297,5 +349,11 @@ public class MainSetFragment extends BaseFragment {
             mMasterNumberDialog.dismiss();
         if (mSOSNumberDialog != null)
             mSOSNumberDialog.dismiss();
+        if (mDoorbellLookDialog != null)
+            mDoorbellLookDialog.dismiss();
+        if (mVideotapTimeDialog != null)
+            mVideotapTimeDialog.dismiss();
+        if (mDoorbellLeavelTimeDialog != null)
+            mDoorbellLeavelTimeDialog.dismiss();
     }
 }

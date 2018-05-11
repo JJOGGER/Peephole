@@ -179,8 +179,7 @@ public class PictureActivity extends BaseActivity {
         Date date = new Date(System.currentTimeMillis());
         String time = simpleDateFormat.format(date);
         final String tempPath = FileUtil.getInstance().getDoorbellVideoPath() + File.separator +
-                "VID_" + time +
-                ".mp4";
+                "VID_" + time + ".mp4";
         saveFile = new File(tempPath);
         mRecorder.setOutputFile(saveFile.getAbsolutePath());
         mRecorder.setPreviewDisplay(mSurfaceView.getHolder().getSurface());

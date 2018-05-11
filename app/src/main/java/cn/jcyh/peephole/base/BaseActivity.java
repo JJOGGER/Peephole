@@ -43,7 +43,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         if (isFullScreen()) {
             statusUtil.setActivityFullScreen(this);
         }
-        IMEI = DoorBellControlCenter.getInstance(this).getIMEI();
+        IMEI = DoorBellControlCenter.getIMEI(this);
         init();
         loadData();
     }

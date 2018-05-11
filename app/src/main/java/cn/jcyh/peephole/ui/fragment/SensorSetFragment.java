@@ -13,7 +13,6 @@ import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.widget.MyDeviceParam;
 import timber.log.Timber;
 
-import static cn.jcyh.peephole.utils.ConstantUtil.IMEI;
 
 /**
  * Created by jogger on 2018/4/28.
@@ -134,7 +133,7 @@ public class SensorSetFragment extends BaseFragment {
                 break;
             case R.id.my_ring_alarm:
                 myRingAlarm.setCheck(!myRingAlarm.isChecked());
-                mDoorbellConfig.setDoorbellNetPush(myRingAlarm.isChecked() ? 1 : 0);
+                mDoorbellConfig.setSensorRingAlarm(myRingAlarm.isChecked() ? 1 : 0);
                 break;
         }
         setParam();
@@ -145,7 +144,7 @@ public class SensorSetFragment extends BaseFragment {
      */
     private void setParam() {
         //保存到服务器
-        HttpAction.getHttpAction(mActivity).setDoorbellConfig(IMEI, mDoorbellConfig, new IDataListener<Boolean>() {
+        HttpAction.getHttpAction(mActivity).setDoorbellConfig(DoorBellControlCenter.getIMEI(mActivity), mDoorbellConfig, new IDataListener<Boolean>() {
             @Override
             public void onSuccess(Boolean aBoolean) {
                 Timber.e("----------设置成功");

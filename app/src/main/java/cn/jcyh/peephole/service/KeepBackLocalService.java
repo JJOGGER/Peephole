@@ -146,6 +146,7 @@ public class KeepBackLocalService extends Service {
         DoorbellConfig doorbellConfig = mControlCenter.getDoorbellConfig();
         if (manager != null)
             manager.setPIRSensorOn(doorbellConfig.getMonitorSwitch() == 1);
+        Timber.e("---------manager"+manager.getPIRSensorOn());
     }
 
     private int mCount;
@@ -189,7 +190,7 @@ public class KeepBackLocalService extends Service {
      * 连接anychat
      */
     private void connectAnyChat() {
-        String imei = mControlCenter.getIMEI();
+        String imei = DoorBellControlCenter.getIMEI(this);
         Timber.e("------imei:" + imei);
         mAnyChat.Logout();
         mAnyChat.Release();

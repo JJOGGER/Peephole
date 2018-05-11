@@ -315,5 +315,22 @@ public class BcManager {
                 PREFIX + type.toString(), 0) == 1;
     }
 
-
+    /**
+     * 打开关闭锁
+     */
+    public void setLock(boolean on) {
+        if (on){
+            try {
+                ics.writeSysFileStatusInt("/sys/devices/platform/CUSTDriver/driver/LockEnState", 1);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }else{
+            try {
+                ics.writeSysFileStatusInt("/sys/devices/platform/CUSTDriver/driver/LockEnState", 0);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

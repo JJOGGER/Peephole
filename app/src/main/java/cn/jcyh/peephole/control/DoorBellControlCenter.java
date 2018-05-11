@@ -46,7 +46,6 @@ public class DoorBellControlCenter {
     public static boolean sIsAnychatLogin = false;//标记anychat是否登录
     public AnyChatCoreSDK mAnyChat;//单例的anychat，同一事件的话可以使用这个
     private MediaPlayer mMediaPlaer;
-    public static int mEventType = -1;
     private Gson mGson;
     public static boolean sIsVideo;//标记是否正在视频通话中
     public static boolean sIsBinding;//标记是否正在绑定中
@@ -72,14 +71,15 @@ public class DoorBellControlCenter {
         return mDoorBellControlCenter;
     }
 
-    public String getIMEI() {
-        String imei = SharePreUtil.getInstance(sContext).getString(ConstantUtil.IMEI, "");
+    public static String getIMEI(Context context) {
+        String imei = SharePreUtil.getInstance(context.getApplicationContext()).getString(ConstantUtil.SYSTEM_IMEI, "");
         if (TextUtils.isEmpty(imei)) {
-            imei = Settings.System.getString(sContext.getContentResolver(), Settings.System.ANDROID_ID);
-            SharePreUtil.getInstance(sContext).setString(ConstantUtil.IMEI, imei);
+            imei = Settings.System.getString(context.getApplicationContext().getContentResolver(), Settings.System.ANDROID_ID);
+            SharePreUtil.getInstance(context.getApplicationContext()).setString(ConstantUtil.SYSTEM_IMEI, imei);
         }
         return imei;
     }
+
 //    /***
 //     * 停止播放
 //     */
@@ -173,7 +173,6 @@ public class DoorBellControlCenter {
      */
     public void videoCallContrl(int dwEventType, int dwUserId,
                                 int dwErrorCode, int dwFlags, int dwParam, String szUserStr) {
-        mEventType = dwEventType;
         mAnyChat.VideoCallControl(dwEventType, dwUserId, dwErrorCode, dwFlags,
                 dwParam, szUserStr);
     }
@@ -673,23 +672,29 @@ public class DoorBellControlCenter {
      * 保存猫眼初始化设置
      */
     public void saveDoorbellConfig(DoorbellConfig doorbellConfig) {
-        String config = mGson.toJson(doorbellConfig);
-        Timber.e("-----config:" + config);
-        SharePreUtil.getInstance(sContext).setString(ConstantUtil.DOORBELL_CONFIG, config);
+        File file = new File(FileUtil.getDoorbellDataPath());
+        FileUtil.writeFile(file, mGson.toJson(doorbellConfig));
     }
 
     public DoorbellConfig getDoorbellConfig() {
-        DoorbellConfig config = mGson.fromJson(SharePreUtil.getInstance(sContext)
-                .getString(ConstantUtil.DOORBELL_CONFIG, ""), DoorbellConfig.class);
-        if (config == null) {
+        DoorbellConfig config;
+        String configJson = FileUtil.readFile(FileUtil.getDoorbellDataPath());
+//        Timber.e("-------config:" + configJson);
+        if (TextUtils.isEmpty(configJson)) {
             config = new DoorbellConfig();
             saveDoorbellConfig(config);
+            FileUtil.readFile(FileUtil.getDoorbellDataPath());
             //保存到服务器
-            HttpAction.getHttpAction(sContext).setDoorbellConfig(getIMEI(), config, null);
+            HttpAction.getHttpAction(sContext).setDoorbellConfig(getIMEI(sContext), config, null);
+        } else {
+            config = mGson.fromJson(configJson, DoorbellConfig.class);
         }
         return config;
     }
 
+    /**
+     * 保存绑定的列表数据
+     */
     public void saveBindUsers(List<User> bindUsers) {
         String users;
         if (bindUsers == null || bindUsers.size() == 0)

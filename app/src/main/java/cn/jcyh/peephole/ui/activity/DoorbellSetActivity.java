@@ -181,7 +181,7 @@ public class DoorbellSetActivity extends BaseActivity {
         HttpAction.getHttpAction(this).setDoorbellConfig(IMEI, mDoorbellConfig, new IDataListener<Boolean>() {
             @Override
             public void onSuccess(Boolean aBoolean) {
-                Timber.e("----------设置成功");
+                Timber.e("----------设置成功"+mDoorbellConfig);
                 //保存到本地
                 DoorBellControlCenter.getInstance(getApplicationContext()).saveDoorbellConfig(mDoorbellConfig);
             }

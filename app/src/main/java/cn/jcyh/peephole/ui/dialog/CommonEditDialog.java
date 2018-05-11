@@ -63,10 +63,6 @@ public class CommonEditDialog extends BaseDialogFragment {
                         etContent.setError(getString(R.string.input_no_null));
                         return;
                     }
-                    if (!number.matches(getString(R.string.regex_phone))) {
-                        etContent.setError(getString(R.string.phone_no_regex));
-                        return;
-                    }
                     mOnDialogListener.onConfirm(number);
                 }
                 break;

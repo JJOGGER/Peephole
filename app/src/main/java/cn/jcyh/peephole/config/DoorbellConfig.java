@@ -1,5 +1,7 @@
 package cn.jcyh.peephole.config;
 
+import android.text.TextUtils;
+
 import cn.jcyh.peephole.bean.DoorbellParam;
 
 /**
@@ -31,6 +33,10 @@ public class DoorbellConfig {
     private int videoLeaveMsgTime = 20;//猫眼留言时间
     private int videotapTime = 5;//录像时间
     private int doorbellLookTime = 15;//猫眼查看时间
+    private String mDoorbellRingName;//门铃声
+    private String mDoorbellAlarmName;//报警声
+    private int mRingVolume = 50;
+    private int mAlarmVolume = 50;
 
     public int getDoorbellNetPush() {
         return doorbellNetPush;
@@ -182,6 +188,38 @@ public class DoorbellConfig {
 
     public void setDoorbellLookTime(int doorbellLookTime) {
         this.doorbellLookTime = doorbellLookTime;
+    }
+
+    public String getDoorbellRingName() {
+        return TextUtils.isEmpty(mDoorbellRingName) ? "ring_one.mp3" : mDoorbellRingName;
+    }
+
+    public void setDoorbellRingName(String doorbellRingName) {
+        mDoorbellRingName = doorbellRingName;
+    }
+
+    public String getDoorbellAlarmName() {
+        return TextUtils.isEmpty(mDoorbellAlarmName) ? "alarm_one.mp3" : mDoorbellAlarmName;
+    }
+
+    public void setDoorbellAlarmName(String doorbellAlarmName) {
+        mDoorbellAlarmName = doorbellAlarmName;
+    }
+
+    public int getRingVolume() {
+        return mRingVolume;
+    }
+
+    public void setRingVolume(int ringVolume) {
+        mRingVolume = ringVolume;
+    }
+
+    public int getAlarmVolume() {
+        return mAlarmVolume;
+    }
+
+    public void setAlarmVolume(int alarmVolume) {
+        mAlarmVolume = alarmVolume;
     }
 
     public void setDoorbellParams(DoorbellParam doorbellParams) {

@@ -14,6 +14,7 @@ import cn.jcyh.peephole.bean.CommandJson;
 import cn.jcyh.peephole.bean.DoorbellParam;
 import cn.jcyh.peephole.bean.User;
 import cn.jcyh.peephole.config.DoorbellConfig;
+import cn.jcyh.peephole.control.BcManager;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
@@ -99,6 +100,7 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
         switch (commandJson.getCommandType()) {
             case CommandJson.CommandType.UNLOCK_DOORBELL_REQUEST:
                 ToastUtil.showToast(mContext, "执行解锁操作");
+                BcManager.getManager(mContext).setLock(true);
                 mControlCenter.sendUnlockResponse(dwUserid);
                 break;
             case CommandJson.CommandType.DOORBELL_CALL_IMG_REQUEST:
@@ -107,7 +109,7 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
                 mControlCenter.sendVideoCallImg(dwUserid, commandJson.getFlag());
                 break;
             case CommandJson.CommandType.UNBIND_DOORBELL_COMPLETED:
-                HttpAction.getHttpAction(mContext).getBindUsers(DoorBellControlCenter.getInstance(mContext).getIMEI(), new IDataListener<List<User>>() {
+                HttpAction.getHttpAction(mContext).getBindUsers(DoorBellControlCenter.getIMEI(mContext), new IDataListener<List<User>>() {
                     @Override
                     public void onSuccess(List<User> users) {
                         DoorBellControlCenter.getInstance(mContext).saveBindUsers(users);
@@ -153,7 +155,7 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
             DoorbellParam doorbellParam = mGson.fromJson(commandJson.getFlag(), DoorbellParam.class);
             doorbellConfig.setMonitorParams(doorbellParam);
         }
-        HttpAction.getHttpAction(mContext).setDoorbellConfig(mControlCenter.getIMEI(), doorbellConfig, new IDataListener<Boolean>() {
+        HttpAction.getHttpAction(mContext).setDoorbellConfig(DoorBellControlCenter.getIMEI(mContext), doorbellConfig, new IDataListener<Boolean>() {
             @Override
             public void onSuccess(Boolean aBoolean) {
                 mControlCenter.saveDoorbellConfig(doorbellConfig);

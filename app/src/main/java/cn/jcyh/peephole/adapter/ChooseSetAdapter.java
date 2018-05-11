@@ -17,6 +17,10 @@ public class ChooseSetAdapter extends RecyclerView.Adapter<ChooseSetAdapter.MyVi
     private int mCurrentPos;
     private OnItemClickListener mListener;
 
+    public ChooseSetAdapter(List<String> datas) {
+        mDatas = datas;
+    }
+
     public interface OnItemClickListener {
         void onItemClick(String data, int pos);
     }
@@ -25,9 +29,8 @@ public class ChooseSetAdapter extends RecyclerView.Adapter<ChooseSetAdapter.MyVi
         mListener = listener;
     }
 
-    public void loadData(List<String> datas) {
-        mDatas = datas;
-        notifyDataSetChanged();
+    public List<String> getData() {
+        return mDatas;
     }
 
     @Override
@@ -61,9 +64,17 @@ public class ChooseSetAdapter extends RecyclerView.Adapter<ChooseSetAdapter.MyVi
         return mDatas.size();
     }
 
-    private void setCheckedItem(int position) {
+    public void setCheckedItem(int position) {
         mCurrentPos = position;
         notifyDataSetChanged();
+    }
+
+    public int getPosition(String data) {
+        for (int i = 0; i < mDatas.size(); i++) {
+            if (data.equals(mDatas.get(i)))
+                return i;
+        }
+        return 0;
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {

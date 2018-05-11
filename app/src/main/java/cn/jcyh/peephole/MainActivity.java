@@ -65,9 +65,7 @@ public class MainActivity extends BaseActivity {
             Timber.e("--------file" + file.exists() + "--sdCardPaths：" + sdCardPaths);
         }
         String sdCardPath = "/protect_s/prod_info";
-        Timber.e("----------sd:" + sdCardPath);
         File file1 = new File(sdCardPath);
-        Timber.e("----------path:" + file1.exists());
         searchFile(file1);
         HttpAction.getHttpAction(getApplicationContext()).getBindUsers(IMEI, new IDataListener<List<User>>() {
             @Override

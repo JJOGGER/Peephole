@@ -32,6 +32,7 @@ import timber.log.Timber;
 public class FileUtil {
     private static FileUtil sUtils;
     private SimpleDateFormat mSimpleDateFormat;
+    private static final String DOORBELL_DATA_PATH = "/protect_s/prod_info";
 
     private FileUtil() {
         mSimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -53,7 +54,7 @@ public class FileUtil {
      */
     public String getDoorbellImgPath() {
         return Environment.getExternalStoragePublicDirectory(Environment
-                .DIRECTORY_DCIM).getAbsolutePath();
+                .DIRECTORY_DCIM).getAbsolutePath() + File.separator + "Camera";
     }
 
     /**
@@ -61,12 +62,16 @@ public class FileUtil {
      */
     public String getDoorbellVideoPath() {
         return Environment.getExternalStoragePublicDirectory(Environment
-                .DIRECTORY_MOVIES).getAbsolutePath();
+                .DIRECTORY_DCIM).getAbsolutePath() + File.separator + "Camera";
     }
 
     public String getDoorbellMediaThumbnailPath() {
-        return Environment.getExternalStoragePublicDirectory(Environment
-                .DIRECTORY_MOVIES).getAbsolutePath() + File.separator + "thumbnail";
+        return getDoorbellVideoPath() + File.separator + "thumbnail";
+    }
+
+
+    public static String getDoorbellDataPath() {
+        return DOORBELL_DATA_PATH + File.separator + "doorbell_config.config";
     }
 
     /**
@@ -297,30 +302,32 @@ public class FileUtil {
         InputStream in = null;
         ByteArrayOutputStream baos = null;
         BufferedInputStream bis = null;
-        BufferedOutputStream bos = null;
+//        BufferedOutputStream bos = null;
+        File file = new File(filePath);
         try {
-            in = new FileInputStream(filePath);
+            in = new FileInputStream(file);
             baos = new ByteArrayOutputStream();
             bis = new BufferedInputStream(in);
-            bos = new BufferedOutputStream(baos);
+//            bos = new BufferedOutputStream(baos);
             int ret;
             byte[] buf = new byte[1024];
             while ((ret = bis.read(buf, 0, buf.length)) != -1) {
-                bos.write(buf, 0, ret);
+                baos.write(buf, 0, ret);
+                baos.flush();
             }
-            result = bos.toString();
+            result = baos.toString();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {
-                if (in != null)
-                    in.close();
-                if (bis != null)
-                    bis.close();
+//                if (bos != null)
+//                    bos.close();
                 if (baos != null)
                     baos.close();
-                if (bos != null)
-                    bos.close();
+                if (bis != null)
+                    bis.close();
+                if (in != null)
+                    in.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -338,8 +345,12 @@ public class FileUtil {
         OutputStream out = null;
         ByteArrayInputStream bais = null;
         BufferedOutputStream bos = null;
+        Timber.e("---------file.exist:" + file.exists() + "-->" + file.canRead() + "-->" + file.canWrite());
+        if (file.exists())
+            file.delete();
         try {
             out = new FileOutputStream(file);
+            Timber.e("-----------json:" + json + "---" + file.getAbsolutePath());
             bos = new BufferedOutputStream(out);
             bais = new ByteArrayInputStream(json.getBytes());
             int ret;
@@ -347,19 +358,22 @@ public class FileUtil {
             while ((ret = bais.read(buf, 0, buf.length)) != -1) {
                 bos.write(buf, 0, ret);
             }
+            bos.flush();
             result = true;
         } catch (Exception e) {
             e.printStackTrace();
+            Timber.e("----------e1:" + e.getMessage());
         } finally {
             try {
+                if (bos != null)
+                    bos.close();
                 if (out != null)
                     out.close();
                 if (bais != null)
                     bais.close();
-                if (bos != null)
-                    bos.close();
             } catch (IOException e) {
                 e.printStackTrace();
+                Timber.e("----------e2:" + e.getMessage());
             }
         }
         return result;

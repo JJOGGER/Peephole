@@ -46,8 +46,7 @@ public class AnychatBaseEventAdapter implements AnyChatBaseEvent {
             DoorBellControlCenter.sIsAnychatLogin = false;
             Timber.e("-------anychat登录失败！错误码:" + dwErrorCode);
             if (dwErrorCode == 205) {
-                HttpAction.getHttpAction(mContext).initDoorbell(DoorBellControlCenter.getInstance
-                        (mContext).getIMEI(), null);
+                HttpAction.getHttpAction(mContext).initDoorbell(DoorBellControlCenter.getIMEI(mContext), null);
             }
         }
         Intent intent = new Intent(ACTION_ANYCHAT_BASE_EVENT);

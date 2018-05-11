@@ -46,6 +46,11 @@
         <item>@string/twentynine</item>
         <item>@string/thirty</item>
     </integer-array>
-
+    <string-array name="leave_time">
+        <item>@string/five_s</item>
+        <item>@string/ten_s</item>
+        <item>@string/fifteen_s</item>
+        <item>@string/twenty_s</item>
+    </string-array>
 
 </resources>

@@ -1,7 +1,6 @@
 package cn.jcyh.peephole.ui.fragment;
 
 import android.app.ProgressDialog;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -142,7 +141,9 @@ public class MainFragment extends BaseFragment {
                 openAlbum();
                 break;
             case R.id.rl_leave_message:
-                Intent intent = new Intent();
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setType("vnd.android.cursor.dir/video");
+                startActivity(intent);
 //                        ComponentName componentName = new ComponentName("com.android
 // .gallery3d", "com.android" +
 //                                ".gallery3d.app.GalleryActivity");
@@ -152,12 +153,6 @@ public class MainFragment extends BaseFragment {
 //                intent.setComponent(comp);
 //                intent.setAction("android.intent.action.VIEW");
 //                startActivity(intent);
-                Intent i = new Intent();
-//                intent.setAction(Intent.ACTION_GET_CONTENT);
-                String allApps = getAllApps();
-                i.setPackage(allApps);
-                Timber.e("-------->" + allApps);
-                startActivity(i);
                 break;
             case R.id.rl_monitor_switch:
                 if (mProgressDialog.isShowing()) return;
@@ -234,7 +229,7 @@ public class MainFragment extends BaseFragment {
         final DoorBellControlCenter controlCenter = DoorBellControlCenter.getInstance(mActivity);
         final DoorbellConfig doorbellConfig = controlCenter.getDoorbellConfig();
         doorbellConfig.setMonitorSwitch(1 - doorbellConfig.getMonitorSwitch());
-        HttpAction.getHttpAction(mActivity).setDoorbellConfig(controlCenter.getIMEI(),
+        HttpAction.getHttpAction(mActivity).setDoorbellConfig(DoorBellControlCenter.getIMEI(mActivity),
                 doorbellConfig, new IDataListener<Boolean>() {
                     @Override
                     public void onSuccess(Boolean aBoolean) {
@@ -266,14 +261,17 @@ public class MainFragment extends BaseFragment {
      * 打开系统相册
      */
     public void openAlbum() {
+        Intent intent=new Intent(Intent.ACTION_VIEW);
+        intent.setType("vnd.android.cursor.dir/image");
+        startActivity(intent);
 //        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media
 //                .EXTERNAL_CONTENT_URI);
-        Intent intent = new Intent(Intent.ACTION_PICK_ACTIVITY, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        intent.addCategory(Intent.ACTION_MAIN);
-        ComponentName componentName = new ComponentName("com.android.gallery3d", "com.android" +
-                ".gallery3d.app.GalleryActivity");
-        intent.setComponent(componentName);
-        startActivity(intent);
+//        Intent intent = new Intent(Intent.ACTION_PICK_ACTIVITY, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//        intent.addCategory(Intent.ACTION_MAIN);
+//        ComponentName componentName = new ComponentName("com.android.gallery3d", "com.android" +
+//                ".gallery3d.app.GalleryActivity");
+//        intent.setComponent(componentName);
+//        startActivity(intent);
     }
 
     private void setweek() {

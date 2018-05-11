@@ -5,12 +5,13 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.support.annotation.RequiresApi;
 
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.service.KeepBackLocalService;
-import timber.log.Timber;
 
 /**
  * Created by jogger on 2018/5/2.
@@ -18,10 +19,10 @@ import timber.log.Timber;
  */
 
 public class AlarmReceiver extends BroadcastReceiver {
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onReceive(Context context, Intent intent) {
         //再次注册闹钟广播
-        Timber.e("-----onReceive:" + DoorBellControlCenter.sIsAnychatLogin);
         if (!DoorBellControlCenter.sIsAnychatLogin) {
             //唤醒
 //            Timber.e("-----------10分钟重连：" + DoorBellControlCenter.sIsAnychatLogin);
@@ -41,7 +42,7 @@ public class AlarmReceiver extends BroadcastReceiver {
             Intent intentAlarm = new Intent(context, AlarmReceiver.class);
             PendingIntent pi = PendingIntent.getBroadcast(context, 0, intentAlarm, 0);
             assert alarmManager != null;
-            alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()
+            alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()
                     + 1000 * 60, pi);
         }
     }
