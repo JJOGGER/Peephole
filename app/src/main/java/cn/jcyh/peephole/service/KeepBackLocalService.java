@@ -49,6 +49,7 @@ import cn.jcyh.peephole.adapter.AnychatBaseEventAdapter;
 import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.BcManager;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.receiver.AlarmReceiver;
 import cn.jcyh.peephole.utils.FileUtil;
 import timber.log.Timber;
@@ -146,7 +147,7 @@ public class KeepBackLocalService extends Service {
         DoorbellConfig doorbellConfig = mControlCenter.getDoorbellConfig();
         if (manager != null)
             manager.setPIRSensorOn(doorbellConfig.getMonitorSwitch() == 1);
-        Timber.e("---------manager"+manager.getPIRSensorOn());
+        HttpAction.getHttpAction(this).setDoorbellConfig(DoorBellControlCenter.getIMEI(this), doorbellConfig, null);
     }
 
     private int mCount;

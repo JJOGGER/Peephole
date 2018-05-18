@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
     <!-- 控制呼吸灯，振动器等，用于新消息提醒 -->
     <uses-permission android:name="android.permission.FLASHLIGHT"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
@@ -52,6 +53,13 @@
                 <category android:name="android.intent.category.HOME"/>
             </intent-filter>
         </receiver>
+        <receiver android:name=".receiver.NetworkStateReceiver">
+            <intent-filter>
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
+                <action android:name="android.net.wifi.STATE_CHANGE"/>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+            </intent-filter>
+        </receiver>
         <receiver android:name=".receiver.AlarmReceiver"/>
 
         <service android:name=".service.KeepBackLocalService"/>
@@ -92,6 +100,8 @@
         <activity android:name=".ui.activity.VideoMenuActivity">
         </activity>
         <activity android:name=".ui.activity.BindUsersActivity">
+        </activity>
+        <activity android:name=".ui.activity.CameraActivity">
         </activity>
     </application>
 

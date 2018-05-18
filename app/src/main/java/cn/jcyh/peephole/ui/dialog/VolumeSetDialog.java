@@ -84,6 +84,7 @@ public class VolumeSetDialog extends BaseDialogFragment implements SeekBar.OnSee
         if (mPlayer != null) {
             mPlayer.stop();
             mPlayer.release();
+            mPlayer = null;
         }
     }
 

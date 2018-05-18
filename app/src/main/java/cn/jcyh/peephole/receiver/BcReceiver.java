@@ -17,6 +17,7 @@ import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.ui.activity.PictureActivity;
 import timber.log.Timber;
 
+import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_DOORBELL_SYSTEM_ALARM;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_DOORBELL_SYSTEM_RING;
 
 public class BcReceiver extends BroadcastReceiver {
@@ -143,10 +144,10 @@ public class BcReceiver extends BroadcastReceiver {
                         //开启了停留报警
                         play(mContext, DoorBellControlCenter.DOORBELL_TYPE_ALARM);
                     }
-//                    Intent intent = new Intent(mContext, PictureActivity.class);
-//                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                    intent.putExtra("type", TYPE_DOORBELL_SYSTEM_ALARM);
-//                    mContext.startActivity(intent);
+                    Intent intent = new Intent(mContext, PictureActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("type", TYPE_DOORBELL_SYSTEM_ALARM);
+                    mContext.startActivity(intent);
                 }
             }
         }

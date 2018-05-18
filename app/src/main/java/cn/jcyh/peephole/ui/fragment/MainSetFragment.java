@@ -23,13 +23,13 @@ import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.BcManager;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
-import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.ui.dialog.AutoSensorTimeDialog;
 import cn.jcyh.peephole.ui.dialog.ChooseSetDialog;
 import cn.jcyh.peephole.ui.dialog.CommonEditDialog;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.OnDialogListener;
 import cn.jcyh.peephole.utils.ToastUtil;
+import cn.jcyh.peephole.utils.Tool;
 
 
 /**
@@ -137,20 +137,32 @@ public class MainSetFragment extends BaseFragment {
      */
     private void showLeavelTimeDialog() {
         if (mDoorbellLeavelTimeDialog == null) {
-            ChooseSetDialog chooseSetDialog = new ChooseSetDialog();
+            final ChooseSetDialog chooseSetDialog = new ChooseSetDialog();
             chooseSetDialog.setTitle(getString(R.string.video_leave_msg_time));
             List<String> datas = new ArrayList<>();
             String[] stringArray = getResources().getStringArray(R.array.leave_time);
             Collections.addAll(datas, stringArray);
-            ChooseSetAdapter adapter = new ChooseSetAdapter(datas);
+            final ChooseSetAdapter adapter = new ChooseSetAdapter(datas);
             chooseSetDialog.setAdapter(adapter);
             adapter.setOnItemClickListener(new ChooseSetAdapter.OnItemClickListener() {
                 @Override
                 public void onItemClick(String data, int pos) {
-
+                    int number = 0;
+                    if (Tool.hasDigit(data)) {
+                        try {
+                            number = Integer.parseInt(Tool.getNumbers(data));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    mDoorbellConfig.setVideoLeaveMsgTime(number);
+                    DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
+                    chooseSetDialog.dismiss();
                 }
             });
+            mDoorbellLeavelTimeDialog = new DialogHelper((BaseActivity) mActivity, chooseSetDialog);
         }
+        ((ChooseSetDialog) mDoorbellLeavelTimeDialog.getDialogFragment()).setCheckedItem(mDoorbellConfig.getVideoLeaveMsgTime() + getString(R.string.second));
         mDoorbellLeavelTimeDialog.commit();
     }
 
@@ -208,6 +220,8 @@ public class MainSetFragment extends BaseFragment {
                 }
             });
             mVideotapTimeDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
+        } else {
+            ((CommonEditDialog) mVideotapTimeDialog.getDialogFragment()).setContent(String.valueOf(mDoorbellConfig.getVideotapTime()));
         }
         mVideotapTimeDialog.commit();
     }
@@ -235,6 +249,8 @@ public class MainSetFragment extends BaseFragment {
                 }
             });
             mMasterNumberDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
+        } else {
+            ((CommonEditDialog) mMasterNumberDialog.getDialogFragment()).setContent(mDoorbellConfig.getMasterNumber());
         }
         mMasterNumberDialog.commit();
     }
@@ -262,6 +278,8 @@ public class MainSetFragment extends BaseFragment {
                 }
             });
             mSOSNumberDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
+        } else {
+            ((CommonEditDialog) mSOSNumberDialog.getDialogFragment()).setContent(mDoorbellConfig.getSosNumber());
         }
         mSOSNumberDialog.commit();
     }
@@ -272,18 +290,10 @@ public class MainSetFragment extends BaseFragment {
     private void switchMonitor() {
         cbMonitor.setChecked(!cbMonitor.isChecked());
         mDoorbellConfig.setMonitorSwitch(cbMonitor.isChecked() ? 1 : 0);
-        HttpAction.getHttpAction(mActivity).setDoorbellConfig(DoorBellControlCenter.getIMEI(mActivity), mDoorbellConfig, new IDataListener<Boolean>() {
-            @Override
-            public void onSuccess(Boolean aBoolean) {
-                mControlCenter.saveDoorbellConfig(mDoorbellConfig);
-                BcManager.getManager(mActivity).setPIRSensorOn(mDoorbellConfig.getMonitorSwitch() == 1);
-            }
-
-            @Override
-            public void onFailure(int errorCode) {
-                ToastUtil.showToast(mActivity, getString(R.string.set_failure) + errorCode);
-            }
-        });
+        mControlCenter.saveDoorbellConfig(mDoorbellConfig);
+        tvMonitorState.setText(cbMonitor.isChecked() ? R.string.monitor_opened : R.string.monitor_closed);
+        BcManager.getManager(mActivity).setPIRSensorOn(mDoorbellConfig.getMonitorSwitch() == 1);
+        HttpAction.getHttpAction(mActivity).setDoorbellConfig(DoorBellControlCenter.getIMEI(mActivity), mDoorbellConfig, null);
     }
 
     /**

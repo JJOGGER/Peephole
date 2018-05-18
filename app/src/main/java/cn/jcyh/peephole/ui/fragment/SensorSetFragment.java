@@ -9,9 +9,7 @@ import cn.jcyh.peephole.base.BaseFragment;
 import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
-import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.widget.MyDeviceParam;
-import timber.log.Timber;
 
 
 /**
@@ -143,19 +141,9 @@ public class SensorSetFragment extends BaseFragment {
      * 设置参数
      */
     private void setParam() {
+        //保存到本地
+        DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
         //保存到服务器
-        HttpAction.getHttpAction(mActivity).setDoorbellConfig(DoorBellControlCenter.getIMEI(mActivity), mDoorbellConfig, new IDataListener<Boolean>() {
-            @Override
-            public void onSuccess(Boolean aBoolean) {
-                Timber.e("----------设置成功");
-                //保存到本地
-                DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
-            }
-
-            @Override
-            public void onFailure(int errorCode) {
-
-            }
-        });
+        HttpAction.getHttpAction(mActivity).setDoorbellConfig(DoorBellControlCenter.getIMEI(mActivity), mDoorbellConfig, null);
     }
 }

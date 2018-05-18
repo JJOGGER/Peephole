@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.MediaStore;
 import android.telephony.TelephonyManager;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -35,6 +34,7 @@ import cn.jcyh.peephole.control.BcManager;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
+import cn.jcyh.peephole.ui.activity.CameraActivity;
 import cn.jcyh.peephole.utils.LunarCalendar;
 import cn.jcyh.peephole.utils.ToastUtil;
 import timber.log.Timber;
@@ -144,15 +144,6 @@ public class MainFragment extends BaseFragment {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setType("vnd.android.cursor.dir/video");
                 startActivity(intent);
-//                        ComponentName componentName = new ComponentName("com.android
-// .gallery3d", "com.android" +
-//                                ".gallery3d.app.GalleryActivity");
-//                intent.setComponent(componentName);
-//                ComponentName comp = new ComponentName("com.android.camera", "com.android
-// .camera.VideoPlayer.GalleryPicker");
-//                intent.setComponent(comp);
-//                intent.setAction("android.intent.action.VIEW");
-//                startActivity(intent);
                 break;
             case R.id.rl_monitor_switch:
                 if (mProgressDialog.isShowing()) return;
@@ -162,8 +153,9 @@ public class MainFragment extends BaseFragment {
                 calSOS();
                 break;
             case R.id.iv_home:
-                intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);// 启动系统相机
-                startActivity(intent);
+//                intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);// 启动系统相机
+//                startActivity(intent);
+                startNewActivity(CameraActivity.class);
                 break;
         }
     }
@@ -261,7 +253,7 @@ public class MainFragment extends BaseFragment {
      * 打开系统相册
      */
     public void openAlbum() {
-        Intent intent=new Intent(Intent.ACTION_VIEW);
+        Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setType("vnd.android.cursor.dir/image");
         startActivity(intent);
 //        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media
@@ -322,7 +314,7 @@ public class MainFragment extends BaseFragment {
             if (mActivity == null || mActivity.isFinishing() || mActivity.getFragmentManager() ==
                     null)
                 return;
-            if (msg.what == WHAT) {
+            if (msg.what == WHAT && !TextUtils.isEmpty(mAmPm)) {
                 mHourMinDate.setTime(System.currentTimeMillis());
                 String time = mHmformat.format(mHourMinDate);
                 if (mSpannableString == null) {

@@ -55,7 +55,7 @@ public class AnyChatVideoCallEventAdapter implements AnyChatVideoCallEvent {
                 break;
             case AnyChatDefine.BRAC_VIDEOCALL_EVENT_START:// 视频呼叫会话开始事件
                 Timber.e("--------->开始进入会话窗口");
-                DoorBellControlCenter.sCurrentVideoUserAccount = DoorBellControlCenter.getInstance(mContext).getUserAccountByAId(dwUserId);
+                DoorBellControlCenter.sCurrentVideoUser = DoorBellControlCenter.getInstance(mContext).getUserAccountByAId(dwUserId);
                 Intent videoIntent = new Intent(mContext, VideoService.class);
                 videoIntent.putExtra("roomId", dwParam);
                 videoIntent.putExtra("userId", dwUserId);
@@ -65,7 +65,7 @@ public class AnyChatVideoCallEventAdapter implements AnyChatVideoCallEvent {
 //                        DialogFactory.getDialogFactory().dismiss();
                 Timber.e("--------结束通话");
                 mContext.stopService(new Intent(mContext, VideoService.class));
-                DoorBellControlCenter.sCurrentVideoUserAccount = null;
+                DoorBellControlCenter.sCurrentVideoUser = null;
                 break;
         }
 

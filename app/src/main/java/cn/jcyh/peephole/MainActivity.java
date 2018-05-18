@@ -103,6 +103,12 @@ public class MainActivity extends BaseActivity {
         unregisterReceiver(mReceiver);
     }
 
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(Intent.ACTION_MAIN,null);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        startActivity(intent);
+    }
 
     private class MyReceiver extends BroadcastReceiver {
 

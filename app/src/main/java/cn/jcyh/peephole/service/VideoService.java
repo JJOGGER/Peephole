@@ -177,6 +177,7 @@ public class VideoService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Timber.e("-------onDestroy");
         DoorBellControlCenter.sIsVideo = false;
         mDoorbellVideoHelper.userCameraControl(-1, 0);
         mDoorbellVideoHelper.userSpeakControl(-1, 0);
@@ -266,7 +267,7 @@ public class VideoService extends Service {
      * 结束视频
      */
     private void finishVideoCall() {
-        ToastUtil.showToast(getApplicationContext(), String.format(getString(R.string._finish_video_format), DoorBellControlCenter.sCurrentVideoUserAccount));
+        ToastUtil.showToast(getApplicationContext(), String.format(getString(R.string._finish_video_format), DoorBellControlCenter.sCurrentVideoUser.getAccount()));
         stopSelf();
     }
 

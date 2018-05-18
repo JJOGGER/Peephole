@@ -47,6 +47,11 @@ public class CommonEditDialog extends BaseDialogFragment {
         super.init(view);
         if (!TextUtils.isEmpty(mTitle))
             tvTitle.setText(mTitle);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         if (!TextUtils.isEmpty(mContent))
             etContent.setText(mContent);
     }

@@ -2,6 +2,7 @@ package cn.jcyh.peephole.ui.dialog;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -21,6 +22,11 @@ public abstract class BaseDialogFragment extends DialogFragment {
     public Activity mActivity;
     private Unbinder mBind;
     public OnDialogListener mOnDialogListener;
+    public OnDialogDissmissListener mDismissListener;
+
+    public interface OnDialogDissmissListener {
+        void onDismiss();
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -52,6 +58,17 @@ public abstract class BaseDialogFragment extends DialogFragment {
 
     public void setOnDialogListener(OnDialogListener onDialogListener) {
         mOnDialogListener = onDialogListener;
+    }
+
+    public void setOnDismissListener(OnDialogDissmissListener listener) {
+        mDismissListener = listener;
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
+        if (mDismissListener != null)
+            mDismissListener.onDismiss();
     }
 
     @Override

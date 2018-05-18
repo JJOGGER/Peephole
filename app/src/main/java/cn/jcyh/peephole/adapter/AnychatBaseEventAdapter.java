@@ -10,9 +10,9 @@ import cn.jcyh.peephole.http.HttpAction;
 import timber.log.Timber;
 
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_BASE_EVENT;
-import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_LOGIN_STATE;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_ENTER_ROOM;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_LINK_CLOSE;
+import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_LOGIN_STATE;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_ONLINE_USER;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_USER_AT_ROOM;
 

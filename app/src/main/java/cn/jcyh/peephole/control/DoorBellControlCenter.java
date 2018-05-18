@@ -49,7 +49,7 @@ public class DoorBellControlCenter {
     private Gson mGson;
     public static boolean sIsVideo;//标记是否正在视频通话中
     public static boolean sIsBinding;//标记是否正在绑定中
-    public static String sCurrentVideoUserAccount;
+    public static User sCurrentVideoUser;
 
 
     //    public static Map<String, Object> pushFlagMap;
@@ -563,16 +563,14 @@ public class DoorBellControlCenter {
                 0, anyChatOutParam);
     }
 
-    //
-//    /**
-//     * 结束通话
-//     *
-//     * @param tUserId
-//     */
-//    public void finishVideoCall(int tUserId) {
-//        videoCallContrl(AnyChatDefine.BRAC_VIDEOCALL_EVENT_FINISH, tUserId, 0, 0, mSelfUserId,
-// "");
-//    }
+
+    /**
+     * 结束通话
+     */
+    public void finishVideoCall(int selfUserId, int tUserId) {
+        videoCallContrl(AnyChatDefine.BRAC_VIDEOCALL_EVENT_FINISH, tUserId, 0, 0, selfUserId,
+                "");
+    }
 //
 //    public void initVideoSDK(Context context) {
 //        AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_AUTOROTATION, 1);
@@ -713,12 +711,12 @@ public class DoorBellControlCenter {
         }.getType());
     }
 
-    public String getUserAccountByAId(int aId) {
+    public User getUserAccountByAId(int aId) {
         List<User> bindUsers = getBindUsers();
         if (bindUsers != null) {
             for (int i = 0; i < bindUsers.size(); i++) {
                 if (aId == bindUsers.get(i).getAid()) {
-                    return bindUsers.get(i).getAccount();
+                    return bindUsers.get(i);
                 }
             }
         }

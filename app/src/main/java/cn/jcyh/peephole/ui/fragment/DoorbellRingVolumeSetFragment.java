@@ -1,5 +1,8 @@
 package cn.jcyh.peephole.ui.fragment;
 
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
+import android.media.MediaPlayer;
 import android.view.View;
 import android.widget.TextView;
 
@@ -16,17 +19,19 @@ import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.base.BaseFragment;
 import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.ui.dialog.BaseDialogFragment;
 import cn.jcyh.peephole.ui.dialog.ChooseSetDialog;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.OnDialogListener;
 import cn.jcyh.peephole.ui.dialog.VolumeSetDialog;
+import timber.log.Timber;
 
 /**
  * Created by jogger on 2018/4/28.
  * 设置铃声和音量
  */
 
-public class DoorbellRingVolumeSetFragment extends BaseFragment {
+public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseDialogFragment.OnDialogDissmissListener {
     @BindView(R.id.tv_doorbell_ring)
     TextView tvDoorbellRing;
     @BindView(R.id.tv_alarm_ring)
@@ -37,6 +42,7 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment {
     private List<String> mDoorbellRings;
     private List<String> mAlarmRings;
     private DoorbellConfig mDoorbellConfig;
+    private MediaPlayer mPlayer;
 
     @Override
     public int getLayoutId() {
@@ -78,53 +84,75 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment {
                 mVolumeDialog.commit();
                 break;
             case R.id.rl_doorbell_ring:
-                if (mDoorbellRingDialog == null) {
-                    ChooseSetDialog chooseSetDialog = new ChooseSetDialog();
-                    chooseSetDialog.setType(DoorBellControlCenter.DOORBELL_TYPE_RING);
-                    chooseSetDialog.setTitle(getString(R.string.doorbell_ring));
-                    ChooseSetAdapter adapter = new ChooseSetAdapter(mDoorbellRings);
-                    chooseSetDialog.setAdapter(adapter);
-                    chooseSetDialog.setOnDialogListener(new OnDialogListener() {
-                        @Override
-                        public void onConfirm(Object content) {
-                            tvDoorbellRing.setText(content.toString());
-                        }
-                    });
-                    mDoorbellRingDialog = new DialogHelper((BaseActivity) mActivity, chooseSetDialog);
-                }
-                setCurrentItem(mDoorbellConfig.getDoorbellRingName());
-                mDoorbellRingDialog.commit();
+                showRingDialog();
                 break;
             case R.id.rl_alarm_ring:
-                if (mAlarmRingDialog == null) {
-                    ChooseSetDialog chooseSetDialog = new ChooseSetDialog();
-                    chooseSetDialog.setType(DoorBellControlCenter.DOORBELL_TYPE_ALARM);
-                    chooseSetDialog.setTitle(getString(R.string.alarm_ring));
-                    ChooseSetAdapter adapter = new ChooseSetAdapter(mAlarmRings);
-                    chooseSetDialog.setAdapter(adapter);
-                    adapter.setOnItemClickListener(new ChooseSetAdapter.OnItemClickListener() {
-                        @Override
-                        public void onItemClick(String data, int pos) {
-
-                        }
-                    });
-                    chooseSetDialog.setOnDialogListener(new OnDialogListener() {
-                        @Override
-                        public void onConfirm(Object content) {
-
-                            tvAlarmRing.setText(content.toString());
-                        }
-                    });
-                    mAlarmRingDialog = new DialogHelper((BaseActivity) mActivity, chooseSetDialog);
-                }
-                setCurrentItem(mDoorbellConfig.getDoorbellAlarmName());
-                mAlarmRingDialog.commit();
+                showAlarmDialog();
                 break;
         }
     }
 
-    private void setCurrentItem(String data) {
-        ((ChooseSetDialog) mDoorbellRingDialog.getDialogFragment()).setCheckedItem(data);
+    private void showAlarmDialog() {
+        if (mAlarmRingDialog == null) {
+            final ChooseSetDialog chooseSetDialog = new ChooseSetDialog();
+            chooseSetDialog.setType(DoorBellControlCenter.DOORBELL_TYPE_ALARM);
+            chooseSetDialog.setTitle(getString(R.string.alarm_ring));
+            ChooseSetAdapter adapter = new ChooseSetAdapter(mAlarmRings);
+            chooseSetDialog.setAdapter(adapter);
+            adapter.setOnItemClickListener(new ChooseSetAdapter.OnItemClickListener() {
+                @Override
+                public void onItemClick(String data, int pos) {
+                    chooseSetDialog.setCheckedItem(data);
+                    play(data, DoorBellControlCenter.DOORBELL_TYPE_ALARM);
+                }
+            });
+            chooseSetDialog.setOnDismissListener(this);
+            chooseSetDialog.setOnDialogListener(new OnDialogListener() {
+                @Override
+                public void onConfirm(Object content) {
+                    mDoorbellConfig.setDoorbellAlarmName(content.toString());
+                    DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
+                    tvAlarmRing.setText(content.toString());
+                }
+            });
+            mAlarmRingDialog = new DialogHelper((BaseActivity) mActivity, chooseSetDialog);
+        }
+        ChooseSetDialog dialogFragment = (ChooseSetDialog) mAlarmRingDialog.getDialogFragment();
+        if (dialogFragment != null)
+            dialogFragment.setCheckedItem(mDoorbellConfig.getDoorbellAlarmName());
+        mAlarmRingDialog.commit();
+    }
+
+    private void showRingDialog() {
+        if (mDoorbellRingDialog == null) {
+            final ChooseSetDialog chooseSetDialog = new ChooseSetDialog();
+            chooseSetDialog.setType(DoorBellControlCenter.DOORBELL_TYPE_RING);
+            chooseSetDialog.setTitle(getString(R.string.doorbell_ring));
+            ChooseSetAdapter adapter = new ChooseSetAdapter(mDoorbellRings);
+            chooseSetDialog.setAdapter(adapter);
+            adapter.setOnItemClickListener(new ChooseSetAdapter.OnItemClickListener() {
+                @Override
+                public void onItemClick(String data, int pos) {
+                    chooseSetDialog.setCheckedItem(data);
+                    play(data, DoorBellControlCenter.DOORBELL_TYPE_RING);
+                }
+            });
+            chooseSetDialog.setOnDismissListener(this);
+            chooseSetDialog.setOnDialogListener(new OnDialogListener() {
+                @Override
+                public void onConfirm(Object content) {
+                    Timber.e("---------content:" + content.toString());
+                    mDoorbellConfig.setDoorbellRingName(content.toString());
+                    DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
+                    tvDoorbellRing.setText(content.toString());
+                }
+            });
+            mDoorbellRingDialog = new DialogHelper((BaseActivity) mActivity, chooseSetDialog);
+        }
+        ChooseSetDialog dialogFragment = (ChooseSetDialog) mDoorbellRingDialog.getDialogFragment();
+        if (dialogFragment != null)
+            dialogFragment.setCheckedItem(mDoorbellConfig.getDoorbellRingName());
+        mDoorbellRingDialog.commit();
     }
 
     @Override
@@ -136,5 +164,40 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment {
             mDoorbellRingDialog.dismiss();
         if (mVolumeDialog != null)
             mVolumeDialog.dismiss();
+        if (mPlayer != null) {
+            mPlayer.stop();
+            mPlayer.release();
+        }
+    }
+
+    public void play(String data, int type) {
+        try {
+            AssetFileDescriptor descriptor;
+            AssetManager assets = getResources().getAssets();
+            if (type == DoorBellControlCenter.DOORBELL_TYPE_RING)
+                descriptor = assets.openFd("ring/" + data);
+            else descriptor = assets.openFd("alarm/" + data);
+            if (mPlayer == null) {
+                mPlayer = new MediaPlayer();
+                mPlayer.setLooping(false);
+            } else {
+                mPlayer.stop();
+                mPlayer.reset();
+            }
+            mPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
+            mPlayer.prepare();
+            mPlayer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onDismiss() {
+        if (mPlayer != null) {
+            mPlayer.stop();
+            mPlayer.release();
+            mPlayer = null;
+        }
     }
 }

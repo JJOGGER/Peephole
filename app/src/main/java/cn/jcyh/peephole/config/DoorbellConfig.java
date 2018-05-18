@@ -30,9 +30,9 @@ public class DoorbellConfig {
     private int autoSensorTime = 5;
     private String masterNumber;//主人号码
     private String sosNumber;//sos号码
-    private int videoLeaveMsgTime = 20;//猫眼留言时间
+    private int videoLeaveMsgTime = 5;//猫眼留言时间
     private int videotapTime = 5;//录像时间
-    private int doorbellLookTime = 15;//猫眼查看时间
+    private int doorbellLookTime = 5;//猫眼查看时间
     private String mDoorbellRingName;//门铃声
     private String mDoorbellAlarmName;//报警声
     private int mRingVolume = 50;

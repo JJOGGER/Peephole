@@ -3,14 +3,11 @@ package cn.jcyh.peephole.receiver;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.text.TextUtils;
 
 import cn.jcyh.peephole.MainActivity;
 import timber.log.Timber;
-
-/**
- * Created by jogger on 2018/1/16.
- */
 
 public class BootBroadcastReceiver extends BroadcastReceiver {
     @Override
@@ -21,6 +18,9 @@ public class BootBroadcastReceiver extends BroadcastReceiver {
             Intent bootActivityIntent = new Intent(context, MainActivity.class);
             bootActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(bootActivityIntent);
+            WifiManager wifiManager= (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            wifiManager.setWifiEnabled(true);
+
         }
     }
 }

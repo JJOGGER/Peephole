@@ -14,6 +14,7 @@ import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.utils.ConstantUtil;
+import timber.log.Timber;
 
 public class VideoServiceActivity extends BaseActivity {
     @BindView(R.id.tv_state)
@@ -37,7 +38,7 @@ public class VideoServiceActivity extends BaseActivity {
         tvDeviceNumber.setText(String.format(getString(R.string.device_no_), IMEI));
         if (DoorBellControlCenter.sIsAnychatLogin) {
             if (DoorBellControlCenter.sIsVideo) {
-                tvState.setText(String.format(getString(R.string.video_with_user_format), DoorBellControlCenter.sCurrentVideoUserAccount));
+                tvState.setText(String.format(getString(R.string.video_with_user_format), DoorBellControlCenter.sCurrentVideoUser.getAccount()));
             } else
                 tvState.setText(R.string.ready_connect);
         } else {
@@ -46,7 +47,14 @@ public class VideoServiceActivity extends BaseActivity {
         mControlCenter = DoorBellControlCenter.getInstance(this);
         mReceiver = new MyReceiver();
         IntentFilter intentFilter = new IntentFilter(ConstantUtil.ACTION_ANYCHAT_VIDEO_CALL_EVENT);
+        intentFilter.addAction(ConstantUtil.ACTION_ANYCHAT_BASE_EVENT);
         registerReceiver(mReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Timber.e("---------------onResume");
     }
 
     @Override
@@ -62,6 +70,9 @@ public class VideoServiceActivity extends BaseActivity {
                 startNewActivity(VideoMenuActivity.class);
                 break;
             case R.id.btn_exit:
+                if (DoorBellControlCenter.sIsVideo) {
+                    mControlCenter.finishVideoCall(-1, DoorBellControlCenter.sCurrentVideoUser.getAid());
+                }
                 finish();
                 break;
         }
@@ -75,10 +86,10 @@ public class VideoServiceActivity extends BaseActivity {
             String type = intent.getStringExtra("type");
             switch (action) {
                 case ConstantUtil.ACTION_ANYCHAT_VIDEO_CALL_EVENT:
+                    Timber.e("---------ACTION_ANYCHAT_VIDEO_CALL_EVENT");
                     if (ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_START.equals(type)) {
-                        String account = DoorBellControlCenter.getInstance(getApplicationContext()).getUserAccountByAId(intent.getIntExtra("dwUserId", -1));
-                        if (!TextUtils.isEmpty(account)) {
-                            tvState.setText(String.format(getString(R.string.video_with_user_format), account));
+                        if (!TextUtils.isEmpty(DoorBellControlCenter.sCurrentVideoUser.getAccount())) {
+                            tvState.setText(String.format(getString(R.string.video_with_user_format), DoorBellControlCenter.sCurrentVideoUser.getAccount()));
                         }
                     } else if (ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_FINISH.equals(type)) {
                         if (DoorBellControlCenter.sIsAnychatLogin)

@@ -15,9 +15,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import cn.jcyh.peephole.R;
@@ -61,7 +59,20 @@ public class PictureActivity extends BaseActivity {
             mCamera.release();
             mCamera = null;
         }
-        mCamera = Camera.open();
+        int cameraCount = 0;
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+        cameraCount = Camera.getNumberOfCameras();
+        for (int camIdx = 0; camIdx < cameraCount; camIdx++) {
+            Camera.getCameraInfo(camIdx, cameraInfo);
+            if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) { // 代表摄像头的方位，目前有定义值两个分别为CAMERA_FACING_FRONT前置和CAMERA_FACING_BACK后置
+                try {
+                    mCamera = Camera.open(camIdx);
+                    break;
+                } catch (RuntimeException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 //        Camera.Parameters parameters = mCamera.getParameters();
 //
 //        parameters.setPictureFormat(PixelFormat.JPEG);
@@ -113,9 +124,6 @@ public class PictureActivity extends BaseActivity {
         setResult(RESULT_OK, intent);
         closeCamera();
         //获取拍照的图片
-        Map<String, Object> params = new HashMap<>();
-        params.put("deviceId", IMEI);
-        params.put("type", mType);
         int type = 0;
         if (ConstantUtil.TYPE_DOORBELL_SYSTEM_RING.equals(mType)) {
             type = DoorBellControlCenter.DOORBELL_TYPE_RING;
@@ -169,12 +177,12 @@ public class PictureActivity extends BaseActivity {
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);//设置采集声音
         mRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);//设置采集图像
         //2.设置视频，音频的输出格式
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         //3.设置音频的编码格式
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
         //设置图像的编码格式
-        mRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
-        File saveFile = null;
+        mRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+        File saveFile;
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
         Date date = new Date(System.currentTimeMillis());
         String time = simpleDateFormat.format(date);
