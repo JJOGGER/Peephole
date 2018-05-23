@@ -46,13 +46,15 @@ public class BcReceiver extends BroadcastReceiver {
                 String extAct = intent.getStringExtra("value");
                 if (extAct.equals("PeopleIn")) {
                     Timber.e("------->mTimer:" + mTimer + "-->PIR中断:有人来了");
-                    if (mTimer != null && mTimerTask != null) {
-                        return;
-                    }
-                    mTimer = new Timer();
-                    mTimerTask = new MyTimeTask(context);
-                    mCount = 0;
-                    mTimer.schedule(mTimerTask, 0, 1000);
+//                    if (mTimer != null && mTimerTask != null) {
+//                        return;
+//                    }
+//                    mTimer = new Timer();
+//                    mTimerTask = new MyTimeTask(context);
+//                    mCount = 0;
+//                    mTimer.schedule(mTimerTask, 0, 1000);
+                }else if (extAct.equals("PeopleOut")){
+                    Timber.e("------->mTimer:" + mTimer + "-->PIR中断:人走了");
                 }
 //            else if (extAct.equals("PeopleOut")) {
 //                showToast(context, "PIR中断:人走了");

@@ -47,4 +47,6 @@ dependencies {
     compile project(':anychat')
     compile project(':zxinglib')
     compile files('libs/classes-full-debug.jar')
+    compile files('libs/Msc.jar')
+    compile files('libs/Sunflower.jar')
 }

@@ -154,6 +154,8 @@
     <string name="alarm_volume">报警音量</string>
     <string name="more_than_time_msg">超过最大时间，更改为300s</string>
     <string name="low_than_time_msg">小于最短时间，更改为5s</string>
+    <string name="face_set_msg">设置人脸识别</string>
+    <string name="face_set">人脸识别</string>
     <!--<string name="date_week_format">%d年%d月%d日&#160;%s</string>-->
     <!--<string name="calendar_date_format">农历%d年%s月%s</string>-->
 </resources>
