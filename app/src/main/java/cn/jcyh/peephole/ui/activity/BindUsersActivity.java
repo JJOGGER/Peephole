@@ -42,7 +42,7 @@ public class BindUsersActivity extends BaseActivity implements BindUsersAdapter.
         mProgressDialog = new ProgressDialog(this);
         mProgressDialog.setMessage(getString(R.string.waitting));
         mProgressDialog.show();
-        HttpAction.getHttpAction(getApplicationContext()).getBindUsers(IMEI, new IDataListener<List<User>>() {
+        HttpAction.getHttpAction().getBindUsers(IMEI, new IDataListener<List<User>>() {
             @Override
             public void onSuccess(List<User> users) {
                 if (mProgressDialog != null && mProgressDialog.isShowing())

@@ -44,14 +44,14 @@ public class VolumeSetDialog extends BaseDialogFragment implements SeekBar.OnSee
     @Override
     public void onResume() {
         super.onResume();
-        mDoorbellConfig = DoorBellControlCenter.getInstance(mActivity).getDoorbellConfig();
+        mDoorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
         sbDoorbell.setProgress(mDoorbellConfig.getRingVolume());
         sbAlarm.setProgress(mDoorbellConfig.getAlarmVolume());
     }
 
     @OnClick(R.id.tv_confirm)
     public void onClick(View v) {
-        DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
+        DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
         dismiss();
     }
 

@@ -2,6 +2,7 @@ package cn.jcyh.peephole.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.bairuitech.anychat.AnyChatUserInfoEvent;
 
@@ -34,7 +35,7 @@ public class AnyChatUserInfoEventAdapter implements AnyChatUserInfoEvent {
         intent.putExtra("dwType", dwType);
         intent.setAction(ACTION_ANYCHAT_USER_INFO_EVENT);
         intent.putExtra("type", TYPE_ANYCHAT_USER_INFO_UPDATE);
-        mContext.sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 
     @Override
@@ -46,6 +47,6 @@ public class AnyChatUserInfoEventAdapter implements AnyChatUserInfoEvent {
         intent.putExtra("dwStatus", dwStatus);
         intent.setAction(ACTION_ANYCHAT_USER_INFO_EVENT);
         intent.putExtra("type", TYPE_ANYCHAT_FRIEND_STATUS);
-        mContext.sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 }

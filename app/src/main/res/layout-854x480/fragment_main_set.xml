@@ -430,39 +430,5 @@
             android:layout_marginRight="16dp"
             android:layout_marginTop="2dp"
             android:background="@color/gray_777777"/>
-
-        <RelativeLayout
-            android:id="@+id/rl_face_set"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:id="@+id/tv_face_set_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="16dp"
-                android:paddingTop="4dp"
-                android:text="@string/face_set"
-                android:textColor="@color/tv_title_color_selector"
-                android:textSize="16sp"/>
-
-            <TextView
-                android:id="@+id/tv_face_set"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/tv_face_set_title"
-                android:paddingLeft="16dp"
-                android:text="@string/face_set_msg"
-                android:textColor="@color/tv_subtitle_color_selector"
-                android:textSize="12sp"/>
-        </RelativeLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0.5dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginTop="2dp"
-            android:background="@color/gray_dedede"/>
     </LinearLayout>
 </ScrollView>

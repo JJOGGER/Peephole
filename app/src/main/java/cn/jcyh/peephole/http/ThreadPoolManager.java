@@ -8,11 +8,8 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by jogger on 2018/1/25.
- */
 
-public class ThreadPoolManager {
+ class ThreadPoolManager {
     private static ThreadPoolManager sThreadPoolManager;
     private ThreadPoolExecutor mThreadPoolExecutor;
     private LinkedBlockingDeque<Future<?>> mRequestQueue = new LinkedBlockingDeque<>();//请求队列
@@ -23,7 +20,7 @@ public class ThreadPoolManager {
         mThreadPoolExecutor.setRejectedExecutionHandler(new RejectedHandler());
     }
 
-    public static ThreadPoolManager getThreadPoolManager() {
+     static ThreadPoolManager getThreadPoolManager() {
         if (sThreadPoolManager == null) {
             synchronized (ThreadPoolManager.class) {
                 if (sThreadPoolManager == null) {
@@ -37,7 +34,7 @@ public class ThreadPoolManager {
     /**
      * 给外部调用
      */
-    public <T> void excute(FutureTask<T> futureTask) {
+     <T> void excute(FutureTask<T> futureTask) {
         if (futureTask != null) {
             try {
                 mRequestQueue.put(futureTask);

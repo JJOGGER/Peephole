@@ -25,20 +25,9 @@ import com.bairuitech.anychat.config.ConfigEntity;
 import com.bairuitech.anychat.config.ConfigHelper;
 import com.szjcyh.mysmart.IMyAidlInterface;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import cn.jcyh.peephole.MainActivity;
 import cn.jcyh.peephole.R;
@@ -51,12 +40,11 @@ import cn.jcyh.peephole.control.BcManager;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.receiver.AlarmReceiver;
-import cn.jcyh.peephole.utils.FileUtil;
 import timber.log.Timber;
 
 
 /**
- * Created by jogger on 2017/12/4.
+ * Created by jogger on 2017/12/4.后台服务
  */
 
 public class KeepBackLocalService extends Service {
@@ -69,13 +57,11 @@ public class KeepBackLocalService extends Service {
     private MyHandler mMyHandler;
     private MyReceiver mReceiver;
     private DoorBellControlCenter mControlCenter;
-    private InputStreamReader mReader;
-    private OutputStreamWriter mWriter;
+    //    private OutputStreamWriter mWriter;
     private SimpleDateFormat mSimpleDateFormat;
     private Date mDate;
-    private Timer mTimer;
-    private TimerTask mTimerTask;
-    private int mUserId;
+//    private Timer mTimer;
+//    private TimerTask mTimerTask;
 
     @Nullable
     @Override
@@ -89,7 +75,7 @@ public class KeepBackLocalService extends Service {
         mSimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         mDate = new Date(System
                 .currentTimeMillis());
-        mControlCenter = DoorBellControlCenter.getInstance(this);
+        mControlCenter = DoorBellControlCenter.getInstance();
         initConfig();
         if (mBinder == null) mBinder = new MyBinder();
         mAnyChat = AnyChatCoreSDK.getInstance(getApplicationContext());
@@ -102,52 +88,55 @@ public class KeepBackLocalService extends Service {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
         intentFilter.addAction(Intent.ACTION_SCREEN_ON);
-        try {
-            File file = new File(FileUtil.getInstance().getSDCardPath() + File.separator +
-                    "anychatlog.txt");
-            if (file.exists()) {
-                file.delete();
-            }
-            mWriter = new OutputStreamWriter(new
-                    BufferedOutputStream(new FileOutputStream(file)));
-            mReader = new InputStreamReader(new BufferedInputStream(new FileInputStream(file)));
-            try {
-                mWriter.write("-----oncreate");
-                mWriter.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            File file = new File(FileUtil.getInstance().getSDCardPath() + File.separator +
+//                    "anychatlog.txt");
+//            if (file.exists()) {
+//                file.delete();
+//            }
+//            mWriter = new OutputStreamWriter(new
+//                    BufferedOutputStream(new FileOutputStream(file)));
+//            try {
+//                mWriter.write("-----oncreate");
+//                mWriter.flush();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
         registerReceiver(mReceiver, intentFilter);
-        mTimer = new Timer();
-        mTimerTask = new TimerTask() {
-            @Override
-            public void run() {
-                mCount += 10;
-                try {
-                    mWriter.write("\n");
-                    mDate.setTime(System.currentTimeMillis());
-                    mWriter.write("------time:" + mSimpleDateFormat.format(mDate) +
-                            "---------" + mCount);
-                    mWriter.flush();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-
-        mTimer.schedule(mTimerTask, 0, 10000);
+//        mTimer = new Timer();
+//        mTimerTask = new TimerTask() {
+//            @Override
+//            public void run() {
+//                mCount += 10;
+//                try {
+//                    mWriter.write("\n");
+//                    mDate.setTime(System.currentTimeMillis());
+//                    mWriter.write("------time:" + mSimpleDateFormat.format(mDate) +
+//                            "---------" + mCount);
+//                    mWriter.flush();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        };
+//
+//        mTimer.schedule(mTimerTask, 0, 10000);
     }
 
     private void initConfig() {
         //初始化配置
         BcManager manager = BcManager.getManager(getApplicationContext());
         DoorbellConfig doorbellConfig = mControlCenter.getDoorbellConfig();
-        if (manager != null)
+        if (manager != null) {
+            manager.setSpeakerPowerOn(0, true);
+            manager.setSpeakerPowerOn(1, true);
             manager.setPIRSensorOn(doorbellConfig.getMonitorSwitch() == 1);
-        HttpAction.getHttpAction(this).setDoorbellConfig(DoorBellControlCenter.getIMEI(this), doorbellConfig, null);
+            Timber.e("---------a" + manager.getSpeakerStatus(0) + manager.getSpeakerStatus(1));
+        }
+        HttpAction.getHttpAction().setDoorbellConfig(DoorBellControlCenter.getIMEI(), doorbellConfig, null);
     }
 
     private int mCount;
@@ -175,15 +164,15 @@ public class KeepBackLocalService extends Service {
         PendingIntent pi = PendingIntent.getBroadcast(this, 0, intentAlarm, 0);
         assert alarmManager != null;
         alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 1000 * 60, pi);
-        try {
-            mWriter.write("\n");
-            mDate.setTime(System.currentTimeMillis());
-            mWriter.write("------onstartcommand:" + mSimpleDateFormat.format(mDate) +
-                    "---------" + mCount);
-            mWriter.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            mWriter.write("\n");
+//            mDate.setTime(System.currentTimeMillis());
+//            mWriter.write("------onstartcommand:" + mSimpleDateFormat.format(mDate) +
+//                    "---------" + mCount);
+//            mWriter.flush();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         return START_STICKY;
     }
 
@@ -191,7 +180,7 @@ public class KeepBackLocalService extends Service {
      * 连接anychat
      */
     private void connectAnyChat() {
-        String imei = DoorBellControlCenter.getIMEI(this);
+        String imei = DoorBellControlCenter.getIMEI();
         Timber.e("------imei:" + imei);
         mAnyChat.Logout();
         mAnyChat.Release();
@@ -207,15 +196,15 @@ public class KeepBackLocalService extends Service {
         ConfigEntity configEntity = configHelper.LoadConfig();
         mAnyChat.Connect(configEntity.ip, configEntity.port);//连接anychat
         mAnyChat.Login(imei, imei);
-        try {
-            mWriter.write("\n");
-            mDate.setTime(System.currentTimeMillis());
-            mWriter.write(mSimpleDateFormat.format(mDate) + "----->重新连接："
-                    + imei);
-            mWriter.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            mWriter.write("\n");
+//            mDate.setTime(System.currentTimeMillis());
+//            mWriter.write(mSimpleDateFormat.format(mDate) + "----->重新连接："
+//                    + imei);
+//            mWriter.flush();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     private class MyBinder extends IMyAidlInterface.Stub {
@@ -253,15 +242,15 @@ public class KeepBackLocalService extends Service {
         @Override
         public void OnAnyChatLinkCloseMessage(int dwErrorCode) {
             super.OnAnyChatLinkCloseMessage(dwErrorCode);
-            try {
-                mWriter.write("\n");
-                mDate.setTime(System.currentTimeMillis());
-                mWriter.write(mSimpleDateFormat.format(mDate) + "-----LinkCloseMessage"
-                        + dwErrorCode);
-                mWriter.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                mWriter.write("\n");
+//                mDate.setTime(System.currentTimeMillis());
+//                mWriter.write(mSimpleDateFormat.format(mDate) + "-----LinkCloseMessage"
+//                        + dwErrorCode);
+//                mWriter.flush();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
 
             connectAnyChat();
             //        if (dwErrorCode != 209) {
@@ -271,30 +260,29 @@ public class KeepBackLocalService extends Service {
         @Override
         public void OnAnyChatLoginMessage(int dwUserId, int dwErrorCode) {
             super.OnAnyChatLoginMessage(dwUserId, dwErrorCode);
-            mUserId = dwUserId;
-            try {
-                mWriter.write("\n");
-                mDate.setTime(System.currentTimeMillis());
-                mWriter.write(mSimpleDateFormat.format(mDate) + "----->OnAnyChatLoginMessage"
-                        + dwErrorCode);
-                mWriter.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                mWriter.write("\n");
+//                mDate.setTime(System.currentTimeMillis());
+//                mWriter.write(mSimpleDateFormat.format(mDate) + "----->OnAnyChatLoginMessage"
+//                        + dwErrorCode);
+//                mWriter.flush();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
         }
 
         @Override
         public void OnAnyChatConnectMessage(boolean bSuccess) {
             super.OnAnyChatConnectMessage(bSuccess);
-            try {
-                mWriter.write("\n");
-                mDate.setTime(System.currentTimeMillis());
-                mWriter.write(mSimpleDateFormat.format(mDate) + "----->OnAnyChatConnectMessage"
-                        + bSuccess);
-                mWriter.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                mWriter.write("\n");
+//                mDate.setTime(System.currentTimeMillis());
+//                mWriter.write(mSimpleDateFormat.format(mDate) + "----->OnAnyChatConnectMessage"
+//                        + bSuccess);
+//                mWriter.flush();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
         }
     }
 
@@ -365,12 +353,12 @@ public class KeepBackLocalService extends Service {
         Timber.e("-------------onDestroy");
         stopForeground(true);
         unregisterReceiver(mReceiver);
-        if (mWriter != null)
-            try {
-                mWriter.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//        if (mWriter != null)
+//            try {
+//                mWriter.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
     }
 
 }

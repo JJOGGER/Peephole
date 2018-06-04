@@ -31,7 +31,7 @@ public class DoorbellVideoHelper {
             AnyChatCoreSDK.mCameraHelper.SetContext(context.getApplicationContext());
             if (AnyChatCoreSDK.mCameraHelper.GetCameraNumber() > 1) {
                 // 默认打开前置摄像头
-                AnyChatCoreSDK.mCameraHelper.SelectVideoCapture(AnyChatCoreSDK.mCameraHelper.CAMERA_FACING_BACK);
+                AnyChatCoreSDK.mCameraHelper.SelectVideoCapture(AnyChatCoreSDK.mCameraHelper.CAMERA_FACING_FRONT);
             }
         } else {
             String[] strVideoCaptures = mAnyChat.EnumVideoCapture();

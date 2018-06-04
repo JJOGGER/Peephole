@@ -1,16 +1,13 @@
 package cn.jcyh.peephole.control;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
-import android.media.MediaPlayer;
 import android.provider.Settings;
 import android.text.TextUtils;
 
 import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
 import com.bairuitech.anychat.AnyChatOutParam;
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
@@ -34,7 +31,7 @@ import timber.log.Timber;
  * 控制中心
  */
 
-public class DoorBellControlCenter {
+public class DoorBellControlCenter extends ControlCenter {
 
     private static DoorBellControlCenter mDoorBellControlCenter;
     public static final String DOORBELL_PARAMS_TYPE_MODE = "mode";
@@ -42,25 +39,18 @@ public class DoorBellControlCenter {
     public static final String DOORBELL_PARAMS_TYPE_SENSOR = "sensor";
     public static final int DOORBELL_TYPE_RING = 0;
     public static final int DOORBELL_TYPE_ALARM = 1;
-    private static Context sContext;
     public static boolean sIsAnychatLogin = false;//标记anychat是否登录
     public AnyChatCoreSDK mAnyChat;//单例的anychat，同一事件的话可以使用这个
-    private MediaPlayer mMediaPlaer;
-    private Gson mGson;
     public static boolean sIsVideo;//标记是否正在视频通话中
     public static boolean sIsBinding;//标记是否正在绑定中
     public static User sCurrentVideoUser;
 
-
-    //    public static Map<String, Object> pushFlagMap;
-
     private DoorBellControlCenter() {
+        super();
         mAnyChat = AnyChatCoreSDK.getInstance(null);
-        mGson = new Gson();
     }
 
-    public static DoorBellControlCenter getInstance(Context context) {
-        sContext = context.getApplicationContext();
+    public static DoorBellControlCenter getInstance() {
         if (mDoorBellControlCenter == null) {
             synchronized (DoorBellControlCenter.class) {
                 if (mDoorBellControlCenter == null) {
@@ -71,11 +61,11 @@ public class DoorBellControlCenter {
         return mDoorBellControlCenter;
     }
 
-    public static String getIMEI(Context context) {
-        String imei = SharePreUtil.getInstance(context.getApplicationContext()).getString(ConstantUtil.SYSTEM_IMEI, "");
+    public static String getIMEI() {
+        String imei = SharePreUtil.getInstance().getString(ConstantUtil.SYSTEM_IMEI, "");
         if (TextUtils.isEmpty(imei)) {
-            imei = Settings.System.getString(context.getApplicationContext().getContentResolver(), Settings.System.ANDROID_ID);
-            SharePreUtil.getInstance(context.getApplicationContext()).setString(ConstantUtil.SYSTEM_IMEI, imei);
+            imei = Settings.System.getString(getApp().getContentResolver(), Settings.System.ANDROID_ID);
+            SharePreUtil.getInstance().setString(ConstantUtil.SYSTEM_IMEI, imei);
         }
         return imei;
     }
@@ -683,7 +673,7 @@ public class DoorBellControlCenter {
             saveDoorbellConfig(config);
             FileUtil.readFile(FileUtil.getDoorbellDataPath());
             //保存到服务器
-            HttpAction.getHttpAction(sContext).setDoorbellConfig(getIMEI(sContext), config, null);
+            HttpAction.getHttpAction().setDoorbellConfig(getIMEI(), config, null);
         } else {
             config = mGson.fromJson(configJson, DoorbellConfig.class);
         }
@@ -699,14 +689,14 @@ public class DoorBellControlCenter {
             users = "";
         else
             users = mGson.toJson(bindUsers);
-        SharePreUtil.getInstance(sContext).setString(ConstantUtil.DOORBELL_BIND_USERS, users);
+        SharePreUtil.getInstance().setString(ConstantUtil.DOORBELL_BIND_USERS, users);
     }
 
     /**
      * 获取绑定猫眼的用户列表
      */
     public List<User> getBindUsers() {
-        return mGson.fromJson(SharePreUtil.getInstance(sContext)
+        return mGson.fromJson(SharePreUtil.getInstance()
                 .getString(ConstantUtil.DOORBELL_BIND_USERS, ""), new TypeToken<List<User>>() {
         }.getType());
     }

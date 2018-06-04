@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
@@ -12,8 +13,10 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
+import cn.jcyh.peephole.control.BcManager;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.utils.ConstantUtil;
+import cn.jcyh.peephole.utils.ToastUtil;
 import timber.log.Timber;
 
 public class VideoServiceActivity extends BaseActivity {
@@ -21,8 +24,6 @@ public class VideoServiceActivity extends BaseActivity {
     TextView tvState;
     @BindView(R.id.tv_device_number)
     TextView tvDeviceNumber;
-    private int mRoomId;
-    private int mUserId;
     private MyReceiver mReceiver;
 
     private DoorBellControlCenter mControlCenter;
@@ -37,18 +38,18 @@ public class VideoServiceActivity extends BaseActivity {
     protected void init() {
         tvDeviceNumber.setText(String.format(getString(R.string.device_no_), IMEI));
         if (DoorBellControlCenter.sIsAnychatLogin) {
-            if (DoorBellControlCenter.sIsVideo) {
+            if (DoorBellControlCenter.sIsVideo && DoorBellControlCenter.sCurrentVideoUser != null) {
                 tvState.setText(String.format(getString(R.string.video_with_user_format), DoorBellControlCenter.sCurrentVideoUser.getAccount()));
             } else
                 tvState.setText(R.string.ready_connect);
         } else {
             tvState.setText(R.string.connecting);
         }
-        mControlCenter = DoorBellControlCenter.getInstance(this);
+        mControlCenter = DoorBellControlCenter.getInstance();
         mReceiver = new MyReceiver();
         IntentFilter intentFilter = new IntentFilter(ConstantUtil.ACTION_ANYCHAT_VIDEO_CALL_EVENT);
         intentFilter.addAction(ConstantUtil.ACTION_ANYCHAT_BASE_EVENT);
-        registerReceiver(mReceiver, intentFilter);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, intentFilter);
     }
 
     @Override
@@ -60,7 +61,7 @@ public class VideoServiceActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
     }
 
     @OnClick({R.id.ibtn_menu, R.id.btn_exit})
@@ -70,17 +71,28 @@ public class VideoServiceActivity extends BaseActivity {
                 startNewActivity(VideoMenuActivity.class);
                 break;
             case R.id.btn_exit:
-                if (DoorBellControlCenter.sIsVideo) {
-                    mControlCenter.finishVideoCall(-1, DoorBellControlCenter.sCurrentVideoUser.getAid());
-                }
-                finish();
+                ToastUtil.showToast(getApplicationContext(), "开锁");
+                BcManager.getManager(this).setLock(!BcManager.getManager(this).getLockStatus());
+                boolean lockStatus = BcManager.getManager(this).getLockStatus();
+                Timber.e("--------lockStatus:" + lockStatus);
+                BcManager.getManager(this).setInfraredLightPowerOn(!BcManager.getManager(this).getInfraredLightStatus());
+//                if (DoorBellControlCenter.sIsVideo) {
+//                    mControlCenter.finishVideoCall(-1, DoorBellControlCenter.sCurrentVideoUser.getAid());
+//                }
+//                finish();
                 break;
         }
+    }
+
+    @Override
+    public boolean isFullScreen() {
+        return true;
     }
 
     private class MyReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (isFinishing() || getSupportFragmentManager() == null) return;
             String action = intent.getAction();
             if (TextUtils.isEmpty(action)) return;
             String type = intent.getStringExtra("type");

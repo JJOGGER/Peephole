@@ -37,7 +37,7 @@ public class SensorSetFragment extends BaseFragment {
     }
     @Override
     public void init() {
-        mDoorbellConfig = DoorBellControlCenter.getInstance(mActivity).getDoorbellConfig();
+        mDoorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
         initView();
     }
 
@@ -142,8 +142,8 @@ public class SensorSetFragment extends BaseFragment {
      */
     private void setParam() {
         //保存到本地
-        DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
+        DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
         //保存到服务器
-        HttpAction.getHttpAction(mActivity).setDoorbellConfig(DoorBellControlCenter.getIMEI(mActivity), mDoorbellConfig, null);
+        HttpAction.getHttpAction().setDoorbellConfig(DoorBellControlCenter.getIMEI(), mDoorbellConfig, null);
     }
 }

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.support.v4.content.LocalBroadcastManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -57,10 +58,10 @@ public class BindActivity extends BaseActivity {
         tvImei.setText(String.format(getString(R.string.device_no_), IMEI));
         decordQR();
         mReceiver = new MyReceiver();
-        mControlCenter = DoorBellControlCenter.getInstance(this);
+        mControlCenter = DoorBellControlCenter.getInstance();
         IntentFilter intentFilter = new IntentFilter(ConstantUtil.ACTION_ANYCHAT_TRANS_DATA_EVENT);
         intentFilter.addAction(ConstantUtil.ACTION_ANYCHAT_USER_INFO_EVENT);
-        registerReceiver(mReceiver, intentFilter);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, intentFilter);
         mControlCenter.enterRoom(1, "");
         HintDialogFragmemt hintDialogFragmemt = new HintDialogFragmemt();
         mDialogHelper = new DialogHelper(this, hintDialogFragmemt);
@@ -99,7 +100,7 @@ public class BindActivity extends BaseActivity {
         mTimer = null;
         mTimerTask.cancel();
         mTimerTask = null;
-        unregisterReceiver(mReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
     }
 
     private void decordQR() {
@@ -141,11 +142,11 @@ public class BindActivity extends BaseActivity {
                         case CommandJson.CommandType.BIND_DOORBELL_COMPLETED:
                             //绑定猫眼成功
                             Timber.e("-------------绑定猫眼成功，刷新列表");
-                            HttpAction.getHttpAction(getApplicationContext()).getBindUsers(IMEI, new IDataListener<List<User>>() {
+                            HttpAction.getHttpAction().getBindUsers(IMEI, new IDataListener<List<User>>() {
                                 @Override
                                 public void onSuccess(List<User> users) {
                                     if (users != null) {
-                                        DoorBellControlCenter.getInstance(getApplicationContext()).saveBindUsers(users);
+                                        DoorBellControlCenter.getInstance().saveBindUsers(users);
                                         ToastUtil.showToast(getApplicationContext(), R.string.bind_succ);
                                         finish();
                                     }
@@ -173,7 +174,7 @@ public class BindActivity extends BaseActivity {
      */
     private void responseBindRequest(final int dwUserid, final CommandJson commandJson) {
         //先判断是否已绑定
-        HttpAction.getHttpAction(getApplicationContext()).getBindUsers(IMEI, new
+        HttpAction.getHttpAction().getBindUsers(IMEI, new
                 IDataListener<List<User>>() {
                     @Override
                     public void onSuccess(List<User> users) {

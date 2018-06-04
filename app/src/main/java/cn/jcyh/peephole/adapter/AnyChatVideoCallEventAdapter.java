@@ -2,6 +2,7 @@ package cn.jcyh.peephole.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.bairuitech.anychat.AnyChatDefine;
 import com.bairuitech.anychat.AnyChatVideoCallEvent;
@@ -26,7 +27,7 @@ public class AnyChatVideoCallEventAdapter implements AnyChatVideoCallEvent {
 
     public AnyChatVideoCallEventAdapter(Context context) {
         mContext = context;
-        mControlCenter = DoorBellControlCenter.getInstance(mContext);
+        mControlCenter = DoorBellControlCenter.getInstance();
     }
 
     @Override
@@ -55,7 +56,6 @@ public class AnyChatVideoCallEventAdapter implements AnyChatVideoCallEvent {
                 break;
             case AnyChatDefine.BRAC_VIDEOCALL_EVENT_START:// 视频呼叫会话开始事件
                 Timber.e("--------->开始进入会话窗口");
-                DoorBellControlCenter.sCurrentVideoUser = DoorBellControlCenter.getInstance(mContext).getUserAccountByAId(dwUserId);
                 Intent videoIntent = new Intent(mContext, VideoService.class);
                 videoIntent.putExtra("roomId", dwParam);
                 videoIntent.putExtra("userId", dwUserId);
@@ -65,7 +65,6 @@ public class AnyChatVideoCallEventAdapter implements AnyChatVideoCallEvent {
 //                        DialogFactory.getDialogFactory().dismiss();
                 Timber.e("--------结束通话");
                 mContext.stopService(new Intent(mContext, VideoService.class));
-                DoorBellControlCenter.sCurrentVideoUser = null;
                 break;
         }
 
@@ -91,6 +90,6 @@ public class AnyChatVideoCallEventAdapter implements AnyChatVideoCallEvent {
                 break;
         }
         intent.putExtra("type", type);
-        mContext.sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 }

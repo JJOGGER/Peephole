@@ -53,16 +53,22 @@ public class FileUtil {
      * 猫眼图片路径
      */
     public String getDoorbellImgPath() {
-        return Environment.getExternalStoragePublicDirectory(Environment
+        String path = Environment.getExternalStoragePublicDirectory(Environment
                 .DIRECTORY_DCIM).getAbsolutePath() + File.separator + "Camera";
+        File file = new File(path);
+        if (!file.exists()) file.mkdir();
+        return path;
     }
 
     /**
      * 猫眼图片路径
      */
     public String getDoorbellVideoPath() {
-        return Environment.getExternalStoragePublicDirectory(Environment
+        String path = Environment.getExternalStoragePublicDirectory(Environment
                 .DIRECTORY_DCIM).getAbsolutePath() + File.separator + "Camera";
+        File file = new File(path);
+        if (!file.exists()) file.mkdir();
+        return path;
     }
 
     public String getDoorbellMediaThumbnailPath() {
@@ -362,7 +368,7 @@ public class FileUtil {
             result = true;
         } catch (Exception e) {
             e.printStackTrace();
-            Timber.e("----------e1:" + e.getMessage());
+            Timber.e("----------e1:" + e);
         } finally {
             try {
                 if (bos != null)

@@ -55,7 +55,7 @@ public class ChooseSetDialog extends BaseDialogFragment {
         if (!TextUtils.isEmpty(mTitle)) {
             tvTitle.setText(mTitle);
         }
-        mDoorbellConfig = DoorBellControlCenter.getInstance(mActivity).getDoorbellConfig();
+        mDoorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
         rvContent.setLayoutManager(new LinearLayoutManager(mActivity));
         if (mChooseSetAdapter != null) {
             rvContent.setAdapter(mChooseSetAdapter);

@@ -8,6 +8,7 @@ import android.util.DisplayMetrics;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.ImageView;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +31,8 @@ import timber.log.Timber;
 public class CameraActivity extends BaseActivity {
     @BindView(R.id.surface_picture)
     SurfaceView mSurfaceView;
+    @BindView(R.id.iv_change)
+    ImageView ivChange;
     private Camera mCamera;
     private String mImgPath;
     private Timer mTimer;
@@ -47,7 +50,7 @@ public class CameraActivity extends BaseActivity {
     protected void init() {
         DoorBellControlCenter.sIsVideo = true;
         mSurfaceView.getHolder().addCallback(mCallback);
-        DoorbellConfig doorbellConfig = DoorBellControlCenter.getInstance(this).getDoorbellConfig();
+        DoorbellConfig doorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
         mDoorbellLookTime = doorbellConfig.getDoorbellLookTime();
         mTimer = new Timer();
         mTimerTask = new TimerTask() {
@@ -59,11 +62,7 @@ public class CameraActivity extends BaseActivity {
                         @Override
                         public void run() {
                             //结束
-                            if (mCamera != null) {
-                                mCamera.stopPreview();
-                                mCamera.release();
-                                mCamera = null;
-                            }
+                            closeCamera();
                             finish();
                         }
                     });
@@ -74,32 +73,35 @@ public class CameraActivity extends BaseActivity {
     }
 
     private void initCamera(int facing) {
-        if (mCamera != null) {
-            mCamera.stopPreview();
-            mCamera.release();
-            mCamera = null;
-        }
+        closeCamera();
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
         int cameraCount = Camera.getNumberOfCameras();
-        Timber.e("---------cameraCount:" + cameraCount);
-        for (int camIdx = 0; camIdx < cameraCount; camIdx++) {
-            Camera.getCameraInfo(camIdx, cameraInfo);
-            Timber.e("-------cameraInfo.facing:" + cameraInfo.facing);
-            if (cameraInfo.facing == facing) { // 代表摄像头的方位，目前有定义值两个分别为CAMERA_FACING_FRONT前置和CAMERA_FACING_BACK后置
-                try {
-                    mCamera = Camera.open(camIdx);
-                } catch (RuntimeException e) {
-                    e.printStackTrace();
-                    Timber.e("---------e:" + e);
-                    if (mCamera != null) {
-                        mCamera.stopPreview();
-                        mCamera.release();
-                        mCamera = null;
+        Timber.e("----------cameraCount:" + cameraCount);
+        if (cameraCount < 2) {
+            ivChange.setVisibility(View.GONE);
+            Camera.getCameraInfo(0, cameraInfo);
+            try {
+                mCamera = Camera.open(0);
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+                closeCamera();
+            }
+            mCurrentFacing = cameraInfo.facing;
+        } else {
+            for (int camIdx = 0; camIdx < cameraCount; camIdx++) {
+                Camera.getCameraInfo(camIdx, cameraInfo);
+                Timber.e("----------cameraInfo.facing:" + cameraInfo.facing);
+                if (cameraInfo.facing == facing) { // 代表摄像头的方位，目前有定义值两个分别为CAMERA_FACING_FRONT前置和CAMERA_FACING_BACK后置
+                    try {
+                        mCamera = Camera.open(camIdx);
+                    } catch (RuntimeException e) {
+                        e.printStackTrace();
+                        closeCamera();
+                        continue;
                     }
-                    continue;
+                    mCurrentFacing = cameraInfo.facing;
+                    break;
                 }
-                mCurrentFacing = cameraInfo.facing;
-                break;
             }
         }
         if (mCamera == null) return;
@@ -156,14 +158,15 @@ public class CameraActivity extends BaseActivity {
             return;
         }
         try {
+            mCamera.setPreviewCallback(null);
             mCamera.cancelAutoFocus();
         } catch (Exception e) {
             e.printStackTrace();
-            Timber.e("----e:" + e.getMessage());
+            Timber.e("---->" + e.getMessage());
         }
+        mSurfaceView.getHolder().removeCallback(mCallback);
         mCamera.stopPreview();
         mCamera.release();
-        mSurfaceView.getHolder().removeCallback(mCallback);
         mCamera = null;
     }
 
@@ -179,9 +182,9 @@ public class CameraActivity extends BaseActivity {
                 });
                 break;
             case R.id.iv_change:
-                if (mCurrentFacing== Camera.CameraInfo.CAMERA_FACING_BACK){
+                if (mCurrentFacing == Camera.CameraInfo.CAMERA_FACING_BACK) {
                     initCamera(Camera.CameraInfo.CAMERA_FACING_FRONT);
-                }else {
+                } else {
                     initCamera(Camera.CameraInfo.CAMERA_FACING_BACK);
                 }
                 break;
@@ -191,23 +194,16 @@ public class CameraActivity extends BaseActivity {
     private SurfaceHolder.Callback mCallback = new SurfaceHolder.Callback() {
         @Override
         public void surfaceCreated(SurfaceHolder surfaceHolder) {
-            Timber.e("----------->a:");
-            initCamera(Camera.CameraInfo.CAMERA_FACING_BACK);
+            initCamera(Camera.CameraInfo.CAMERA_FACING_FRONT);
         }
 
         @Override
         public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-            Timber.e("----------->b:");
         }
 
         @Override
         public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-            Timber.e("----------->c:");
-            if (mCamera != null) {
-                mCamera.stopPreview();
-                mCamera.release();
-                mCamera = null;
-            }
+            closeCamera();
         }
     };
 

@@ -14,6 +14,7 @@ import java.io.Serializable;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import cn.jcyh.peephole.control.ActivityCollector;
+import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.utils.StatusUtil;
 
@@ -31,7 +32,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(getLayoutId());
-//        getWindow().setBackgroundDrawable(null);
+        getWindow().setBackgroundDrawable(null);
         mBind = ButterKnife.bind(this);
         ActivityCollector.addActivity(this);
         //开启沉浸式状态栏
@@ -43,7 +44,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         if (isFullScreen()) {
             statusUtil.setActivityFullScreen(this);
         }
-        IMEI = DoorBellControlCenter.getIMEI(this);
+        IMEI = DoorBellControlCenter.getIMEI();
         init();
         loadData();
     }
@@ -173,6 +174,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         ActivityCollector.removeActivity(this);
+        ControlCenter.watch(this);
         mBind.unbind();
     }
 }

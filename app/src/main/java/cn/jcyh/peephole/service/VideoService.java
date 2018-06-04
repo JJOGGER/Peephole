@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -69,7 +70,7 @@ public class VideoService extends Service {
         // 初始化Camera上下文句柄
         AnyChatCoreSDK.mCameraHelper.SetContext(getApplicationContext());
         mAnychat = AnyChatCoreSDK.getInstance(this);
-        mControlCenter = DoorBellControlCenter.getInstance(this);
+        mControlCenter = DoorBellControlCenter.getInstance();
         mDoorbellVideoHelper = mControlCenter.getDoorbellVideoHelper();
         mReceiver = new MyReceiver();
         mHandler = new MyHandler(this);
@@ -78,8 +79,7 @@ public class VideoService extends Service {
         intentFilter.addAction(ConstantUtil.ACTION_ANYCHAT_BASE_EVENT);
         intentFilter.addAction(ConstantUtil.ACTION_ANYCHAT_TRANS_DATA_EVENT);
         intentFilter.addAction(ConstantUtil.ACTION_ANYCHAT_RECORD_EVENT);
-        intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
-        registerReceiver(mReceiver, intentFilter);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, intentFilter);
         createToucher();
 
     }
@@ -125,6 +125,7 @@ public class VideoService extends Service {
             mRoomId = intent.getIntExtra("roomId", -1);
             mUserId = intent.getIntExtra("userId", -1);
         }
+        DoorBellControlCenter.sCurrentVideoUser = DoorBellControlCenter.getInstance().getUserAccountByAId(mUserId);
         if (mRoomId != -1) {
             mControlCenter.enterRoom(mRoomId, "");
         }
@@ -179,6 +180,7 @@ public class VideoService extends Service {
         super.onDestroy();
         Timber.e("-------onDestroy");
         DoorBellControlCenter.sIsVideo = false;
+        DoorBellControlCenter.sCurrentVideoUser = null;
         mDoorbellVideoHelper.userCameraControl(-1, 0);
         mDoorbellVideoHelper.userSpeakControl(-1, 0);
         mIsCheckAv = false;
@@ -186,7 +188,7 @@ public class VideoService extends Service {
             mWindowManager.removeView(flSurfaceContainer);
         }
         mControlCenter.leaveRoom(-1);
-        unregisterReceiver(mReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
     }
 
 
@@ -267,7 +269,8 @@ public class VideoService extends Service {
      * 结束视频
      */
     private void finishVideoCall() {
-        ToastUtil.showToast(getApplicationContext(), String.format(getString(R.string._finish_video_format), DoorBellControlCenter.sCurrentVideoUser.getAccount()));
+        if (DoorBellControlCenter.sCurrentVideoUser != null)
+            ToastUtil.showToast(getApplicationContext(), String.format(getString(R.string._finish_video_format), DoorBellControlCenter.sCurrentVideoUser.getAccount()));
         stopSelf();
     }
 

@@ -29,7 +29,7 @@ public class BcReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        mSensorTime = DoorBellControlCenter.getInstance(context).getDoorbellConfig()
+        mSensorTime = DoorBellControlCenter.getInstance().getDoorbellConfig()
                 .getAutoSensorTime();
         String act = intent.getAction();
         switch (act) {
@@ -56,9 +56,6 @@ public class BcReceiver extends BroadcastReceiver {
                 }else if (extAct.equals("PeopleOut")){
                     Timber.e("------->mTimer:" + mTimer + "-->PIR中断:人走了");
                 }
-//            else if (extAct.equals("PeopleOut")) {
-//                showToast(context, "PIR中断:人走了");
-//            }
                 break;
             }
             case "kphone.intent.action.RING": { // OURDOOR_PRESS
@@ -92,7 +89,7 @@ public class BcReceiver extends BroadcastReceiver {
         try {
             AssetFileDescriptor descriptor;
             AssetManager assets = context.getResources().getAssets();
-            DoorbellConfig doorbellConfig = DoorBellControlCenter.getInstance(context).getDoorbellConfig();
+            DoorbellConfig doorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
             if (mPlayer == null) {
                 mPlayer = new MediaPlayer();
                 mPlayer.setLooping(false);
@@ -140,7 +137,7 @@ public class BcReceiver extends BroadcastReceiver {
                 Timber.e("----------pirStatus" + pirStatus);
                 if (pirStatus) {
                     //表示有人
-                    DoorbellConfig doorbellConfig = DoorBellControlCenter.getInstance(mContext).getDoorbellConfig();
+                    DoorbellConfig doorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
                     Timber.e("----------getSensorRingAlarm" + doorbellConfig.getSensorRingAlarm());
                     if (doorbellConfig.getSensorRingAlarm() == 1) {
                         //开启了停留报警

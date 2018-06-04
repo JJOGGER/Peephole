@@ -3,6 +3,7 @@ package cn.jcyh.peephole.ui.fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
@@ -19,6 +20,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -35,6 +37,7 @@ import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.ui.activity.CameraActivity;
+import cn.jcyh.peephole.utils.FileUtil;
 import cn.jcyh.peephole.utils.LunarCalendar;
 import cn.jcyh.peephole.utils.ToastUtil;
 import timber.log.Timber;
@@ -64,10 +67,15 @@ public class MainFragment extends BaseFragment {
     private DoorbellConfig mDoorbellConfig;
 
     public static MainFragment getInstance(Bundle bundle) {
-        if (sInstance == null)
-            sInstance = new MainFragment();
-        if (bundle != null)
-            sInstance.setArguments(bundle);
+        if (sInstance == null) {
+            synchronized (MainFragment.class) {
+                if (sInstance == null) {
+                    sInstance = new MainFragment();
+                    if (bundle != null)
+                        sInstance.setArguments(bundle);
+                }
+            }
+        }
         return sInstance;
     }
 
@@ -83,12 +91,12 @@ public class MainFragment extends BaseFragment {
         mHmformat = new SimpleDateFormat("hh:mm");
         mSimpleDateFormat = new SimpleDateFormat("yyyy" + getString(R.string.year)
                 + "MM" + getString(R.string.month) + "dd" + getString(R.string.day));
-        mHandler = new MyHandler();
+        mHandler = new MyHandler(this);
         mTimeThread = new TimeThread();
         mTimeThread.start();
         mProgressDialog = new ProgressDialog(mActivity);
         mProgressDialog.setMessage(getString(R.string.waitting));
-        mDoorbellConfig = DoorBellControlCenter.getInstance(mActivity).getDoorbellConfig();
+        mDoorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
     }
 
     @Override
@@ -141,7 +149,9 @@ public class MainFragment extends BaseFragment {
                 openAlbum();
                 break;
             case R.id.rl_leave_message:
+                mActivity.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + FileUtil.getInstance().getDoorbellImgPath())));
                 Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.putExtra("type", 1);
                 intent.setType("vnd.android.cursor.dir/video");
                 startActivity(intent);
                 break;
@@ -193,14 +203,14 @@ public class MainFragment extends BaseFragment {
      */
     public String getAllApps() {
         String packagename = "";
-        List<PackageInfo> apps = new ArrayList<PackageInfo>();
+        List<PackageInfo> apps = new ArrayList<>();
         PackageManager pManager = mActivity.getPackageManager();
         //获取手机内所有应用
         List<PackageInfo> paklist = pManager.getInstalledPackages(0);
         for (int i = 0; i < paklist.size(); i++) {
             PackageInfo pak = (PackageInfo) paklist.get(i);
             //判断系统预装的应用程序
-            if (!((pak.applicationInfo.flags & pak.applicationInfo.FLAG_SYSTEM) <= 0)) {
+            if (!((pak.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) <= 0)) {
                 apps.add(pak);
             }
         }
@@ -218,10 +228,10 @@ public class MainFragment extends BaseFragment {
     }
 
     private void switchMonitor() {
-        final DoorBellControlCenter controlCenter = DoorBellControlCenter.getInstance(mActivity);
+        final DoorBellControlCenter controlCenter = DoorBellControlCenter.getInstance();
         final DoorbellConfig doorbellConfig = controlCenter.getDoorbellConfig();
         doorbellConfig.setMonitorSwitch(1 - doorbellConfig.getMonitorSwitch());
-        HttpAction.getHttpAction(mActivity).setDoorbellConfig(DoorBellControlCenter.getIMEI(mActivity),
+        HttpAction.getHttpAction().setDoorbellConfig(DoorBellControlCenter.getIMEI(),
                 doorbellConfig, new IDataListener<Boolean>() {
                     @Override
                     public void onSuccess(Boolean aBoolean) {
@@ -253,7 +263,9 @@ public class MainFragment extends BaseFragment {
      * 打开系统相册
      */
     public void openAlbum() {
+        mActivity.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + FileUtil.getInstance().getDoorbellImgPath())));
         Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.putExtra("type", 1);
         intent.setType("vnd.android.cursor.dir/image");
         startActivity(intent);
 //        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media
@@ -302,35 +314,41 @@ public class MainFragment extends BaseFragment {
     }
 
 
-    private class MyHandler extends Handler {
+    private static class MyHandler extends Handler {
         private static final int WHAT = 0x001;
         private SpannableStringBuilder mSpannableString;
         private AbsoluteSizeSpan mSizeSpanTime;
         private AbsoluteSizeSpan mSizeSpanAmPm;
+        private WeakReference<MainFragment> mWeakReference;
+
+        private MyHandler(MainFragment fragment) {
+            mWeakReference = new WeakReference<>(fragment);
+        }
 
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            if (mActivity == null || mActivity.isFinishing() || mActivity.getFragmentManager() ==
+            MainFragment mainFragment = mWeakReference.get();
+            if (mainFragment == null || mainFragment.mActivity == null || mainFragment.mActivity.isFinishing() || mainFragment.mActivity.getFragmentManager() ==
                     null)
                 return;
-            if (msg.what == WHAT && !TextUtils.isEmpty(mAmPm)) {
-                mHourMinDate.setTime(System.currentTimeMillis());
-                String time = mHmformat.format(mHourMinDate);
+            if (msg.what == WHAT && !TextUtils.isEmpty(mainFragment.mAmPm)) {
+                mainFragment.mHourMinDate.setTime(System.currentTimeMillis());
+                String time = mainFragment.mHmformat.format(mainFragment.mHourMinDate);
                 if (mSpannableString == null) {
-                    mSpannableString = new SpannableStringBuilder(time + " " + mAmPm);
+                    mSpannableString = new SpannableStringBuilder(time + " " + mainFragment.mAmPm);
                     mSizeSpanTime = new AbsoluteSizeSpan(40);
                     mSizeSpanAmPm = new AbsoluteSizeSpan(20);
                 }
                 mSpannableString.clear();
-                mSpannableString.append(time).append(" ").append(mAmPm);
+                mSpannableString.append(time).append(" ").append(mainFragment.mAmPm);
                 mSpannableString.setSpan(mSizeSpanTime, 0, time.length(),
                         Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
                 mSpannableString.setSpan(mSizeSpanAmPm, time.length(), time.length() + " ".length
-                                () + mAmPm.length(),
+                                () + mainFragment.mAmPm.length(),
                         Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-                if (tvTime != null)
-                    tvTime.setText(mSpannableString, TextView.BufferType.SPANNABLE);
+                if (mainFragment.tvTime != null)
+                    mainFragment.tvTime.setText(mSpannableString, TextView.BufferType.SPANNABLE);
             }
         }
     }

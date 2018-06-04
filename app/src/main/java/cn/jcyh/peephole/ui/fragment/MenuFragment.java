@@ -26,10 +26,15 @@ public class MenuFragment extends BaseFragment {
     private static MenuFragment sInstance;
 
     public static MenuFragment getInstance(Bundle bundle) {
-        if (sInstance == null)
-            sInstance = new MenuFragment();
-        if (bundle != null)
-            sInstance.setArguments(bundle);
+        if (sInstance == null) {
+            synchronized (MenuFragment.class) {
+                if (sInstance == null) {
+                    sInstance = new MenuFragment();
+                    if (bundle != null)
+                        sInstance.setArguments(bundle);
+                }
+            }
+        }
         return sInstance;
     }
 

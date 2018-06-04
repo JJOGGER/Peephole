@@ -22,6 +22,7 @@ public class Utils {
     public static final String SPK1_STATE = "/sys/bus/platform/drivers/mt-soc-codec/ExtspkampState";
     public static final String SPK2_STATE = "/sys/bus/platform/drivers/mt-soc-codec/Extspkamp2State";
     public static final String RING_KEY_LED_STATE = "/sys/class/leds/button-backlight/brightness";
+    public static final String LOCK_STATE="/sys/devices/platform/CUSTDriver/driver/LockEnState";
 
     public Utils() {
     }

@@ -12,6 +12,7 @@ import com.cust.service.ICustService;
 import java.lang.reflect.Method;
 
 import cn.jcyh.peephole.utils.Utils;
+import timber.log.Timber;
 
 
 public class BcManager {
@@ -320,17 +321,34 @@ public class BcManager {
      */
     public void setLock(boolean on) {
         if (on){
-            try {
-                ics.writeSysFileStatusInt("/sys/devices/platform/CUSTDriver/driver/LockEnState", 1);
+            Timber.e("------------setLock");
+           try {
+                ics.writeSysFileStatusInt(Utils.LOCK_STATE, 1);
             } catch (RemoteException e) {
+                Timber.e("------------"+e.getMessage());
                 e.printStackTrace();
             }
         }else{
             try {
-                ics.writeSysFileStatusInt("/sys/devices/platform/CUSTDriver/driver/LockEnState", 0);
+                ics.writeSysFileStatusInt(Utils.LOCK_STATE, 0);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    public boolean getLockStatus() {
+        boolean variable = false;
+        try {
+            int r = ics.readSysFileStatusInt(Utils.LOCK_STATE);
+            if (r > 0) {
+                variable = true;
+            } else {
+                variable = false;
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return variable;
     }
 }

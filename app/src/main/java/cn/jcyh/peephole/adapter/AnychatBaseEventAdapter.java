@@ -2,6 +2,7 @@ package cn.jcyh.peephole.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.bairuitech.anychat.AnyChatBaseEvent;
 
@@ -33,7 +34,8 @@ public class AnychatBaseEventAdapter implements AnyChatBaseEvent {
         Intent intent = new Intent(ACTION_ANYCHAT_BASE_EVENT);
         intent.putExtra("dwErrorCode", bSuccess ? 1 : -1);
         intent.putExtra("type", TYPE_ANYCHAT_LOGIN_STATE);
-        mContext.sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+//        mContext.sendBroadcast(intent);
     }
 
     @Override
@@ -46,13 +48,13 @@ public class AnychatBaseEventAdapter implements AnyChatBaseEvent {
             DoorBellControlCenter.sIsAnychatLogin = false;
             Timber.e("-------anychat登录失败！错误码:" + dwErrorCode);
             if (dwErrorCode == 205) {
-                HttpAction.getHttpAction(mContext).initDoorbell(DoorBellControlCenter.getIMEI(mContext), null);
+                HttpAction.getHttpAction().initDoorbell(DoorBellControlCenter.getIMEI(), null);
             }
         }
         Intent intent = new Intent(ACTION_ANYCHAT_BASE_EVENT);
         intent.putExtra("type", TYPE_ANYCHAT_LOGIN_STATE);
         intent.putExtra("dwErrorCode", dwErrorCode);
-        mContext.sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 
     @Override
@@ -63,7 +65,7 @@ public class AnychatBaseEventAdapter implements AnyChatBaseEvent {
         intent.putExtra("dwErrorCode", dwErrorCode);
         intent.setAction(ACTION_ANYCHAT_BASE_EVENT);
         intent.putExtra("type", TYPE_ANYCHAT_ENTER_ROOM);
-        mContext.sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 
     @Override
@@ -74,7 +76,7 @@ public class AnychatBaseEventAdapter implements AnyChatBaseEvent {
         intent.putExtra("dwRoomId", dwRoomId);
         intent.setAction(ACTION_ANYCHAT_BASE_EVENT);
         intent.putExtra("type", TYPE_ANYCHAT_ONLINE_USER);
-        mContext.sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 
     @Override
@@ -85,7 +87,7 @@ public class AnychatBaseEventAdapter implements AnyChatBaseEvent {
         intent.putExtra("bEnter", bEnter);
         intent.setAction(ACTION_ANYCHAT_BASE_EVENT);
         intent.putExtra("type", TYPE_ANYCHAT_USER_AT_ROOM);
-        mContext.sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 
     @Override
@@ -96,7 +98,6 @@ public class AnychatBaseEventAdapter implements AnyChatBaseEvent {
         intent.putExtra("dwErrorCode", dwErrorCode);
         intent.setAction(ACTION_ANYCHAT_BASE_EVENT);
         intent.putExtra("type", TYPE_ANYCHAT_LINK_CLOSE);
-        mContext.sendBroadcast(intent);
-
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 }

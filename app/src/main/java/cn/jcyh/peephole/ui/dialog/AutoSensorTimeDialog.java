@@ -40,7 +40,7 @@ public class AutoSensorTimeDialog extends BaseDialogFragment {
         rb20s.setChecked(false);
         rb40s.setChecked(false);
         rb1m.setChecked(false);
-        mDoorbellConfig = DoorBellControlCenter.getInstance(mActivity).getDoorbellConfig();
+        mDoorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
         int time = mDoorbellConfig.getAutoSensorTime();
         switch (time) {
             case 5:
@@ -92,7 +92,7 @@ public class AutoSensorTimeDialog extends BaseDialogFragment {
             mOnDialogListener.onConfirm(time);
         }
         mDoorbellConfig.setAutoSensorTime(time);
-        DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
+        DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
         dismiss();
     }
 }

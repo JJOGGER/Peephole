@@ -27,7 +27,7 @@ public class VideoMenuActivity extends BaseActivity {
                 startNewActivity(BindUsersActivity.class);
                 break;
             case R.id.tv_user_bind_window:
-                List<User> bindUsers = DoorBellControlCenter.getInstance(getApplicationContext()).getBindUsers();
+                List<User> bindUsers = DoorBellControlCenter.getInstance().getBindUsers();
                 if (bindUsers != null && bindUsers.size() >= 5) {
                     ToastUtil.showToast(getApplicationContext(), R.string.bind_user_number_max);
                     return;

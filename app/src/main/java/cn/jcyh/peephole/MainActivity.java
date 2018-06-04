@@ -4,8 +4,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.util.DisplayMetrics;
+import android.widget.ImageView;
 
 import java.io.File;
 import java.util.List;
@@ -24,9 +26,13 @@ import timber.log.Timber;
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_DOORBELL_SYSTEM_EVENT;
 
 //按门铃，发消息--》app收到消息--》发起视频通话
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BaseActivity implements ViewPager.OnPageChangeListener {
     @BindView(R.id.vp_main)
-    ViewPager vp_main;
+    ViewPager vpMain;
+    @BindView(R.id.iv_main)
+    ImageView ivMain;
+    @BindView(R.id.iv_menu)
+    ImageView ivMenu;
     private static final int REQEUST_CAPTURE_RING = 0x001;
     private static final int REQEUST_CAPTURE_ALARM = 0x002;
     private MyReceiver mReceiver;
@@ -39,15 +45,22 @@ public class MainActivity extends BaseActivity {
     }
 
     @Override
+    public boolean isFullScreen() {
+        return false;
+    }
+
+    @Override
     protected void init() {
-        mControlCenter = DoorBellControlCenter.getInstance(this);
+        mControlCenter = DoorBellControlCenter.getInstance();
         startService(new Intent(this, KeepBackRemoteService.class));
-        vp_main.setAdapter(new MainPageAdapter(getSupportFragmentManager()));
-        vp_main.setOffscreenPageLimit(2);
+        vpMain.setAdapter(new MainPageAdapter(getSupportFragmentManager()));
+        vpMain.setOffscreenPageLimit(2);
+        vpMain.addOnPageChangeListener(this);
+        ivMain.setSelected(true);
         mReceiver = new MyReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ACTION_DOORBELL_SYSTEM_EVENT);
-        registerReceiver(mReceiver, intentFilter);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, intentFilter);
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int heightPixels = displayMetrics.heightPixels;
@@ -67,11 +80,11 @@ public class MainActivity extends BaseActivity {
         String sdCardPath = "/protect_s/prod_info";
         File file1 = new File(sdCardPath);
         searchFile(file1);
-        HttpAction.getHttpAction(getApplicationContext()).getBindUsers(IMEI, new IDataListener<List<User>>() {
+        HttpAction.getHttpAction().getBindUsers(IMEI, new IDataListener<List<User>>() {
             @Override
             public void onSuccess(List<User> users) {
                 if (users != null && users.size() > 0) {
-                    DoorBellControlCenter.getInstance(getApplicationContext()).saveBindUsers(users);
+                    DoorBellControlCenter.getInstance().saveBindUsers(users);
                 }
                 Timber.e("---user:" + users);
             }
@@ -90,7 +103,6 @@ public class MainActivity extends BaseActivity {
     private void searchFile(File file) {
         if (file.isDirectory() && file.list() != null) {
             for (int i = 0; i < file.list().length; i++) {
-                Timber.e("--------file:" + file.list()[i]);
                 File file2 = new File(file.getAbsolutePath() + File.separator + file.list()[i]);
                 searchFile(file2);
             }
@@ -100,14 +112,30 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
     }
 
     @Override
     public void onBackPressed() {
-        Intent intent = new Intent(Intent.ACTION_MAIN,null);
+        Intent intent = new Intent(Intent.ACTION_MAIN, null);
         intent.addCategory(Intent.CATEGORY_HOME);
         startActivity(intent);
+    }
+
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        ivMain.setSelected(position == 0);
+        ivMenu.setSelected(position == 1);
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+
     }
 
     private class MyReceiver extends BroadcastReceiver {

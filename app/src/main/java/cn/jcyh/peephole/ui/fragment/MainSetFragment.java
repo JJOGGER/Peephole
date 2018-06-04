@@ -1,6 +1,7 @@
 package cn.jcyh.peephole.ui.fragment;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.text.TextUtils;
@@ -30,6 +31,7 @@ import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.OnDialogListener;
 import cn.jcyh.peephole.utils.ToastUtil;
 import cn.jcyh.peephole.utils.Tool;
+import timber.log.Timber;
 
 
 /**
@@ -76,7 +78,7 @@ public class MainSetFragment extends BaseFragment {
     @Override
     public void init() {
         super.init();
-        mControlCenter = DoorBellControlCenter.getInstance(mActivity);
+        mControlCenter = DoorBellControlCenter.getInstance();
         mDoorbellConfig = mControlCenter.getDoorbellConfig();
         mFragmentManager = getFragmentManager();
         updateView();
@@ -95,10 +97,13 @@ public class MainSetFragment extends BaseFragment {
                 transaction.commit();
                 break;
             case R.id.rl_sensor_set:
+                Timber.e("-----------SensorSetFragment");
                 transaction = mFragmentManager.beginTransaction();
                 SensorSetFragment sensorSetFragment = new SensorSetFragment();
                 transaction.add(R.id.fl_container, sensorSetFragment, SensorSetFragment.class.getName());
-                transaction.hide(mFragmentManager.findFragmentByTag(MainSetFragment.class.getName()));
+                Fragment fragmentByTag = mFragmentManager.findFragmentByTag(MainSetFragment.class.getName());
+                if (fragmentByTag != null)
+                    transaction.hide(fragmentByTag);
                 transaction.commit();
                 break;
             case R.id.rl_monitor:
@@ -156,7 +161,7 @@ public class MainSetFragment extends BaseFragment {
                         }
                     }
                     mDoorbellConfig.setVideoLeaveMsgTime(number);
-                    DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
+                    DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
                     chooseSetDialog.dismiss();
                 }
             });
@@ -187,7 +192,7 @@ public class MainSetFragment extends BaseFragment {
                     }
                     mDoorbellConfig.setDoorbellLookTime(time);
                     tvDoorbellLookTime.setText(String.valueOf(time));
-                    DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
+                    DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
                 }
             });
             mDoorbellLookDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
@@ -216,7 +221,7 @@ public class MainSetFragment extends BaseFragment {
                     }
                     mDoorbellConfig.setVideotapTime(time);
                     tvDoorbellVideotapTime.setText(String.valueOf(time));
-                    DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
+                    DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
                 }
             });
             mVideotapTimeDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
@@ -245,7 +250,7 @@ public class MainSetFragment extends BaseFragment {
                     }
                     mDoorbellConfig.setMasterNumber(o.toString());
                     tvMasterNumber.setText(o.toString());
-                    DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
+                    DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
                 }
             });
             mMasterNumberDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
@@ -274,7 +279,7 @@ public class MainSetFragment extends BaseFragment {
                     }
                     mDoorbellConfig.setSosNumber(o.toString());
                     tvSOSNumber.setText(o.toString());
-                    DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
+                    DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
                 }
             });
             mSOSNumberDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
@@ -292,14 +297,21 @@ public class MainSetFragment extends BaseFragment {
         mDoorbellConfig.setMonitorSwitch(cbMonitor.isChecked() ? 1 : 0);
         mControlCenter.saveDoorbellConfig(mDoorbellConfig);
         tvMonitorState.setText(cbMonitor.isChecked() ? R.string.monitor_opened : R.string.monitor_closed);
+        rlSensorTime.setEnabled(cbMonitor.isChecked());
+        tvSensorTime.setEnabled(cbMonitor.isChecked());
+        tvSensorTimeTitle.setEnabled(cbMonitor.isChecked());
+        rlSensorSet.setEnabled(cbMonitor.isChecked());
+        tvSensorSetTitle.setEnabled(cbMonitor.isChecked());
+        tvSensorSet.setEnabled(cbMonitor.isChecked());
         BcManager.getManager(mActivity).setPIRSensorOn(mDoorbellConfig.getMonitorSwitch() == 1);
-        HttpAction.getHttpAction(mActivity).setDoorbellConfig(DoorBellControlCenter.getIMEI(mActivity), mDoorbellConfig, null);
+        HttpAction.getHttpAction().setDoorbellConfig(DoorBellControlCenter.getIMEI(), mDoorbellConfig, null);
     }
 
     /**
      * 自动感应设置
      */
     private void autoSensorTimeSet() {
+        Timber.e("---------autoSensorTimeSet");
         if (mAutoSensorTimeDialog == null) {
             AutoSensorTimeDialog autoSensorTimeDialog = new AutoSensorTimeDialog();
             Bundle bundle = new Bundle();
@@ -331,10 +343,10 @@ public class MainSetFragment extends BaseFragment {
             tvSensorTime.setText(R.string.one_m);
         else
             tvSensorTime.setText(mDoorbellConfig.getAutoSensorTime() + getString(R.string.second));
+        rlSensorTime.setEnabled(isMonitor);
         tvSensorSetTitle.setEnabled(isMonitor);
         tvSensorSet.setEnabled(isMonitor);
         rlSensorSet.setEnabled(isMonitor);
-        rlSensorTime.setEnabled(isMonitor);
         if (mDoorbellConfig.getMonitorSwitch() != 1) {
             tvMonitorState.setText(R.string.monitor_closed);
             rlSensorTime.setEnabled(false);

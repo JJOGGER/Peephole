@@ -3,22 +3,16 @@ package cn.jcyh.peephole.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-/**
- * Created by jogger on 2017/4/12.
- *
- */
+import cn.jcyh.peephole.control.ControlCenter;
 
 public class SharePreUtil {
     private static SharePreUtil mSharePreUtil;
-    private static Context mContext;
     private static SharedPreferences sp;
-    private static String mCustomFileName;
 
     private SharePreUtil() {
     }
 
-    public static SharePreUtil getInstance(Context context) {
-        mContext = context.getApplicationContext();
+    public static SharePreUtil getInstance() {
         if (mSharePreUtil == null) {
             synchronized (SharePreUtil.class) {
                 if (mSharePreUtil == null) {
@@ -26,7 +20,7 @@ public class SharePreUtil {
                 }
             }
         }
-        sp = mContext.getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE);
+        sp = ControlCenter.getApp().getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE);
         return mSharePreUtil;
     }
 

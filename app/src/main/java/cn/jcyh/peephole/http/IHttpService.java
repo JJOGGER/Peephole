@@ -1,5 +1,7 @@
 package cn.jcyh.peephole.http;
 
+import java.util.Map;
+
 /**
  * Created by jogger on 2018/1/25.
  */
@@ -7,10 +9,7 @@ package cn.jcyh.peephole.http;
 public interface IHttpService {
     void setUrl(String url);
 
-    /**
-     * 请求参数->bytep[]
-     */
-    void setRequest(byte[] requestData);
+    void setParams(Map<String, Object> params);
 
     /**
      *

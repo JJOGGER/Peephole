@@ -53,10 +53,10 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
     public void init() {
         mDoorbellRings = new ArrayList<>();
         mAlarmRings = new ArrayList<>();
-        DoorbellConfig doorbellConfig = DoorBellControlCenter.getInstance(mActivity).getDoorbellConfig();
+        DoorbellConfig doorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
         tvDoorbellRing.setText(doorbellConfig.getDoorbellRingName());
         tvAlarmRing.setText(doorbellConfig.getDoorbellAlarmName());
-        mDoorbellConfig = DoorBellControlCenter.getInstance(mActivity).getDoorbellConfig();
+        mDoorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
         String[] rings = new String[0];
         try {
             rings = getResources().getAssets().list("ring");
@@ -111,7 +111,7 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
                 @Override
                 public void onConfirm(Object content) {
                     mDoorbellConfig.setDoorbellAlarmName(content.toString());
-                    DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
+                    DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
                     tvAlarmRing.setText(content.toString());
                 }
             });
@@ -143,7 +143,7 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
                 public void onConfirm(Object content) {
                     Timber.e("---------content:" + content.toString());
                     mDoorbellConfig.setDoorbellRingName(content.toString());
-                    DoorBellControlCenter.getInstance(mActivity).saveDoorbellConfig(mDoorbellConfig);
+                    DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
                     tvDoorbellRing.setText(content.toString());
                 }
             });

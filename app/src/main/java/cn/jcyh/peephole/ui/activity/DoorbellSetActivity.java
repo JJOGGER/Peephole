@@ -37,7 +37,7 @@ public class DoorbellSetActivity extends BaseActivity {
 
     @Override
     public void init() {
-        mDoorbellConfig = DoorBellControlCenter.getInstance(this).getDoorbellConfig();
+        mDoorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
         initView();
     }
 
@@ -178,12 +178,12 @@ public class DoorbellSetActivity extends BaseActivity {
      */
     private void setParam() {
         //保存到服务器
-        HttpAction.getHttpAction(this).setDoorbellConfig(IMEI, mDoorbellConfig, new IDataListener<Boolean>() {
+        HttpAction.getHttpAction().setDoorbellConfig(IMEI, mDoorbellConfig, new IDataListener<Boolean>() {
             @Override
             public void onSuccess(Boolean aBoolean) {
                 Timber.e("----------设置成功"+mDoorbellConfig);
                 //保存到本地
-                DoorBellControlCenter.getInstance(getApplicationContext()).saveDoorbellConfig(mDoorbellConfig);
+                DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
             }
 
             @Override

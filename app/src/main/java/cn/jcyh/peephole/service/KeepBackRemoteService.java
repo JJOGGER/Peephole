@@ -9,12 +9,8 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
 
-import com.google.gson.Gson;
 import com.szjcyh.mysmart.IMyAidlInterface;
 
-import cn.jcyh.peephole.config.DoorbellConfig;
-import cn.jcyh.peephole.utils.ConstantUtil;
-import cn.jcyh.peephole.utils.SharePreUtil;
 import timber.log.Timber;
 
 /**
@@ -35,7 +31,6 @@ public class KeepBackRemoteService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        configDoorbell();
     }
 
     @Override
@@ -58,19 +53,6 @@ public class KeepBackRemoteService extends Service {
         }
     }
 
-    /**
-     * 配置猫眼
-     */
-    private void configDoorbell() {
-        String configJson = SharePreUtil.getInstance(getApplicationContext()).getString(ConstantUtil.DOORBELL_CONFIG, "");
-        Gson gson = new Gson();
-        DoorbellConfig config = gson.fromJson(configJson, DoorbellConfig.class);
-        if (config == null) {
-            //本地不存在
-
-        } else {
-        }
-    }
 
     private class MyServiceConnection implements ServiceConnection {
 

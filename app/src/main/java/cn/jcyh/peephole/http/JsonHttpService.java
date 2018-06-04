@@ -1,13 +1,18 @@
 package cn.jcyh.peephole.http;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import android.util.Log;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import timber.log.Timber;
 
 /**
@@ -15,20 +20,28 @@ import timber.log.Timber;
  */
 
 public class JsonHttpService implements IHttpService {
+    private static final String TAG = "JsonHttpService";
     private IHttpListener mHttpListener;
-    private HttpURLConnection mURLConnection;
-    private String url;
-    private byte[] requestData;
-
+    private String mUrl;
+    private Map<String, Object> mParams;
+    private OkHttpClient mOkHttpClient;
 
     @Override
     public void setUrl(String url) {
-        this.url = url;
+        this.mUrl = url;
     }
 
     @Override
-    public void setRequest(byte[] requestData) {
-        this.requestData = requestData;
+    public void setParams(Map<String, Object> params) {
+        mParams = params;
+    }
+
+    JsonHttpService() {
+        mOkHttpClient = new OkHttpClient().newBuilder()
+                .connectTimeout(10, TimeUnit.SECONDS)//设置超时时间
+                .readTimeout(10, TimeUnit.SECONDS)//设置读取超时时间
+                .writeTimeout(10, TimeUnit.SECONDS)//设置写入超时时间
+                .build();
     }
 
     @Override
@@ -36,63 +49,50 @@ public class JsonHttpService implements IHttpService {
         post();
     }
 
-
     @Override
     public void setHttpListener(IHttpListener listener) {
-        this.mHttpListener = listener;
+        mHttpListener = listener;
     }
 
-    public void post() {
-        mURLConnection = null;
+    private void post() {
         try {
-            URL urlConn = new URL(url);
-            Timber.e("---请求路径 : " + url);
-            mURLConnection = (HttpURLConnection) urlConn.openConnection();
-            mURLConnection.setRequestMethod("POST");
-            mURLConnection.setDoInput(true);
-            mURLConnection.setDoOutput(true);
-            mURLConnection.setUseCaches(false);
-            mURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
-            mURLConnection.setConnectTimeout(10 * 1000);
-//            //添加请求头
-//            connection.setRequestProperty("token", token);
-            mURLConnection.connect();
-            //post数据
-            if (requestData != null) {
-                OutputStream outputStream = mURLConnection.getOutputStream();
-                outputStream.write(requestData);
-                outputStream.flush();
-                outputStream.close();
+//            if (IsHaveInternet()) {
+            Log.i(TAG, "----URL:" + mUrl);
+            //创建一个FormBody.Builder
+            FormBody.Builder builder = new FormBody.Builder();
+            if (mParams != null && mParams.keySet().size() != 0) {
+                for (String key : mParams.keySet()) {
+                    //追加表单信息
+                    builder.add(key, mParams.get(key) + "");
+                }
             }
-            //获取返回结果
-            if (mURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-//                String responeStr = readStream();
-//                Timber.e("服务端返回的数据：" + responeStr);
-                if (mHttpListener != null)
-                    mHttpListener.onSuccess(mURLConnection.getInputStream());
-            } else {
-                int responseCode = mURLConnection.getResponseCode();
-                String message = readStream(mURLConnection.getErrorStream());
-                Timber.e("---请求失败： code=" + responseCode + ", msg=" + message);
-            }
-        } catch (Exception e) {
-            Timber.e("---请求异常：" + e.toString());
-//            e.printStackTrace();
-        } finally {
-            if (mURLConnection != null) {
-                mURLConnection.disconnect();
-            }
-        }
-    }
+            //生成表单实体对象
+            RequestBody formBody = builder.build();
+            //补全请求地址
+            final Request request = new Request.Builder()
+                    .url(mUrl)
+                    .post(formBody)
+//                                .header("cookie", SharePreUtil.getInstance(mContext).getString("cookie", "no_cookie"))
+                    .build();
+            mOkHttpClient.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    Timber.e("---------onFailure");
+                    mHttpListener.onFailure();
+                }
 
-    private static String readStream(InputStream inputStream) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        String line = null;
-        StringBuffer sb = new StringBuffer();
-        while ((line = reader.readLine()) != null) {
-            sb.append(line);
+                @Override
+                public void onResponse(Call call, final Response response) throws IOException {
+//                                String cookie = response.headers().get("Set-Cookie");
+//                                if (!TextUtils.isEmpty(cookie))
+//                                    SharePreUtil.getInstance(mContext).setString("cookie", cookie);
+//                    final String result = response.body().string();
+                    mHttpListener.onSuccess(response.body().string());
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            Timber.i("---error" + e);
         }
-        reader.close();
-        return sb.toString();
     }
 }

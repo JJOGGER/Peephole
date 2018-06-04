@@ -1,16 +1,15 @@
 package cn.jcyh.peephole.http;
 
-import android.content.Context;
 import android.os.Handler;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 import cn.jcyh.peephole.bean.DoorbellParam;
@@ -36,9 +35,8 @@ public class HttpAction {
     private Gson mGson;
     private Handler mHandler;//全局处理子线程和M主线程通信
     private OkHttpClient mOkHttpClient;
-    private Context mContext;
 
-    private HttpAction(Context context) {
+    private HttpAction() {
         mGson = new Gson();
         mOkHttpClient = new OkHttpClient().newBuilder()
                 .connectTimeout(10, TimeUnit.SECONDS)//设置超时时间
@@ -46,14 +44,13 @@ public class HttpAction {
                 .writeTimeout(10, TimeUnit.SECONDS)//设置写入超时时间
                 .build();
         mHandler = new Handler();
-        mContext = context.getApplicationContext();
     }
 
-    public static HttpAction getHttpAction(Context context) {
+    public static HttpAction getHttpAction() {
         if (sHttpAction == null) {
             synchronized (HttpAction.class) {
                 if (sHttpAction == null) {
-                    sHttpAction = new HttpAction(context);
+                    sHttpAction = new HttpAction();
                 }
             }
         }
@@ -63,7 +60,8 @@ public class HttpAction {
     public void initDoorbell(String deviceId, final IDataListener<Boolean> listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("deviceId", deviceId);
-        request2(HttpUrlIble.INIT_DOORBELL_URL, params, listener);
+//        request2(HttpUrlIble.INIT_DOORBELL_URL, params, listener);
+        request3(HttpUrlIble.INIT_DOORBELL_URL, params, listener);
 
     }
 
@@ -74,26 +72,7 @@ public class HttpAction {
         Map<String, Object> params = new HashMap<>();
         params.put("deviceId", deviceId);
         Timber.e("------deviceId:" + deviceId);
-        request(HttpUrlIble.GET_BIND_USERS_URL, params, new IDataListener<HttpResult>() {
-            @Override
-            public void onSuccess(HttpResult httpResult) {
-
-                TypeToken<List<User>> typeToken = new TypeToken<List<User>>() {
-                };
-                List<User> users = mGson.fromJson(httpResult.getData().toString(), typeToken
-                        .getType());
-                if (listener != null) {
-                    listener.onSuccess(users);
-                }
-            }
-
-            @Override
-            public void onFailure(int errorCode) {
-                if (listener != null) {
-                    listener.onFailure(errorCode);
-                }
-            }
-        });
+        request2(HttpUrlIble.GET_BIND_USERS_URL, params, User.class, listener);
     }
 
     /**
@@ -109,7 +88,7 @@ public class HttpAction {
         params.put("type", type);
         params.put("value", mGson.toJson(value));
         Timber.e("-------value:" + mGson.toJson(value));
-        request2(HttpUrlIble.DOORBELL_PARAMS_SET_UTL, params, listener);
+        request3(HttpUrlIble.DOORBELL_PARAMS_SET_UTL, params, listener);
     }
 
     public void getDoorbellParams(String deviceId, String type, final
@@ -117,7 +96,7 @@ public class HttpAction {
         Map<String, Object> params = new HashMap<>();
         params.put("deviceId", deviceId);
         params.put("type", type);
-        request(HttpUrlIble.DOORBELL_PARAMS_GET_UTL, params, new IDataListener<HttpResult>() {
+        request1(HttpUrlIble.DOORBELL_PARAMS_GET_UTL, params, new IDataListener<HttpResult>() {
             @Override
             public void onSuccess(HttpResult httpResult) {
                 DoorbellParam doorbellParam = mGson.fromJson(httpResult.getData().toString(),
@@ -143,96 +122,48 @@ public class HttpAction {
         Map<String, Object> params = new HashMap<>();
         params.put("deviceId", deviceId);
         params.put("config", mGson.toJson(config));
-        request2(HttpUrlIble.DOORBELL_SET_CONFIG_URL, params, listener);
+        request3(HttpUrlIble.DOORBELL_SET_CONFIG_URL, params, listener);
     }
 
-    public void getDoorbellConfig(String deviceId, final IDataListener<DoorbellConfig> listener){
+    public void getDoorbellConfig(String deviceId, final IDataListener<DoorbellConfig> listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("deviceId", deviceId);
-        request(HttpUrlIble.DOORBELL_GET_CONFIG_URL, params, new IDataListener<HttpResult>() {
-            @Override
-            public void onSuccess(HttpResult httpResult) {
-                DoorbellConfig doorbellConfig = mGson.fromJson(httpResult.getData().toString(),
-                        DoorbellConfig.class);
-                if (listener != null) {
-                    listener.onSuccess(doorbellConfig);
-                }
-            }
-
-            @Override
-            public void onFailure(int errorCode) {
-                if (listener != null)
-                    listener.onFailure(errorCode);
-            }
-        });
+        request1(HttpUrlIble.DOORBELL_GET_CONFIG_URL, params, listener);
     }
-    public void sendDoorbellImg(String deviceId,int type,String filePath,final IDataListener<Boolean>listener){
+
+    /**
+     * 普通对象请求
+     */
+    public void request1(String url, Map<String, Object> params, IDataListener listener) {
+        HttpTask httpTask = new HttpTask(url, params, listener);
+        ThreadPoolManager.getThreadPoolManager().excute(new FutureTask<>(httpTask, listener));
+    }
+
+    /**
+     * 带列表数据请求
+     */
+    public <M, T> void request2(String url, Map<String, Object> params, Class<M> clazz, IDataListener<T> listener) {
+        HttpTask2 httpTask = new HttpTask2(url, params, clazz, listener);
+        ThreadPoolManager.getThreadPoolManager().excute(new FutureTask<>(httpTask, listener));
+    }
+
+    /**
+     * 不关心返回结果请求
+     */
+    public void request3(String url, Map<String, Object> params, IDataListener<Boolean> listener) {
+        HttpTask3 httpTask = new HttpTask3(url, params, listener);
+        ThreadPoolManager.getThreadPoolManager().excute(new FutureTask<>(httpTask, listener));
+    }
+
+    public void sendDoorbellImg(String deviceId, int type, String filePath, final IDataListener<Boolean> listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("deviceId", deviceId);
         params.put("type", type);
-        sendPostImg(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL,filePath,params,listener);
-    }
-
-    private void request(final String url, Map<String, Object> params, final
-    IDataListener<HttpResult> listener) {
-        HttpUtil.getInstance(mContext).sendPostRequest(url, params, new HttpUtil
-                .OnRequestListener() {
-            @Override
-            public void success(String result) {
-                Timber.e("-------result:" + result + "-->" + url);
-                if (listener != null) {
-                    try {
-                        HttpResult httpResult = mGson.fromJson(result, HttpResult.class);
-                        if (httpResult != null) {
-                            if (httpResult.getCode() == 200) {
-                                listener.onSuccess(httpResult);
-                            } else {
-                                listener.onFailure(httpResult.getCode());
-                            }
-                        }
-                    } catch (Exception e) {
-                        listener.onFailure(-1);
-                    }
-
-                }
-            }
-
-            @Override
-            public void failure() {
-                listener.onFailure(-1);
-            }
-        });
-    }
-
-    private void request2(final String url, Map<String, Object> params, final
-    IDataListener<Boolean> listener) {
-        HttpUtil.getInstance(mContext).sendPostRequest(url, params, new HttpUtil
-                .OnRequestListener() {
-            @Override
-            public void success(String result) {
-                Timber.e("-----------result:" + result + "-->" + url);
-                HttpResult httpResult = mGson.fromJson(result, HttpResult.class);
-                if (listener != null) {
-                    if (httpResult != null) {
-                        if (httpResult.getCode() == 200) {
-                            listener.onSuccess(true);
-                        } else {
-                            listener.onFailure(httpResult.getCode());
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void failure() {
-                if (listener != null)
-                    listener.onFailure(-1);
-            }
-        });
+        sendPostImg(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL, filePath, params, listener);
     }
 
     private void sendPostImg(final String url, String filePath, final Map<String, Object> params,
-                            final IDataListener listener) {
+                             final IDataListener listener) {
         MediaType type = MediaType.parse("image/jpeg");//"text/xml;charset=utf-8"
         File file = new File(filePath);
 //        RequestBody fileBody = RequestBody.create(type, file);

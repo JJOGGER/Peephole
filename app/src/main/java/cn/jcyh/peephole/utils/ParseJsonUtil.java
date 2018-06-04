@@ -32,11 +32,11 @@ public class ParseJsonUtil {
         return status;
     }
 
-    public static String getErrorCode(String str) {
-        String code = "";
+    public static int getErrorCode(String str) {
+        int code = 0;
         try {
             JSONObject json = new JSONObject(str);
-            code = json.getString("code");
+            code = json.getInt("code");
         } catch (JSONException e) {
             e.printStackTrace();
         }

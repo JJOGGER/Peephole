@@ -2,6 +2,7 @@ package cn.jcyh.peephole.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.bairuitech.anychat.AnyChatTransDataEvent;
 import com.google.gson.Gson;
@@ -36,7 +37,7 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
 
     public AnyChatTransDataEventAdapter(Context context) {
         mContext = context;
-        mControlCenter = DoorBellControlCenter.getInstance(mContext);
+        mControlCenter = DoorBellControlCenter.getInstance();
         mGson = new Gson();
     }
 
@@ -53,7 +54,7 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
         intent.putExtra("dwTaskId", dwTaskId);
         intent.setAction(ACTION_ANYCHAT_TRANS_DATA_EVENT);
         intent.putExtra("type", ConstantUtil.TYPE_ANYCHAT_TRANS_FILE);
-        mContext.sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 
     @Override
@@ -74,7 +75,7 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
         }
         if (commandJson == null) return;
         intent.putExtra("command", commandJson);
-        mContext.sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
         switch (commandJson.getCommandType()) {
             case CommandJson.CommandType.DOORBELL_LASTED_IMG_NAMES_REQUEST:
                 //收到近期图片获取请求
@@ -109,10 +110,10 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
                 mControlCenter.sendVideoCallImg(dwUserid, commandJson.getFlag());
                 break;
             case CommandJson.CommandType.UNBIND_DOORBELL_COMPLETED:
-                HttpAction.getHttpAction(mContext).getBindUsers(DoorBellControlCenter.getIMEI(mContext), new IDataListener<List<User>>() {
+                HttpAction.getHttpAction().getBindUsers(DoorBellControlCenter.getIMEI(), new IDataListener<List<User>>() {
                     @Override
                     public void onSuccess(List<User> users) {
-                        DoorBellControlCenter.getInstance(mContext).saveBindUsers(users);
+                        DoorBellControlCenter.getInstance().saveBindUsers(users);
                     }
 
                     @Override
@@ -155,7 +156,7 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
             DoorbellParam doorbellParam = mGson.fromJson(commandJson.getFlag(), DoorbellParam.class);
             doorbellConfig.setMonitorParams(doorbellParam);
         }
-        HttpAction.getHttpAction(mContext).setDoorbellConfig(DoorBellControlCenter.getIMEI(mContext), doorbellConfig, new IDataListener<Boolean>() {
+        HttpAction.getHttpAction().setDoorbellConfig(DoorBellControlCenter.getIMEI(), doorbellConfig, new IDataListener<Boolean>() {
             @Override
             public void onSuccess(Boolean aBoolean) {
                 mControlCenter.saveDoorbellConfig(doorbellConfig);

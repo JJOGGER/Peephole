@@ -48,23 +48,20 @@ public class PictureActivity extends BaseActivity {
     @Override
     protected void init() {
         DoorBellControlCenter.sIsVideo = true;
+        mSurfaceView.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         mSurfaceView.getHolder().addCallback(mCallback);
         mType = getIntent().getStringExtra("type");
-        mDoorbellConfig = DoorBellControlCenter.getInstance(this).getDoorbellConfig();
+        mDoorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
     }
 
     private void initCamera() {
-        if (mCamera != null) {
-            mCamera.stopPreview();
-            mCamera.release();
-            mCamera = null;
-        }
+        closeCamera();
         int cameraCount = 0;
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
         cameraCount = Camera.getNumberOfCameras();
         for (int camIdx = 0; camIdx < cameraCount; camIdx++) {
             Camera.getCameraInfo(camIdx, cameraInfo);
-            if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) { // 代表摄像头的方位，目前有定义值两个分别为CAMERA_FACING_FRONT前置和CAMERA_FACING_BACK后置
+            if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) { // 代表摄像头的方位，目前有定义值两个分别为CAMERA_FACING_FRONT前置和CAMERA_FACING_BACK后置
                 try {
                     mCamera = Camera.open(camIdx);
                     break;
@@ -73,17 +70,10 @@ public class PictureActivity extends BaseActivity {
                 }
             }
         }
-//        Camera.Parameters parameters = mCamera.getParameters();
-//
 //        parameters.setPictureFormat(PixelFormat.JPEG);
-//
 //        parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-//
 //        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);//1连续对焦
-//
 //        setDispaly(parameters, mCamera);
-//
-//        mCamera.setParameters(parameters);
         Camera.Parameters parameters = mCamera.getParameters();
         parameters.setPictureSize(480, 360);//1024, 600
         mCamera.setParameters(parameters);
@@ -93,13 +83,12 @@ public class PictureActivity extends BaseActivity {
             e.printStackTrace();
             Timber.e("-------------<" + e.getMessage());
         }
-        mCamera.startPreview();//开始预览，必须在调用相机拍照之前
-        mCamera.takePicture(null, null, new Camera.PictureCallback() {
-            @Override
-            public void onPictureTaken(byte[] data, Camera camera) {
-                onTakePhoto(data);
-            }
-        });
+        try {
+            mCamera.startPreview();//开始预览，必须在调用相机拍照之前
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            Timber.e("-------------<" + e.getMessage());
+        }
     }
 
     private void onTakePhoto(byte[] data) {
@@ -122,7 +111,6 @@ public class PictureActivity extends BaseActivity {
         Intent intent = getIntent();
         intent.putExtra("filePath", mImgPath);
         setResult(RESULT_OK, intent);
-        closeCamera();
         //获取拍照的图片
         int type = 0;
         if (ConstantUtil.TYPE_DOORBELL_SYSTEM_RING.equals(mType)) {
@@ -130,7 +118,7 @@ public class PictureActivity extends BaseActivity {
         } else if (ConstantUtil.TYPE_DOORBELL_SYSTEM_ALARM.equals(mType)) {
             type = DoorBellControlCenter.DOORBELL_TYPE_ALARM;
         }
-        HttpAction.getHttpAction(this).sendDoorbellImg(IMEI, type,
+        HttpAction.getHttpAction().sendDoorbellImg(IMEI, type,
                 mImgPath, null);
         if (ConstantUtil.TYPE_DOORBELL_SYSTEM_RING.equals(mType)) {
             if (mDoorbellConfig.getDoorbellVideotap() == 1) {
@@ -153,7 +141,14 @@ public class PictureActivity extends BaseActivity {
 
     }
 
+    @Override
+    public void onBackPressed() {
+        endDeal();
+        finish();
+    }
+
     private void endDeal() {
+        closeCamera();
         if (ConstantUtil.TYPE_DOORBELL_SYSTEM_RING.equals(mType)) {
             if (mDoorbellConfig.getDoorbellVideoCall() == 1) {
                 sendVideoCall();
@@ -173,6 +168,9 @@ public class PictureActivity extends BaseActivity {
         mSurfaceView.getHolder().setFixedSize(1024, 600);
         mSurfaceView.getHolder().setKeepScreenOn(true);
         mRecorder = new MediaRecorder();
+        initCamera();
+        if (mCamera != null) mCamera.unlock();
+        mRecorder.setCamera(mCamera);
         mRecorder.reset();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);//设置采集声音
         mRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);//设置采集图像
@@ -197,7 +195,12 @@ public class PictureActivity extends BaseActivity {
             e.printStackTrace();
         }
         //开始录制
-        mRecorder.start();
+        try {
+            mRecorder.start();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            return;
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -232,15 +235,15 @@ public class PictureActivity extends BaseActivity {
      */
     private void sendVideoCall() {
         //发视频推送
-        HttpAction.getHttpAction(this).getBindUsers(IMEI, new IDataListener<List<User>>() {
+        HttpAction.getHttpAction().getBindUsers(IMEI, new IDataListener<List<User>>() {
             @Override
             public void onSuccess(List<User> users) {
                 if (users != null && users.size() != 0) {
                     //通知用户
-                    DoorBellControlCenter.getInstance(getApplicationContext()).sendVideoCall
+                    DoorBellControlCenter.getInstance().sendVideoCall
                             (users, mType, mImgPath);
-                    finish();
                 }
+                finish();
             }
 
             @Override
@@ -257,11 +260,13 @@ public class PictureActivity extends BaseActivity {
             return;
         }
         try {
+            mCamera.setPreviewCallback(null);
             mCamera.cancelAutoFocus();
         } catch (Exception e) {
             e.printStackTrace();
             Timber.e("---->" + e.getMessage());
         }
+        mSurfaceView.getHolder().removeCallback(mCallback);
         mCamera.stopPreview();
         mCamera.release();
         mCamera = null;
@@ -294,6 +299,12 @@ public class PictureActivity extends BaseActivity {
         public void surfaceCreated(SurfaceHolder surfaceHolder) {
             Timber.e("----------->a:");
             initCamera();
+            mCamera.takePicture(null, null, new Camera.PictureCallback() {
+                @Override
+                public void onPictureTaken(byte[] data, Camera camera) {
+                    onTakePhoto(data);
+                }
+            });
         }
 
         @Override
@@ -304,6 +315,7 @@ public class PictureActivity extends BaseActivity {
         @Override
         public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
             Timber.e("----------->c:");
+            closeCamera();
         }
     };
 

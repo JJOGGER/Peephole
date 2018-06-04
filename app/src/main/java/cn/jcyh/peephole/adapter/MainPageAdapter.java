@@ -3,13 +3,10 @@ package cn.jcyh.peephole.adapter;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.view.ViewGroup;
 
 import cn.jcyh.peephole.ui.fragment.MainFragment;
 import cn.jcyh.peephole.ui.fragment.MenuFragment;
-
-/**
- * Created by jogger on 2018/1/17.
- */
 
 public class MainPageAdapter extends FragmentPagerAdapter {
     public MainPageAdapter(FragmentManager fm) {
@@ -24,5 +21,9 @@ public class MainPageAdapter extends FragmentPagerAdapter {
     @Override
     public int getCount() {
         return 2;
+    }
+
+    @Override
+    public void destroyItem(ViewGroup container, int position, Object object) {
     }
 }
