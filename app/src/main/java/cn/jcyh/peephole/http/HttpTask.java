@@ -7,9 +7,8 @@ import com.google.gson.Gson;
 import java.io.File;
 import java.util.Map;
 
-import cn.jcyh.peephole.bean.HttpResult;
+import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.ParseJsonUtil;
-import timber.log.Timber;
 
 /**
  * Created by jogger on 2018/1/25.
@@ -43,7 +42,7 @@ class HttpTask implements Runnable {
         mHttpService.setHttpListener(new IHttpListener() {
             @Override
             public void onSuccess(final String result) {
-                Timber.e("------------result:" + result);
+                L.e("------------result:" + result);
                 if (listener != null) {
                     mHandler.post(new Runnable() {
                         @Override

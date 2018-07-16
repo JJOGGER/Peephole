@@ -7,7 +7,6 @@ import android.support.v4.app.FragmentTransaction;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.ui.fragment.MainSetFragment;
-import timber.log.Timber;
 
 public class SetActivity extends BaseActivity {
 
@@ -30,7 +29,6 @@ public class SetActivity extends BaseActivity {
     @Override
     public void onBackPressed() {
         Fragment fragment = mFragmentManager.findFragmentByTag(MainSetFragment.class.getName());
-        Timber.e("------fragment;" + fragment.getUserVisibleHint() + fragment.isAdded());
         if (fragment.isAdded() && !fragment.isVisible()) {
             mFragmentManager.beginTransaction().replace(R.id.fl_container,fragment).show(fragment).commit();
         } else {

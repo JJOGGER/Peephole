@@ -15,13 +15,13 @@ import java.util.List;
 import butterknife.BindView;
 import cn.jcyh.peephole.adapter.MainPageAdapter;
 import cn.jcyh.peephole.base.BaseActivity;
-import cn.jcyh.peephole.bean.User;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.entity.User;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.service.KeepBackRemoteService;
 import cn.jcyh.peephole.utils.FileUtil;
-import timber.log.Timber;
+import cn.jcyh.peephole.utils.L;
 
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_DOORBELL_SYSTEM_EVENT;
 
@@ -65,17 +65,17 @@ public class MainActivity extends BaseActivity implements ViewPager.OnPageChange
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int heightPixels = displayMetrics.heightPixels;
         int widthPixels = displayMetrics.widthPixels;
-        Timber.e("---->h:" + heightPixels + "---w:" + widthPixels);
+        L.e("---->h:" + heightPixels + "---w:" + widthPixels);
         List<String> sdCardPaths1 = FileUtil.getInstance().getSDCardPaths(getApplicationContext(), true);
         File file;
         if (sdCardPaths1 != null && sdCardPaths1.size() > 0) {
             file = new File(sdCardPaths1.get(0));
-            Timber.e("--------file" + file.exists() + "--sdCardPaths1：" + sdCardPaths1);
+            L.e("--------file" + file.exists() + "--sdCardPaths1：" + sdCardPaths1);
         }
         List<String> sdCardPaths = FileUtil.getInstance().getSDCardPaths(getApplicationContext(), false);
         if (sdCardPaths != null && sdCardPaths.size() > 0) {
             file = new File(sdCardPaths.get(0));
-            Timber.e("--------file" + file.exists() + "--sdCardPaths：" + sdCardPaths);
+            L.e("--------file" + file.exists() + "--sdCardPaths：" + sdCardPaths);
         }
         String sdCardPath = "/protect_s/prod_info";
         File file1 = new File(sdCardPath);
@@ -86,7 +86,7 @@ public class MainActivity extends BaseActivity implements ViewPager.OnPageChange
                 if (users != null && users.size() > 0) {
                     DoorBellControlCenter.getInstance().saveBindUsers(users);
                 }
-                Timber.e("---user:" + users);
+                L.e("---user:" + users);
             }
 
             @Override
@@ -159,7 +159,7 @@ public class MainActivity extends BaseActivity implements ViewPager.OnPageChange
     @Override
     protected void onActivityResult(final int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Timber.e("-------------onActivityResult" + resultCode + "---" + requestCode);
+        L.e("-------------onActivityResult" + resultCode + "---" + requestCode);
         if (resultCode == RESULT_OK) {
             if (requestCode == REQEUST_CAPTURE_RING) {
 //                mControlCenter.sendVideoCall();

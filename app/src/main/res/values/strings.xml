@@ -156,6 +156,11 @@
     <string name="low_than_time_msg">小于最短时间，更改为5s</string>
     <string name="face_set_msg">设置人脸识别</string>
     <string name="face_set">人脸识别</string>
+    <string name="extend_function">扩展功能</string>
+    <string name="bluetooth_lock">蓝牙锁</string>
+    <string name="no_camera">未检测到摄像头</string>
+    <string name="leave_message_audio_start_msg">主人不在家，请再次按下门铃键开始留言</string>
+    <string name="leave_message_audio_end_msg">留言结束</string>
     <!--<string name="date_week_format">%d年%d月%d日&#160;%s</string>-->
     <!--<string name="calendar_date_format">农历%d年%s月%s</string>-->
 </resources>

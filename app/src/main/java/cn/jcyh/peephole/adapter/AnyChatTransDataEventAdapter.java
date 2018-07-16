@@ -10,18 +10,19 @@ import com.google.gson.reflect.TypeToken;
 
 import java.util.List;
 
+import cn.jcyh.eaglelock.constant.Constant;
 import cn.jcyh.peephole.R;
-import cn.jcyh.peephole.bean.CommandJson;
-import cn.jcyh.peephole.bean.DoorbellParam;
-import cn.jcyh.peephole.bean.User;
 import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.BcManager;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.entity.CommandJson;
+import cn.jcyh.peephole.entity.DoorbellParam;
+import cn.jcyh.peephole.entity.User;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.utils.ConstantUtil;
-import cn.jcyh.peephole.utils.ToastUtil;
-import timber.log.Timber;
+import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.T;
 
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_TRANS_DATA_EVENT;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_ANYCHAT_TRANS_BUFFER;
@@ -44,16 +45,16 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
     @Override
     public void OnAnyChatTransFile(int dwUserid, String FileName, String TempFilePath, int
             dwFileLength, int wParam, int lParam, int dwTaskId) {
-        Timber.e("---------OnAnyChatTransFile" + lParam + "-->" + FileName + "--" + TempFilePath);
+        L.e("---------OnAnyChatTransFile" + lParam + "-->" + FileName + "--" + TempFilePath);
         Intent intent = new Intent();
-        intent.putExtra("dwUserid", dwUserid);
-        intent.putExtra("targetPath", TempFilePath);
-        intent.putExtra("dwFileLength", dwFileLength);
-        intent.putExtra("wParam", wParam);
-        intent.putExtra("lParam", lParam);
-        intent.putExtra("dwTaskId", dwTaskId);
+        intent.putExtra(Constant.DW_USERID, dwUserid);
+        intent.putExtra(Constant.FILE_PATH, TempFilePath);
+        intent.putExtra(Constant.FILE_LENGTH, dwFileLength);
+        intent.putExtra(Constant.W_PARAM, wParam);
+        intent.putExtra(Constant.L_PARAM, lParam);
+        intent.putExtra(Constant.DW_TASK_ID, dwTaskId);
         intent.setAction(ACTION_ANYCHAT_TRANS_DATA_EVENT);
-        intent.putExtra("type", ConstantUtil.TYPE_ANYCHAT_TRANS_FILE);
+        intent.putExtra(Constant.TYPE, ConstantUtil.TYPE_ANYCHAT_TRANS_FILE);
         LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 
@@ -61,20 +62,19 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
     public void OnAnyChatTransBuffer(int dwUserid, byte[] lpBuf, int dwLen) {
         String result = new String(lpBuf, 0, lpBuf.length);
         Intent intent = new Intent();
-        intent.putExtra("dwUserid", dwUserid);
-        intent.putExtra("result", result);
-        Timber.e("-----OnAnyChatTransBuffer" + result + "---dwUserid:" + dwUserid);
+        intent.putExtra(Constant.DW_USERID, dwUserid);
+        intent.putExtra(Constant.RESULT, result);
+        L.e("-----OnAnyChatTransBuffer" + result + "---dwUserid:" + dwUserid);
         intent.setAction(ACTION_ANYCHAT_TRANS_DATA_EVENT);
-        intent.putExtra("type", TYPE_ANYCHAT_TRANS_BUFFER);
+        intent.putExtra(Constant.TYPE, TYPE_ANYCHAT_TRANS_BUFFER);
         CommandJson commandJson = null;
         try {
             commandJson = mGson.fromJson(result, CommandJson.class);
         } catch (Exception e) {
             e.printStackTrace();
-            Timber.e("-----e:" + e.getMessage());
         }
         if (commandJson == null) return;
-        intent.putExtra("command", commandJson);
+        intent.putExtra(Constant.COMMAND, commandJson);
         LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
         switch (commandJson.getCommandType()) {
             case CommandJson.CommandType.DOORBELL_LASTED_IMG_NAMES_REQUEST:
@@ -89,7 +89,7 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
                 String namesJson = commandJson.getFlag();
                 List<String> names = mGson.fromJson(namesJson, new TypeToken<List<String>>() {
                 }.getType());
-                Timber.e("---------->>commandjson:" + commandJson);
+                L.e("---------->>commandjson:" + commandJson);
                 mControlCenter.sendLastedPics(dwUserid, commandJson.getCommand(), names);
                 break;
             case CommandJson.CommandType.DOORBELL_LASTED_VIDEO_REQUEST:
@@ -100,16 +100,17 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
         }
         switch (commandJson.getCommandType()) {
             case CommandJson.CommandType.UNLOCK_DOORBELL_REQUEST:
-                ToastUtil.showToast(mContext, "执行解锁操作");
-                BcManager.getManager(mContext).setLock(true);
+                T.show("执行解锁操作");
+                BcManager.getManager().setLock(true);
                 mControlCenter.sendUnlockResponse(dwUserid);
                 break;
             case CommandJson.CommandType.DOORBELL_CALL_IMG_REQUEST:
                 //视频呼叫图片请求
-                Timber.e("----------视频呼叫图片请求" + dwUserid + "---filepath:" + commandJson.getFlag());
-                mControlCenter.sendVideoCallImg(dwUserid, commandJson.getFlag());
+                L.e("----------视频呼叫图片请求" + dwUserid + "---filepath:" + commandJson.getFlag());
+                mControlCenter.sendVideoCallImg(dwUserid);
                 break;
             case CommandJson.CommandType.UNBIND_DOORBELL_COMPLETED:
+                //解绑成功，刷新绑定列表
                 HttpAction.getHttpAction().getBindUsers(DoorBellControlCenter.getIMEI(), new IDataListener<List<User>>() {
                     @Override
                     public void onSuccess(List<User> users) {
@@ -135,12 +136,12 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
     @Override
     public void OnAnyChatTransBufferEx(int dwUserid, byte[] lpBuf, int dwLen, int wparam, int
             lparam, int taskid) {
-        Timber.e("-----------OnAnyChatTransBufferEx");
+        L.e("-----------OnAnyChatTransBufferEx");
     }
 
     @Override
     public void OnAnyChatSDKFilterData(byte[] lpBuf, int dwLen) {
-        Timber.e("-----------OnAnyChatSDKFilterData");
+        L.e("-----------OnAnyChatSDKFilterData");
     }
 
     /**
@@ -161,7 +162,7 @@ public class AnyChatTransDataEventAdapter implements AnyChatTransDataEvent {
             public void onSuccess(Boolean aBoolean) {
                 mControlCenter.saveDoorbellConfig(doorbellConfig);
                 mControlCenter.sendDoorbellConfigResponse(dwUserid, command, 1);
-                ToastUtil.showToast(mContext, R.string.doorbell_set_changed);
+                T.show(R.string.doorbell_set_changed);
                 // TODO: 2018/4/25 如果当前在设置界面，应更新
             }
 

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.jcyh.peephole.MainActivity;
-import timber.log.Timber;
+import cn.jcyh.peephole.utils.L;
 
 /**
  * Created by it on 2017/3/6.
@@ -49,7 +49,7 @@ public class ActivityCollector {
                 activities) {
             if (!act.isFinishing() && !(act instanceof MainActivity)) {
                 act.finish();
-                Timber.i("--->" + act.getLocalClassName() + "isfinished");
+                L.i("--->" + act.getLocalClassName() + "isfinished");
             }
         }
     }

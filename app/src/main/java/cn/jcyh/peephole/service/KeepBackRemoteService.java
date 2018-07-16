@@ -11,7 +11,8 @@ import android.support.annotation.Nullable;
 
 import com.szjcyh.mysmart.IMyAidlInterface;
 
-import timber.log.Timber;
+import cn.jcyh.peephole.utils.L;
+
 
 /**
  * Created by jogger on 2017/12/4.
@@ -69,7 +70,7 @@ public class KeepBackRemoteService extends Service {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             //重新启动
-            Timber.e("-----KeepBackLocalService被杀重启");
+            L.e("-----KeepBackLocalService被杀重启");
             Intent intent = new Intent(KeepBackRemoteService.this, KeepBackLocalService.class);
             intent.putExtra("flag", 1);
             startService(intent);

@@ -14,9 +14,9 @@ import java.io.Serializable;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import cn.jcyh.peephole.control.ActivityCollector;
-import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.utils.StatusUtil;
+import cn.jcyh.peephole.utils.Util;
 
 /**
  * Created by jogger on 2018/1/10.
@@ -174,7 +174,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         ActivityCollector.removeActivity(this);
-        ControlCenter.watch(this);
+        Util.watch(this);
         mBind.unbind();
     }
 }

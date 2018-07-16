@@ -2,7 +2,7 @@ package cn.jcyh.peephole.config;
 
 import android.text.TextUtils;
 
-import cn.jcyh.peephole.bean.DoorbellParam;
+import cn.jcyh.peephole.entity.DoorbellParam;
 
 /**
  * Created by Jogger on 2018/4/20.
@@ -11,6 +11,7 @@ import cn.jcyh.peephole.bean.DoorbellParam;
 
 public class DoorbellConfig {
     //从本地取，如果为空，则去服务器取，如果有，存到本地，如果没有，创建，并保存到服务器
+    private String nickName = "";
     private int doorbellNetPush = 1;
     private int doorbellVideoCall = 1;
     private int doorbellVideotap = 0;//录像
@@ -37,6 +38,14 @@ public class DoorbellConfig {
     private String mDoorbellAlarmName;//报警声
     private int mRingVolume = 50;
     private int mAlarmVolume = 50;
+
+    public String getNickName() {
+        return nickName;
+    }
+
+    public void setNickName(String nickName) {
+        this.nickName = nickName;
+    }
 
     public int getDoorbellNetPush() {
         return doorbellNetPush;
@@ -191,7 +200,7 @@ public class DoorbellConfig {
     }
 
     public String getDoorbellRingName() {
-        return TextUtils.isEmpty(mDoorbellRingName) ? "ring_one.mp3" : mDoorbellRingName;
+        return TextUtils.isEmpty(mDoorbellRingName) ? "doorbell_one.mp3" : mDoorbellRingName;
     }
 
     public void setDoorbellRingName(String doorbellRingName) {

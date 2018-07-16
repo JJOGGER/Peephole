@@ -12,10 +12,11 @@ import java.util.Map;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
-import cn.jcyh.peephole.bean.DoorbellParam;
-import cn.jcyh.peephole.bean.HttpResult;
-import cn.jcyh.peephole.bean.User;
 import cn.jcyh.peephole.config.DoorbellConfig;
+import cn.jcyh.peephole.entity.Advert;
+import cn.jcyh.peephole.entity.DoorbellParam;
+import cn.jcyh.peephole.entity.User;
+import cn.jcyh.peephole.utils.L;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -24,7 +25,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import timber.log.Timber;
 
 /**
  * Created by jogger on 2018/1/10.
@@ -71,7 +71,7 @@ public class HttpAction {
     public void getBindUsers(String deviceId, final IDataListener<List<User>> listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("deviceId", deviceId);
-        Timber.e("------deviceId:" + deviceId);
+        L.e("------deviceId:" + deviceId);
         request2(HttpUrlIble.GET_BIND_USERS_URL, params, User.class, listener);
     }
 
@@ -87,7 +87,7 @@ public class HttpAction {
         params.put("deviceId", deviceId);
         params.put("type", type);
         params.put("value", mGson.toJson(value));
-        Timber.e("-------value:" + mGson.toJson(value));
+        L.e("-------value:" + mGson.toJson(value));
         request3(HttpUrlIble.DOORBELL_PARAMS_SET_UTL, params, listener);
     }
 
@@ -132,6 +132,13 @@ public class HttpAction {
     }
 
     /**
+     * 广告图
+     */
+    public void getADPictures(final IDataListener<List<Advert>> listener) {
+        request2(HttpUrlIble.DOORBELL_AD_GET_URL, null, Advert.class, listener);
+    }
+
+    /**
      * 普通对象请求
      */
     public void request1(String url, Map<String, Object> params, IDataListener listener) {
@@ -166,6 +173,7 @@ public class HttpAction {
                              final IDataListener listener) {
         MediaType type = MediaType.parse("image/jpeg");//"text/xml;charset=utf-8"
         File file = new File(filePath);
+        if (!file.exists()) return;
 //        RequestBody fileBody = RequestBody.create(type, file);
         MultipartBody.Builder builder = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
@@ -183,11 +191,17 @@ public class HttpAction {
                 .header("Content-Type", "image/jpeg; charset=utf-8;")
                 .post(requestBody)//传参数、文件或者混合，改一下就行请求体就行
                 .build();
-        Timber.e("-----------url" + url);
+        L.e("-----------url" + url);
+        mOkHttpClient = new OkHttpClient().newBuilder()
+                .connectTimeout(200, TimeUnit.SECONDS)//设置超时时间
+                .readTimeout(200, TimeUnit.SECONDS)//设置读取超时时间
+                .writeTimeout(200, TimeUnit.SECONDS)//设置写入超时时间
+                .build();
         mOkHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Timber.e("-------onFailure" + e.getMessage());
+                L.e("-------onFailure" + e.getMessage());
+                L.e("-----------url" + url);
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -201,7 +215,7 @@ public class HttpAction {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 final String result = response.body().string();
-                Timber.e("--------result:" + result + "-->" + url);
+                L.e("--------result:" + result + "-->" + url);
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {

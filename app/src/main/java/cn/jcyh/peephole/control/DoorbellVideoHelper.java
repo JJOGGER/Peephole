@@ -2,7 +2,6 @@ package cn.jcyh.peephole.control;
 
 import android.content.Context;
 import android.graphics.PixelFormat;
-import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceView;
 
@@ -12,6 +11,7 @@ import com.bairuitech.anychat.AnyChatDefine;
 /**
  * Created by jogger on 2018/2/3.
  */
+
 
 public class DoorbellVideoHelper {
 
@@ -24,21 +24,20 @@ public class DoorbellVideoHelper {
     public void initView(Context context, SurfaceView surfaceView) {
         if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
             surfaceView.getHolder().addCallback(AnyChatCoreSDK.mCameraHelper);
-            Log.i("ANYCHAT", "VIDEOCAPTRUE---" + "JAVA");
         }
         if (AnyChatCoreSDK
                 .GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
             AnyChatCoreSDK.mCameraHelper.SetContext(context.getApplicationContext());
             if (AnyChatCoreSDK.mCameraHelper.GetCameraNumber() > 1) {
                 // 默认打开前置摄像头
-                AnyChatCoreSDK.mCameraHelper.SelectVideoCapture(AnyChatCoreSDK.mCameraHelper.CAMERA_FACING_FRONT);
+                AnyChatCoreSDK.mCameraHelper.SelectVideoCapture(AnyChatCoreSDK.mCameraHelper.CAMERA_FACING_BACK);
             }
         } else {
             String[] strVideoCaptures = mAnyChat.EnumVideoCapture();
             if (strVideoCaptures != null && strVideoCaptures.length > 1) {
                 // 默认打开前置摄像头
                 for (String strDevices : strVideoCaptures) {
-                    if (strDevices.indexOf("Front") >= 0) {
+                    if (strDevices.indexOf("Front") >= 1) {
                         mAnyChat.SelectVideoCapture(strDevices);
                         break;
                     }

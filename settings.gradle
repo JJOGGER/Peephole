@@ -1,1 +1,1 @@
-include ':app', ':anychat', ':zxinglib'
+include ':app', ':anychat', ':zxinglib', ':eaglelock'

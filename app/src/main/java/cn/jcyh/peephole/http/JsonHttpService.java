@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import cn.jcyh.peephole.utils.L;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -13,7 +14,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import timber.log.Timber;
 
 /**
  * Created by jogger on 2018/1/25.
@@ -77,7 +77,7 @@ public class JsonHttpService implements IHttpService {
             mOkHttpClient.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    Timber.e("---------onFailure");
+                    L.e("---------onFailure");
                     mHttpListener.onFailure();
                 }
 
@@ -92,7 +92,7 @@ public class JsonHttpService implements IHttpService {
             });
         } catch (Exception e) {
             e.printStackTrace();
-            Timber.i("---error" + e);
+            L.i("---error" + e);
         }
     }
 }

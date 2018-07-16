@@ -1,11 +1,10 @@
 package cn.jcyh.peephole.ui.fragment;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
+import android.content.IntentFilter;
 import android.content.res.TypedArray;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,12 +19,13 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.youth.banner.loader.ImageLoader;
+
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -36,11 +36,11 @@ import cn.jcyh.peephole.control.BcManager;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
-import cn.jcyh.peephole.ui.activity.CameraActivity;
+import cn.jcyh.peephole.ui.activity.DoorbellLookActivity;
 import cn.jcyh.peephole.utils.FileUtil;
+import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.LunarCalendar;
-import cn.jcyh.peephole.utils.ToastUtil;
-import timber.log.Timber;
+import cn.jcyh.peephole.utils.T;
 
 import static cn.jcyh.peephole.R.id.tv_time;
 
@@ -54,17 +54,12 @@ public class MainFragment extends BaseFragment {
     TextView tvDate2;
     @BindView(R.id.iv_home)
     ImageView ivHome;
-    private String mDate;
+    //    @BindView(R.id.banner)
+//    Banner banner;
     private static MainFragment sInstance;
-    private MyHandler mHandler;
-    private SimpleDateFormat mHmformat;
-    private SimpleDateFormat mSimpleDateFormat;
-    private Date mHourMinDate;
-    private Date mSimpleDate;
-    private TimeThread mTimeThread;
-    private String mAmPm;
     private ProgressDialog mProgressDialog;
     private DoorbellConfig mDoorbellConfig;
+    private MyReceiver mReceiver;
 
     public static MainFragment getInstance(Bundle bundle) {
         if (sInstance == null) {
@@ -86,59 +81,18 @@ public class MainFragment extends BaseFragment {
 
     @Override
     public void init() {
-        mHourMinDate = new Date();
-        mSimpleDate = new Date();
-        mHmformat = new SimpleDateFormat("hh:mm");
-        mSimpleDateFormat = new SimpleDateFormat("yyyy" + getString(R.string.year)
-                + "MM" + getString(R.string.month) + "dd" + getString(R.string.day));
-        mHandler = new MyHandler(this);
-        mTimeThread = new TimeThread();
-        mTimeThread.start();
+        new TimeThread(this).start();
         mProgressDialog = new ProgressDialog(mActivity);
         mProgressDialog.setMessage(getString(R.string.waitting));
         mDoorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        long time = System.currentTimeMillis();
-        mSimpleDate.setTime(time);
-        mDate = mSimpleDateFormat.format(mSimpleDate);
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(time);
-        int apm = calendar.get(Calendar.AM_PM);
-        // apm=0 表示上午，apm=1表示下午。
-        mAmPm = apm == 0 ? getString(R.string.am) : getString(R.string.pm);
-        //星期
-        setweek();
-        // 农历月数组
-        TypedArray a = getResources().obtainTypedArray(R.array.setting_month);
-        int len0 = a.length();
-        String[] lunarMonth = new String[len0];
-        for (int i = 0; i < len0; i++) {
-            lunarMonth[i] = getString(a.getResourceId(i, 0));
-        }
-        a.recycle();
-        // 农历日数组
-        TypedArray ar1 = getResources().obtainTypedArray(
-                R.array.setting_ChinaDate);
-        int len1 = ar1.length();
-        String[] lunarDay = new String[len1];
-        for (int i = 0; i < len1; i++) {
-            lunarDay[i] = getString(ar1.getResourceId(i, 0));
-        }
-        ar1.recycle();
-        // 系统时间
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1;
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        // 农历时间换算
-        int[] lunarDate = LunarCalendar.solarToLunar(year, month, day);
-        String ChinaYear = lunarDate[0] + "";//得到农历年
-        String ChinaMonth = lunarMonth[lunarDate[1] - 1];//得到农历月
-        String ChinaDay = lunarDay[lunarDate[2] - 1];//得到农历日
-        tvDate2.setText(ChinaYear + getString(R.string.year) + ChinaMonth + ChinaDay);
+        mReceiver = new MyReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_SCREEN_ON);
+        mActivity.registerReceiver(mReceiver, intentFilter);
+//        banner.setImageLoader(new GlideImageLoader());
+//        banner.start();
+//        banner.setVisibility(View.GONE);
+        ivHome.setVisibility(View.VISIBLE);
     }
 
     @OnClick({R.id.rl_media_record, R.id.rl_leave_message, R.id.rl_monitor_switch, R.id.rl_sos,
@@ -165,7 +119,8 @@ public class MainFragment extends BaseFragment {
             case R.id.iv_home:
 //                intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);// 启动系统相机
 //                startActivity(intent);
-                startNewActivity(CameraActivity.class);
+                if (!DoorBellControlCenter.sIsVideo)
+                    startNewActivity(DoorbellLookActivity.class);
                 break;
         }
     }
@@ -185,7 +140,7 @@ public class MainFragment extends BaseFragment {
                 break;
         }
         if (!result) {
-            ToastUtil.showToast(mActivity, getString(R.string.no_sim_msg));
+            T.show(getString(R.string.no_sim_msg));
             return;
         }
         if (!TextUtils.isEmpty(mDoorbellConfig.getSosNumber())) {
@@ -194,37 +149,8 @@ public class MainFragment extends BaseFragment {
             intent.setData(data);
             startActivity(intent);
         } else {
-            ToastUtil.showToast(mActivity, getString(R.string.no_sos_number));
+            T.show(getString(R.string.no_sos_number));
         }
-    }
-
-    /**
-     * 查询手机内系统应用
-     */
-    public String getAllApps() {
-        String packagename = "";
-        List<PackageInfo> apps = new ArrayList<>();
-        PackageManager pManager = mActivity.getPackageManager();
-        //获取手机内所有应用
-        List<PackageInfo> paklist = pManager.getInstalledPackages(0);
-        for (int i = 0; i < paklist.size(); i++) {
-            PackageInfo pak = (PackageInfo) paklist.get(i);
-            //判断系统预装的应用程序
-            if (!((pak.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) <= 0)) {
-                apps.add(pak);
-            }
-        }
-        for (int i = 0; i < apps.size(); i++) {
-            PackageInfo pinfo = apps.get(i);
-            //set Application Name
-            String a = pManager.getApplicationLabel(pinfo.applicationInfo).toString();
-            Timber.e("---------" + a);
-            if (a.contains("图库")) {
-                packagename = pinfo.packageName;
-                break;
-            }
-        }
-        return packagename;
     }
 
     private void switchMonitor() {
@@ -237,17 +163,17 @@ public class MainFragment extends BaseFragment {
                     public void onSuccess(Boolean aBoolean) {
                         controlCenter.saveDoorbellConfig(doorbellConfig);
                         if (doorbellConfig.getMonitorSwitch() == 1) {
-                            ToastUtil.showToast(mActivity, R.string.monitor_opened);
+                            T.show(R.string.monitor_opened);
                         } else {
-                            ToastUtil.showToast(mActivity, R.string.monitor_closed);
+                            T.show(R.string.monitor_closed);
                         }
-                        BcManager.getManager(mActivity).setPIRSensorOn(doorbellConfig.getMonitorSwitch()
+                        BcManager.getManager().setPIRSensorOn(doorbellConfig.getMonitorSwitch()
                                 == 1);
                     }
 
                     @Override
                     public void onFailure(int errorCode) {
-                        ToastUtil.showToast(mActivity, getString(R.string.set_failure) + errorCode);
+                        T.show(getString(R.string.set_failure) + errorCode);
                     }
                 });
     }
@@ -257,6 +183,7 @@ public class MainFragment extends BaseFragment {
         super.onDestroy();
         if (mProgressDialog != null && mProgressDialog.isShowing())
             mProgressDialog.dismiss();
+        mActivity.unregisterReceiver(mReceiver);
     }
 
     /**
@@ -268,57 +195,10 @@ public class MainFragment extends BaseFragment {
         intent.putExtra("type", 1);
         intent.setType("vnd.android.cursor.dir/image");
         startActivity(intent);
-//        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media
-//                .EXTERNAL_CONTENT_URI);
-//        Intent intent = new Intent(Intent.ACTION_PICK_ACTIVITY, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-//        intent.addCategory(Intent.ACTION_MAIN);
-//        ComponentName componentName = new ComponentName("com.android.gallery3d", "com.android" +
-//                ".gallery3d.app.GalleryActivity");
-//        intent.setComponent(componentName);
-//        startActivity(intent);
     }
-
-    private void setweek() {
-        // 系统时间
-        Calendar time = Calendar.getInstance();
-        int week = time.get(Calendar.DAY_OF_WEEK);
-        setWeekString(week);
-    }
-
-    private void setWeekString(int index) {
-        // 星期换算
-        switch (index) {
-            case 1:
-                mDate += " " + getString(R.string.sunday);
-                break;
-            case 2:
-                mDate += " " + getString(R.string.monday);
-                break;
-            case 3:
-                mDate += " " + getString(R.string.tuesday);
-                break;
-            case 4:
-                mDate += " " + getString(R.string.wednesday);
-                break;
-            case 5:
-                mDate += " " + getString(R.string.thursday);
-                break;
-            case 6:
-                mDate += " " + getString(R.string.friday);
-                break;
-            case 7:
-                mDate += " " + getString(R.string.saturday);
-                break;
-        }
-        tvDate.setText(mDate);
-    }
-
 
     private static class MyHandler extends Handler {
-        private static final int WHAT = 0x001;
-        private SpannableStringBuilder mSpannableString;
-        private AbsoluteSizeSpan mSizeSpanTime;
-        private AbsoluteSizeSpan mSizeSpanAmPm;
+        static final int WHAT = 0x001;
         private WeakReference<MainFragment> mWeakReference;
 
         private MyHandler(MainFragment fragment) {
@@ -332,45 +212,198 @@ public class MainFragment extends BaseFragment {
             if (mainFragment == null || mainFragment.mActivity == null || mainFragment.mActivity.isFinishing() || mainFragment.mActivity.getFragmentManager() ==
                     null)
                 return;
-            if (msg.what == WHAT && !TextUtils.isEmpty(mainFragment.mAmPm)) {
-                mainFragment.mHourMinDate.setTime(System.currentTimeMillis());
-                String time = mainFragment.mHmformat.format(mainFragment.mHourMinDate);
-                if (mSpannableString == null) {
-                    mSpannableString = new SpannableStringBuilder(time + " " + mainFragment.mAmPm);
-                    mSizeSpanTime = new AbsoluteSizeSpan(40);
-                    mSizeSpanAmPm = new AbsoluteSizeSpan(20);
-                }
-                mSpannableString.clear();
-                mSpannableString.append(time).append(" ").append(mainFragment.mAmPm);
-                mSpannableString.setSpan(mSizeSpanTime, 0, time.length(),
-                        Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-                mSpannableString.setSpan(mSizeSpanAmPm, time.length(), time.length() + " ".length
-                                () + mainFragment.mAmPm.length(),
-                        Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+            if (msg.what != WHAT) return;
+            Bundle data = msg.getData();
+            if (data == null) return;
+            try {
+                CharSequence spannableString = data.getCharSequence("spannableString", "");
                 if (mainFragment.tvTime != null)
-                    mainFragment.tvTime.setText(mSpannableString, TextView.BufferType.SPANNABLE);
+                    mainFragment.tvTime.setText(spannableString, TextView.BufferType.SPANNABLE);
+                if (mainFragment.tvDate != null)
+                    mainFragment.tvDate.setText(data.getString("date", ""));
+                if (mainFragment.tvDate2 != null)
+                    mainFragment.tvDate2.setText(data.getString("lunarDate", ""));
+            } catch (IndexOutOfBoundsException e) {
+                e.printStackTrace();
             }
         }
     }
 
     // 时间线程
-    private class TimeThread extends Thread {
+    @SuppressWarnings("InfiniteLoopStatement")
+    private static class TimeThread extends Thread {
+        private WeakReference<MainFragment> mWeakReference;
+        private SpannableStringBuilder mSpannableString;
+        private AbsoluteSizeSpan mSizeSpanTime;
+        private AbsoluteSizeSpan mSizeSpanAmPm;
+        private Date mHourMinDate;
+        private Date mSimpleDate;
+        private String mDate;
+        private SimpleDateFormat mHMformat;//时分转换
+        private SimpleDateFormat mYMDFormat;//年月日转换
+        private String mAmPm;
+        private final Calendar mCalendar;
+        private final String[] mLunarMonth;
+        private final String[] mLunarDay;
+        private boolean mStartTime = true;
+        private MyHandler mHandler;
+        private Bundle mHandleData;
+
+        TimeThread(MainFragment fragment) {
+            mWeakReference = new WeakReference<>(fragment);
+            mHandler = new MyHandler(fragment);
+            mHandleData = new Bundle();
+            mHourMinDate = new Date();
+            mSimpleDate = new Date();
+            mHMformat = new SimpleDateFormat("hh:mm");
+            mYMDFormat = new SimpleDateFormat("yyyy" + fragment.getString(R.string.year)
+                    + "MM" + fragment.getString(R.string.month) + "dd" + fragment.getString(R.string.day));
+            mCalendar = Calendar.getInstance();
+            // 农历月数组
+            TypedArray a = fragment.getResources().obtainTypedArray(R.array.setting_month);
+            int len0 = a.length();
+            mLunarMonth = new String[len0];
+            for (int i = 0; i < len0; i++) {
+                mLunarMonth[i] = fragment.getString(a.getResourceId(i, 0));
+            }
+            a.recycle();
+            // 农历日数组
+            TypedArray ar1 = fragment.getResources().obtainTypedArray(
+                    R.array.setting_ChinaDate);
+            int len1 = ar1.length();
+            mLunarDay = new String[len1];
+            for (int i = 0; i < len1; i++) {
+                mLunarDay[i] = fragment.getString(ar1.getResourceId(i, 0));
+            }
+            ar1.recycle();
+        }
+
         @Override
         public void run() {
             super.run();
-            while (true) {
+            while (mStartTime) {
+                MainFragment mainFragment = mWeakReference.get();
+                if (mainFragment == null || mainFragment.mActivity == null || mainFragment.mActivity.isFinishing() || mainFragment.mActivity.getFragmentManager() ==
+                        null) {
+                    mStartTime = false;
+                    return;
+                }
+                long time = System.currentTimeMillis();
+                mCalendar.setTimeInMillis(time);
+                int apm = mCalendar.get(Calendar.AM_PM);
+                // apm=0 表示上午，apm=1表示下午。
+                mAmPm = apm == 0 ? mainFragment.getString(R.string.am) : mainFragment.getString(R.string.pm);//获取上下午
+                if (!TextUtils.isEmpty(mAmPm)) {
+                    mHourMinDate.setTime(System.currentTimeMillis());
+                    String hmTime = mHMformat.format(mHourMinDate);//获取时分
+                    if (mSpannableString == null) {
+                        mSpannableString = new SpannableStringBuilder(hmTime + " " + mAmPm);
+                        mSizeSpanTime = new AbsoluteSizeSpan(40);
+                        mSizeSpanAmPm = new AbsoluteSizeSpan(20);
+                    }
+                    mSpannableString.clear();
+                    mSpannableString.append(hmTime).append(" ").append(mAmPm);
+                    mSpannableString.setSpan(mSizeSpanTime, 0, hmTime.length(),
+                            Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+                    mSpannableString.setSpan(mSizeSpanAmPm, hmTime.length(), hmTime.length() + " ".length() + mAmPm.length(),
+                            Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+                    mHandleData.putCharSequence("spannableString", mSpannableString);
+                }
+
+                //设置年月日 星期
+                mSimpleDate.setTime(time);
+                mDate = mYMDFormat.format(mSimpleDate);//获取年月日
+                int week = mCalendar.get(Calendar.DAY_OF_WEEK);
+                // 星期换算
+                switch (week) {
+                    case Calendar.SUNDAY:
+                        mDate += " " + mainFragment.getString(R.string.sunday);
+                        break;
+                    case Calendar.MONDAY:
+                        mDate += " " + mainFragment.getString(R.string.monday);
+                        break;
+                    case Calendar.TUESDAY:
+                        mDate += " " + mainFragment.getString(R.string.tuesday);
+                        break;
+                    case Calendar.WEDNESDAY:
+                        mDate += " " + mainFragment.getString(R.string.wednesday);
+                        break;
+                    case Calendar.THURSDAY:
+                        mDate += " " + mainFragment.getString(R.string.thursday);
+                        break;
+                    case Calendar.FRIDAY:
+                        mDate += " " + mainFragment.getString(R.string.friday);
+                        break;
+                    case Calendar.SATURDAY:
+                        mDate += " " + mainFragment.getString(R.string.saturday);
+                        break;
+                    default:
+                        break;
+                }
+                mHandleData.putString("date", mDate);
+                //计算农历
+                int year = mCalendar.get(Calendar.YEAR);
+                int month = mCalendar.get(Calendar.MONTH) + 1;
+                int day = mCalendar.get(Calendar.DAY_OF_MONTH);
+                // 农历时间换算
+                int[] lunarDate = LunarCalendar.solarToLunar(year, month, day);
+                String ChinaYear = lunarDate[0] + "";//得到农历年
+                String ChinaMonth = mLunarMonth[lunarDate[1] - 1];//得到农历月
+                String ChinaDay = mLunarDay[lunarDate[2] - 1];//得到农历日
                 try {
-                    Thread.sleep(500);
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mHandler.sendEmptyMessage(MyHandler.WHAT);
-                        }
-                    });
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+                // TODO: 2018/6/20 java.lang.IllegalStateException: Fragment MainFragment{32be3539} not attached to Activity
+                mHandleData.putString("lunarDate", ChinaYear + mainFragment.getString(R.string.year) + ChinaMonth + ChinaDay);
+                Message message = Message.obtain();
+                message.what = MyHandler.WHAT;
+                message.setData(mHandleData);
+                mHandler.sendMessage(message);
             }
+        }
+    }
+
+    private class MyReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (Intent.ACTION_SCREEN_ON.equals(action)) {
+                L.e("-----ACTION_SCREEN_ON");
+//                HttpAction.getHttpAction().getADPictures(new IDataListener<List<Advert>>() {
+//                    @Override
+//                    public void onSuccess(List<Advert> adverts) {
+//                        if (adverts == null || adverts.size() == 0) return;
+//                        ivHome.setVisibility(View.GONE);
+//                        List<String> imgUrls = new ArrayList<>();
+//                        for (int i = 0; i < adverts.size(); i++) {
+//                            imgUrls.add(adverts.get(i).getPicUrl());
+//                        }
+//                        banner.setImages(imgUrls);
+//                        banner.setDelayTime(adverts.get(0).getTimer());
+//                    }
+//
+//                    @Override
+//                    public void onFailure(int errorCode) {
+//
+//                    }
+//                });
+            }
+        }
+    }
+
+    public class GlideImageLoader extends ImageLoader {
+        @Override
+        public void displayImage(Context context, Object path, ImageView imageView) {
+            //Glide 加载图片简单用法
+            Glide.with(context).load(path).into(imageView);
+        }
+
+        //提供createImageView 方法，如果不用可以不重写这个方法，主要是方便自定义ImageView的创建
+        @Override
+        public ImageView createImageView(Context context) {
+            return new ImageView(context);
         }
     }
 }

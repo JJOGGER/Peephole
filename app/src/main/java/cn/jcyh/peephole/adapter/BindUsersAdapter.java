@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.jcyh.peephole.R;
-import cn.jcyh.peephole.bean.User;
+import cn.jcyh.peephole.entity.User;
 
 public class BindUsersAdapter extends RecyclerView.Adapter<BindUsersAdapter.MyViewHolder> {
     private List<User> mUsers;

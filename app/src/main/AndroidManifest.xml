@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
           package="cn.jcyh.peephole">
 
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <!-- 权限声明 -->
-    <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"
+                     tools:ignore="ProtectedPermissions"/>
     <!-- 访问网络状态 -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -38,7 +40,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/MyAppTheme">
-        <activity android:name=".MainActivity" android:launchMode="singleTask">
+        <activity
+            android:name=".MainActivity"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -87,10 +91,6 @@
         </activity>
         <activity android:name=".ui.activity.BindActivity">
         </activity>
-        <activity
-            android:name=".ui.activity.PictureActivity"
-            android:launchMode="singleTask">
-        </activity>
         <activity android:name=".ui.activity.AboutActivity">
         </activity>
         <activity android:name=".ui.activity.SetActivity">
@@ -100,6 +100,8 @@
         <activity android:name=".ui.activity.VideoMenuActivity">
         </activity>
         <activity android:name=".ui.activity.BindUsersActivity">
+        </activity>
+        <activity android:name=".ui.activity.DoorbellLookActivity">
         </activity>
         <activity android:name=".ui.activity.CameraActivity">
         </activity>

@@ -24,7 +24,6 @@ import cn.jcyh.peephole.ui.dialog.ChooseSetDialog;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.OnDialogListener;
 import cn.jcyh.peephole.ui.dialog.VolumeSetDialog;
-import timber.log.Timber;
 
 /**
  * Created by jogger on 2018/4/28.
@@ -141,7 +140,6 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
             chooseSetDialog.setOnDialogListener(new OnDialogListener() {
                 @Override
                 public void onConfirm(Object content) {
-                    Timber.e("---------content:" + content.toString());
                     mDoorbellConfig.setDoorbellRingName(content.toString());
                     DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
                     tvDoorbellRing.setText(content.toString());

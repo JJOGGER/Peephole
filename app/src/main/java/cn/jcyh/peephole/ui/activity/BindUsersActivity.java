@@ -12,7 +12,7 @@ import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.adapter.BindUsersAdapter;
 import cn.jcyh.peephole.base.BaseActivity;
-import cn.jcyh.peephole.bean.User;
+import cn.jcyh.peephole.entity.User;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;

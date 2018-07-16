@@ -1,5 +1,6 @@
 package cn.jcyh.peephole.control;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.IBinder;
 import android.os.IHardwareService;
@@ -11,16 +12,25 @@ import com.cust.service.ICustService;
 
 import java.lang.reflect.Method;
 
-import cn.jcyh.peephole.utils.Utils;
-import timber.log.Timber;
+import cn.jcyh.peephole.utils.Util;
 
 
 public class BcManager {
-
+    private static final String IR_LED_EN_STATE = "/sys/devices/platform/CUSTDriver/driver/IrLedEnState";
+    private static final String PIR_EN_STATE = "/sys/devices/platform/CUSTDriver/driver/PirEnState";
+    private static final String PIR_STATE = "/sys/devices/platform/CUSTDriver/driver/PirState";
+    private static final String LOCK_DETECT_STATE = "/sys/devices/platform/CUSTDriver/driver/LockDetectState";
+    private static final String LIGHT_SENSOR_VALUE = "/sys/devices/platform/CUSTDriver/driver/LightSensor";
+    private static final String SPK1_STATE = "/sys/bus/platform/drivers/mt-soc-codec/ExtspkampState";
+    private static final String SPK2_STATE = "/sys/bus/platform/drivers/mt-soc-codec/Extspkamp2State";
+    private static final String RING_KEY_LED_STATE = "/sys/class/leds/button-backlight/brightness";
+    private static final String LOCK_STATE = "/sys/devices/platform/CUSTDriver/driver/LockEnState";
     private static final String PREFIX = "eogleking_";
 
     private static final int LIGHT_ID_BUTTONS = 2;
+    @SuppressLint("StaticFieldLeak")
     private static BcManager sManager;
+    @SuppressLint("StaticFieldLeak")
     private static Context sContext = null;
 
     private IHardwareService localhardwareservice;
@@ -35,15 +45,15 @@ public class BcManager {
             Method method = Class.forName("android.os.ServiceManager").getMethod("getService", String.class);
             IBinder binder = (IBinder) method.invoke(null, new Object[]{"hardware"});
             localhardwareservice = IHardwareService.Stub.asInterface(binder);
-            IBinder binder2 =  ServiceManager.getService("CustService"); //
+            IBinder binder2 = ServiceManager.getService("CustService"); //
             ics = ICustService.Stub.asInterface(binder2);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static BcManager getManager(Context context) {
-        sContext = context.getApplicationContext();
+    public static BcManager getManager() {
+        sContext = Util.getApp();
         if (sManager == null) {
             synchronized (BcManager.class) {
                 if (sManager == null) {
@@ -69,12 +79,8 @@ public class BcManager {
     public boolean getPIRStatus() {
         boolean variable = false;
         try {
-            int r = ics.readSysFileStatusInt(Utils.PIR_STATE);
-            if (r == 0) {
-                variable = true;
-            } else {
-                variable = false;
-            }
+            int r = ics.readSysFileStatusInt(PIR_STATE);
+            variable = r == 0;
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -84,18 +90,12 @@ public class BcManager {
 
     /**
      * 查询pir传感器的状态
-     *
-     * @return
      */
     public boolean getPIRSensorOn() {
         boolean variable = false;
         try {
-            int r = ics.readSysFileStatusInt(Utils.PIR_EN_STATE);
-            if (r == 1) {
-                variable = true;
-            } else {
-                variable = false;
-            }
+            int r = ics.readSysFileStatusInt(PIR_EN_STATE);
+            variable = r == 1;
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -104,20 +104,18 @@ public class BcManager {
 
     /**
      * 控制pir传感器打开或关闭
-     *
-     * @param on
      */
     public void setPIRSensorOn(boolean on) {
-        if (ics==null) return;
+        if (ics == null) return;
         if (on) {
             try {
-                ics.writeSysFileStatusInt(Utils.PIR_EN_STATE, 1);
+                ics.writeSysFileStatusInt(PIR_EN_STATE, 1);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
         } else {
             try {
-                ics.writeSysFileStatusInt(Utils.PIR_EN_STATE, 0);
+                ics.writeSysFileStatusInt(PIR_EN_STATE, 0);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -132,12 +130,8 @@ public class BcManager {
     public boolean getTamperSensorStatus() {
         boolean variable = false;
         try {
-            int r = ics.readSysFileStatusInt(Utils.LOCK_DETECT_STATE);
-            if (r == 1) {
-                variable = true;
-            } else {
-                variable = false;
-            }
+            int r = ics.readSysFileStatusInt(LOCK_DETECT_STATE);
+            variable = r == 1;
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -146,19 +140,17 @@ public class BcManager {
 
     /**
      * 控制红外灯打开和关闭 true - 打开, false - 关闭
-     *
-     * @param isPowerOn
      */
     public void setInfraredLightPowerOn(boolean isPowerOn) {
         if (isPowerOn) {
             try {
-                ics.writeSysFileStatusInt(Utils.IR_LED_EN_STATE, 1);
+                ics.writeSysFileStatusInt(IR_LED_EN_STATE, 1);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
         } else {
             try {
-                ics.writeSysFileStatusInt(Utils.IR_LED_EN_STATE, 0);
+                ics.writeSysFileStatusInt(IR_LED_EN_STATE, 0);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -174,12 +166,8 @@ public class BcManager {
         boolean variable = false;
         int r;
         try {
-            r = ics.readSysFileStatusInt(Utils.IR_LED_EN_STATE);
-            if (r == 1) {
-                variable = true;
-            } else {
-                variable = false;
-            }
+            r = ics.readSysFileStatusInt(IR_LED_EN_STATE);
+            variable = r == 1;
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -195,13 +183,13 @@ public class BcManager {
     public void setSpeakerPowerOn(int speakerId, boolean isPowerOn) {
         if (speakerId == 0) {
             try {
-                ics.writeSysFileStatusInt(Utils.SPK1_STATE, isPowerOn ? 1 : 0);
+                ics.writeSysFileStatusInt(SPK1_STATE, isPowerOn ? 1 : 0);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
         } else if (speakerId == 1) {
             try {
-                ics.writeSysFileStatusInt(Utils.SPK2_STATE, isPowerOn ? 1 : 0);
+                ics.writeSysFileStatusInt(SPK2_STATE, isPowerOn ? 1 : 0);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -219,23 +207,19 @@ public class BcManager {
         int r = 0;
         if (speakerId == 0) {
             try {
-                r = ics.readSysFileStatusInt(Utils.SPK1_STATE);
+                r = ics.readSysFileStatusInt(SPK1_STATE);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
         } else if (speakerId == 1) {
             try {
-                r = ics.readSysFileStatusInt(Utils.SPK2_STATE);
+                r = ics.readSysFileStatusInt(SPK2_STATE);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
         }
 
-        if (r == 1) {
-            variable = true;
-        } else {
-            variable = false;
-        }
+        variable = r == 1;
         return variable;
     }
 
@@ -267,12 +251,8 @@ public class BcManager {
     public boolean getRingKeyLedStatus() {
         boolean variable = false;
         try {
-            int r = ics.readSysFileStatusInt(Utils.RING_KEY_LED_STATE);
-            if (r > 0) {
-                variable = true;
-            } else {
-                variable = false;
-            }
+            int r = ics.readSysFileStatusInt(RING_KEY_LED_STATE);
+            variable = r > 0;
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -282,13 +262,11 @@ public class BcManager {
 
     /**
      * 取得光敏电阻的值
-     *
-     * @return
      */
     public int getLightSensorValue() {
         int r = 0;
         try {
-            r = ics.readSysFileStatusInt(Utils.LIGHT_SENSOR_VALUE);
+            r = ics.readSysFileStatusInt(LIGHT_SENSOR_VALUE);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -301,10 +279,6 @@ public class BcManager {
 
     /**
      * 配置某些中断是否产生时,是否点亮屏幕
-     *
-     * @param type
-     * @param trunOnScreen
-     * @return
      */
     public boolean setIntTurnOnScreen(INT_TYPE type, boolean trunOnScreen) {
         return Settings.System.putInt(sContext.getContentResolver(),
@@ -320,32 +294,51 @@ public class BcManager {
      * 打开关闭锁
      */
     public void setLock(boolean on) {
-        if (on){
-            Timber.e("------------setLock");
-           try {
-                ics.writeSysFileStatusInt(Utils.LOCK_STATE, 1);
-            } catch (RemoteException e) {
-                Timber.e("------------"+e.getMessage());
-                e.printStackTrace();
+//        if (on){
+//            L.e("------------setLock");
+//           try {
+//                ics.writeSysFileStatusInt(LOCK_STATE, 1);
+//            } catch (RemoteException e) {
+//                L.e("------------"+e.getMessage());
+//                e.printStackTrace();
+//            }
+//        }else{
+//            try {
+//                ics.writeSysFileStatusInt(LOCK_STATE, 0);
+//            } catch (RemoteException e) {
+//                e.printStackTrace();
+//            }
+//        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ics.writeSysFileStatusInt(LOCK_STATE, 7);
+                    try {
+                        Thread.sleep(300);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    ics.writeSysFileStatusInt(LOCK_STATE, 4);
+                    try {
+                        Thread.sleep(600);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    ics.writeSysFileStatusInt(LOCK_STATE, 7);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
             }
-        }else{
-            try {
-                ics.writeSysFileStatusInt(Utils.LOCK_STATE, 0);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
+        }).start();
+
     }
 
     public boolean getLockStatus() {
         boolean variable = false;
         try {
-            int r = ics.readSysFileStatusInt(Utils.LOCK_STATE);
-            if (r > 0) {
-                variable = true;
-            } else {
-                variable = false;
-            }
+            int r = ics.readSysFileStatusInt(LOCK_STATE);
+            variable = r > 0;
         } catch (RemoteException e) {
             e.printStackTrace();
         }

@@ -29,9 +29,9 @@ import cn.jcyh.peephole.ui.dialog.ChooseSetDialog;
 import cn.jcyh.peephole.ui.dialog.CommonEditDialog;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.OnDialogListener;
-import cn.jcyh.peephole.utils.ToastUtil;
+import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.T;
 import cn.jcyh.peephole.utils.Tool;
-import timber.log.Timber;
 
 
 /**
@@ -86,7 +86,7 @@ public class MainSetFragment extends BaseFragment {
 
     @OnClick({R.id.rl_doorbell_set, R.id.rl_sensor_set, R.id.rl_monitor, R.id.rl_sensor_time,
             R.id.rl_ring_volume, R.id.rl_master_number, R.id.rl_sos_number, R.id.rl_doorbell_leavel_time, R.id.rl_doorbell_videotap_time,
-            R.id.rl_doorbell_look_time})
+            R.id.rl_doorbell_look_time, R.id.rl_extend_function})
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_doorbell_set:
@@ -97,7 +97,6 @@ public class MainSetFragment extends BaseFragment {
                 transaction.commit();
                 break;
             case R.id.rl_sensor_set:
-                Timber.e("-----------SensorSetFragment");
                 transaction = mFragmentManager.beginTransaction();
                 SensorSetFragment sensorSetFragment = new SensorSetFragment();
                 transaction.add(R.id.fl_container, sensorSetFragment, SensorSetFragment.class.getName());
@@ -133,6 +132,13 @@ public class MainSetFragment extends BaseFragment {
                 break;
             case R.id.rl_doorbell_look_time:
                 showLookTimeDialog();
+                break;
+            case R.id.rl_extend_function:
+                transaction = mFragmentManager.beginTransaction();
+                ExtendFunctionFragment extendFunctionFragment = new ExtendFunctionFragment();
+                transaction.add(R.id.fl_container, extendFunctionFragment, ExtendFunctionFragment.class.getName());
+                transaction.hide(mFragmentManager.findFragmentByTag(MainSetFragment.class.getName()));
+                transaction.commit();
                 break;
         }
     }
@@ -184,10 +190,10 @@ public class MainSetFragment extends BaseFragment {
                 public void onConfirm(Object o) {
                     int time = Integer.parseInt(o.toString());
                     if (time > 300) {
-                        ToastUtil.showToast(mActivity, getString(R.string.more_than_time_msg));
+                       T.show( getString(R.string.more_than_time_msg));
                         time = 300;
                     } else if (time < 5) {
-                        ToastUtil.showToast(mActivity, getString(R.string.low_than_time_msg));
+                       T.show(getString(R.string.low_than_time_msg));
                         time = 5;
                     }
                     mDoorbellConfig.setDoorbellLookTime(time);
@@ -213,10 +219,10 @@ public class MainSetFragment extends BaseFragment {
                 public void onConfirm(Object o) {
                     int time = Integer.parseInt(o.toString());
                     if (time > 300) {
-                        ToastUtil.showToast(mActivity, getString(R.string.more_than_time_msg));
+                       T.show( getString(R.string.more_than_time_msg));
                         time = 300;
                     } else if (time < 5) {
-                        ToastUtil.showToast(mActivity, getString(R.string.low_than_time_msg));
+                       T.show( getString(R.string.low_than_time_msg));
                         time = 5;
                     }
                     mDoorbellConfig.setVideotapTime(time);
@@ -245,7 +251,7 @@ public class MainSetFragment extends BaseFragment {
                 @Override
                 public void onConfirm(Object o) {
                     if (!o.toString().matches(getString(R.string.regex_phone))) {
-                        ToastUtil.showToast(mActivity, getString(R.string.phone_no_regex));
+                       T.show( getString(R.string.phone_no_regex));
                         return;
                     }
                     mDoorbellConfig.setMasterNumber(o.toString());
@@ -274,7 +280,7 @@ public class MainSetFragment extends BaseFragment {
                 @Override
                 public void onConfirm(Object o) {
                     if (!o.toString().matches(getString(R.string.regex_phone))) {
-                        ToastUtil.showToast(mActivity, getString(R.string.phone_no_regex));
+                       T.show(getString(R.string.phone_no_regex));
                         return;
                     }
                     mDoorbellConfig.setSosNumber(o.toString());
@@ -303,7 +309,7 @@ public class MainSetFragment extends BaseFragment {
         rlSensorSet.setEnabled(cbMonitor.isChecked());
         tvSensorSetTitle.setEnabled(cbMonitor.isChecked());
         tvSensorSet.setEnabled(cbMonitor.isChecked());
-        BcManager.getManager(mActivity).setPIRSensorOn(mDoorbellConfig.getMonitorSwitch() == 1);
+        BcManager.getManager().setPIRSensorOn(mDoorbellConfig.getMonitorSwitch() == 1);
         HttpAction.getHttpAction().setDoorbellConfig(DoorBellControlCenter.getIMEI(), mDoorbellConfig, null);
     }
 
@@ -311,7 +317,7 @@ public class MainSetFragment extends BaseFragment {
      * 自动感应设置
      */
     private void autoSensorTimeSet() {
-        Timber.e("---------autoSensorTimeSet");
+        L.e("---------autoSensorTimeSet");
         if (mAutoSensorTimeDialog == null) {
             AutoSensorTimeDialog autoSensorTimeDialog = new AutoSensorTimeDialog();
             Bundle bundle = new Bundle();

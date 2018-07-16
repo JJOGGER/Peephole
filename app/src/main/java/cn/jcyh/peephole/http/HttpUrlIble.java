@@ -25,4 +25,6 @@ public interface HttpUrlIble {
     //设置猫眼配置
     String DOORBELL_SET_CONFIG_URL = EAGLERKING_IP + "Doorbell/Setting";
     String DOORBELL_GET_CONFIG_URL = EAGLERKING_IP + "Doorbell/GetSetting";
+
+    String DOORBELL_AD_GET_URL = EAGLERKING_IP + "Doorbell/GetPictrue";
 }

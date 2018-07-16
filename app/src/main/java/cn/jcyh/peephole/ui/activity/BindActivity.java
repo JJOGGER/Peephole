@@ -17,19 +17,20 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import butterknife.BindView;
+import cn.jcyh.eaglelock.constant.Constant;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
-import cn.jcyh.peephole.bean.CommandJson;
-import cn.jcyh.peephole.bean.User;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.entity.CommandJson;
+import cn.jcyh.peephole.entity.User;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.HintDialogFragmemt;
 import cn.jcyh.peephole.utils.CameraProvider;
 import cn.jcyh.peephole.utils.ConstantUtil;
-import cn.jcyh.peephole.utils.ToastUtil;
-import timber.log.Timber;
+import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.T;
 
 import static cn.jcyh.peephole.control.DoorBellControlCenter.sIsBinding;
 
@@ -125,11 +126,11 @@ public class BindActivity extends BaseActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (ConstantUtil.ACTION_ANYCHAT_TRANS_DATA_EVENT.equals(intent.getAction())) {
-                String type = intent.getStringExtra("type");
-                final int dwUserid = intent.getIntExtra("dwUserid", -1);
+                String type = intent.getStringExtra(Constant.TYPE);
+                final int dwUserid = intent.getIntExtra(Constant.DW_USERID, -1);
                 if (ConstantUtil.TYPE_ANYCHAT_TRANS_BUFFER.equals(type)) {
-                    final CommandJson commandJson = intent.getParcelableExtra("command");
-                    Timber.e("---------com:" + commandJson);
+                    final CommandJson commandJson = intent.getParcelableExtra(Constant.COMMAND);
+                    L.e("---------com:" + commandJson);
                     switch (commandJson.getCommandType()) {
                         case CommandJson.CommandType.BIND_DOORBELL_REQUEST:
                             if (commandJson.getCommand().equals(IMEI)) {
@@ -141,20 +142,20 @@ public class BindActivity extends BaseActivity {
                             break;
                         case CommandJson.CommandType.BIND_DOORBELL_COMPLETED:
                             //绑定猫眼成功
-                            Timber.e("-------------绑定猫眼成功，刷新列表");
+                            L.e("-------------绑定猫眼成功，刷新列表");
                             HttpAction.getHttpAction().getBindUsers(IMEI, new IDataListener<List<User>>() {
                                 @Override
                                 public void onSuccess(List<User> users) {
                                     if (users != null) {
                                         DoorBellControlCenter.getInstance().saveBindUsers(users);
-                                        ToastUtil.showToast(getApplicationContext(), R.string.bind_succ);
+                                        T.show(R.string.bind_succ);
                                         finish();
                                     }
                                 }
 
                                 @Override
                                 public void onFailure(int errorCode) {
-                                    ToastUtil.showToast(getApplicationContext(), R.string.bind_succ);
+                                    T.show(R.string.bind_succ);
                                     finish();
                                 }
                             });
@@ -162,7 +163,7 @@ public class BindActivity extends BaseActivity {
                     }
                 }
             } else if (ConstantUtil.ACTION_ANYCHAT_USER_INFO_EVENT.equals(intent.getAction())) {
-                String type = intent.getStringExtra("type");
+                String type = intent.getStringExtra(Constant.TYPE);
                 if (ConstantUtil.TYPE_ANYCHAT_USER_AT_ROOM.equals(type)) {
                 }
             }
@@ -188,7 +189,7 @@ public class BindActivity extends BaseActivity {
                                 }
                             }
                         }
-                        Timber.e("-------responseBindRequest");
+                        L.e("-------responseBindRequest");
                         //未绑定
                         HintDialogFragmemt dialogFragment = (HintDialogFragmemt) mDialogHelper
                                 .getDialogFragment();
@@ -200,9 +201,7 @@ public class BindActivity extends BaseActivity {
                             @Override
                             public void onConfirm(boolean isConfirm) {
                                 if (isConfirm) {
-                                    int flag2 = CameraProvider.hasFrontFacingCamera() &&
-                                            CameraProvider
-                                                    .hasBackFacingCamera() ? 1 : 0;
+                                    int flag2 = CameraProvider.hasFrontFacingCamera() ? 1 : 0;
                                     mControlCenter.sendBindResponse(dwUserid, IMEI, "1", flag2);
                                 } else {
                                     mControlCenter.sendBindResponse(dwUserid, IMEI, "0", -1);

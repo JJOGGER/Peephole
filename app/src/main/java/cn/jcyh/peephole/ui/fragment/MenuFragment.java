@@ -16,7 +16,7 @@ import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.ui.activity.BindActivity;
 import cn.jcyh.peephole.ui.activity.SetActivity;
 import cn.jcyh.peephole.ui.activity.VideoServiceActivity;
-import cn.jcyh.peephole.utils.ToastUtil;
+import cn.jcyh.peephole.utils.T;
 
 /**
  * Created by jogger on 2018/1/20.
@@ -86,7 +86,7 @@ public class MenuFragment extends BaseFragment {
                 break;
             case R.id.tv_bind:
                 if (DoorBellControlCenter.sIsVideo) {
-                    ToastUtil.showToast(mActivity, R.string.videoing_no_bind_msg);
+                    T.show( R.string.videoing_no_bind_msg);
                     return;
                 }
                 startNewActivity(BindActivity.class);

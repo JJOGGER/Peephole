@@ -2,11 +2,13 @@ package cn.jcyh.peephole.utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.text.TextUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -14,7 +16,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import timber.log.Timber;
 
 /**
  * Created by Jogger on 2018/2/4.
@@ -256,16 +257,45 @@ public class ImgUtil {
         return false;
     }
 
-    public static boolean createWaterMaskWidthText(Context context, String filePath, Bitmap
+
+    public static boolean createWaterMaskWidthText(Context context, String filePath, String thumbPath, Bitmap
             src, Bitmap watermark, String text, int heightPixels, int widthPixels) {
-        Timber.e("---->h:" + heightPixels + "---w:" + widthPixels);
-        Bitmap waterMaskBitmap = createWaterMaskBitmap(src, watermark, 30, 24);
-        Bitmap bitmap = drawTextToRightBottom(context, waterMaskBitmap, text, 20, Color.WHITE, 30, 24);
+        L.e("---->h:" + heightPixels + "---w:" + widthPixels);
+//        Bitmap waterMaskBitmap = createWaterMaskBitmap(src, watermark, 30, 24);
+        Bitmap bitmap = drawTextToRightBottom(context, src, text, ScreenUtil.dip2px(context, 64), Color.WHITE, ScreenUtil.dip2px(context, 15), ScreenUtil.dip2px(context, 12));
         File file = new File(filePath);
         BufferedOutputStream bos = null;
         try {
             bos = new BufferedOutputStream(new FileOutputStream(file));
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+            try {
+                bos.flush();
+                if (TextUtils.isEmpty(thumbPath))
+                    return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            if (bos != null) {
+                try {
+                    bos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        if (TextUtils.isEmpty(thumbPath))
+            return false;
+        //压缩图片
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 10;
+        Bitmap optionBitmap = BitmapFactory.decodeFile(filePath, options);
+        file = new File(thumbPath);
+        try {
+            bos = new BufferedOutputStream(new FileOutputStream(file));
+            optionBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
             try {
                 bos.flush();
                 return true;

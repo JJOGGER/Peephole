@@ -16,15 +16,16 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import cn.jcyh.peephole.bean.AnyChatTask;
-import cn.jcyh.peephole.bean.CommandJson;
-import cn.jcyh.peephole.bean.User;
 import cn.jcyh.peephole.config.DoorbellConfig;
+import cn.jcyh.peephole.entity.AnyChatTask;
+import cn.jcyh.peephole.entity.CommandJson;
+import cn.jcyh.peephole.entity.User;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.utils.ConstantUtil;
 import cn.jcyh.peephole.utils.FileUtil;
-import cn.jcyh.peephole.utils.SharePreUtil;
-import timber.log.Timber;
+import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.SPUtil;
+import cn.jcyh.peephole.utils.Util;
 
 /**
  * Created by jogger on 2017/3/17.
@@ -62,10 +63,10 @@ public class DoorBellControlCenter extends ControlCenter {
     }
 
     public static String getIMEI() {
-        String imei = SharePreUtil.getInstance().getString(ConstantUtil.SYSTEM_IMEI, "");
+        String imei = SPUtil.getInstance().getString(ConstantUtil.SYSTEM_IMEI, "");
         if (TextUtils.isEmpty(imei)) {
-            imei = Settings.System.getString(getApp().getContentResolver(), Settings.System.ANDROID_ID);
-            SharePreUtil.getInstance().setString(ConstantUtil.SYSTEM_IMEI, imei);
+            imei = Settings.System.getString(Util.getApp().getContentResolver(), Settings.System.ANDROID_ID);
+            SPUtil.getInstance().put(ConstantUtil.SYSTEM_IMEI, imei);
         }
         return imei;
     }
@@ -83,7 +84,7 @@ public class DoorBellControlCenter extends ControlCenter {
 //            mMediaPlaer.release();
 //            mMediaPlaer = null;
 //        } catch (Exception e) {
-//            Timber.i("media-stop: er");
+//            L.i("media-stop: er");
 //        }
 //
 //    }
@@ -122,7 +123,7 @@ public class DoorBellControlCenter extends ControlCenter {
 //     * @param userId 用户id
 //     */
 //    public DoorBellBean getUserItemByUserId(int userId) {
-//        Timber.e("-------mFriendItems" + mFriendItems);
+//        L.e("-------mFriendItems" + mFriendItems);
 //        if (mFriendItems != null) {
 //            int size = mFriendItems.size();
 //            for (int i = 0; i < size; i++) {
@@ -205,7 +206,7 @@ public class DoorBellControlCenter extends ControlCenter {
 //                break;
 //        }
 //        if (strMessage != null) {
-//            ToastUtil.showToast(sContext, strMessage);
+//            T.show(sContext, strMessage);
 //            stopSessionMis();
 //        }
 //
@@ -346,7 +347,7 @@ public class DoorBellControlCenter extends ControlCenter {
                 }
                 files.add(file);
             }
-            Timber.e("------->files.size()：" + files.size());
+            L.e("------->files.size()：" + files.size());
             //按时间排序
             if (files.size() == 0) {
                 //找不到文件
@@ -365,7 +366,7 @@ public class DoorBellControlCenter extends ControlCenter {
                     requestNum--;
                     if (requestNum < 0) break;
                     names.add(files.get(i).getName());
-                    Timber.e("--------将发送文件：" + files.get(i).getName());
+                    L.e("--------将发送文件：" + files.get(i).getName());
                 }
                 commandJson.setFlag(mGson.toJson(names));
                 commandJson.setFlag2(1);
@@ -385,9 +386,9 @@ public class DoorBellControlCenter extends ControlCenter {
             for (int i = 0; i < names.size(); i++) {
                 File file = new File(fileUtil.getDoorbellImgPath() + File.separator + names.get
                         (i));
-                Timber.e("----------->filePath:" + file.getAbsolutePath());
+                L.e("----------->filePath:" + file.getAbsolutePath());
                 if (file.exists()) {
-                    Timber.e("--------已发送文件");
+                    L.e("--------已发送文件");
                     mAnyChat.TransFile(userId, file.getAbsolutePath(), 0, CommandJson.CommandType
                             .DOORBELL_MEDIA_PIC_PARAM, 0, new AnyChatOutParam());
                 }
@@ -403,7 +404,7 @@ public class DoorBellControlCenter extends ControlCenter {
                     String filePath = thumbnailPath + File.separator + names.get(i).replace("" +
                             ".mp4", ".jpg");
                     File file = new File(filePath);
-                    Timber.e("----------->filePath:" + file.getAbsolutePath() + "--->userid:" +
+                    L.e("----------->filePath:" + file.getAbsolutePath() + "--->userid:" +
                             userId);
                     if (file.exists())
                         mAnyChat.TransFile(userId, filePath, 0, CommandJson.CommandType
@@ -433,7 +434,7 @@ public class DoorBellControlCenter extends ControlCenter {
                 fileName);
         CommandJson commandJson = new CommandJson();
         commandJson.setCommandType(CommandJson.CommandType.DOORBELL_LASTED_VIDEO_RESPONSE);
-        Timber.e("---------->file:" + file.getAbsolutePath() + "-->" + file.exists());
+        L.e("---------->file:" + file.getAbsolutePath() + "-->" + file.exists());
         if (file.exists()) {
             AnyChatOutParam anyChatOutParam = new AnyChatOutParam();
             mAnyChat.TransFile(userId, file.getAbsolutePath(), 0, CommandJson.CommandType
@@ -455,7 +456,7 @@ public class DoorBellControlCenter extends ControlCenter {
      */
     private void sendCommand(int userId, CommandJson commandJson) {
         String json = mGson.toJson(commandJson);
-        Timber.e("------------------>send:" + json);
+        L.e("------------------>send:" + json);
 
         mAnyChat.TransBuffer(userId, json.getBytes(), json.getBytes().length);
     }
@@ -529,10 +530,11 @@ public class DoorBellControlCenter extends ControlCenter {
                 CommandJson.CommandType.NOTIFICATION_DOORBELL_ALARM);
         commandJson.setFlag(filePath);
         String json = mGson.toJson(commandJson);
+
         for (int i = 0; i < users.size(); i++) {
             mAnyChat.TransBuffer(users.get(i).getAid(), json.getBytes(), json
                     .getBytes().length);
-            Timber.e("-----------通知报警的用户：" + users.get(i).getAccount() + "-->" + users.get(i).getAid());
+            L.e("-----------通知报警的用户：" + users.get(i).getAccount() + "-->" + users.get(i).getAid());
         }
 
     }
@@ -543,14 +545,19 @@ public class DoorBellControlCenter extends ControlCenter {
     }
 
     /**
-     * 发送视频呼叫抓拍图
+     * 发送视频呼叫抓拍缩略图
      *
      * @param aId anychatid
      */
-    public void sendVideoCallImg(int aId, String filePath) {
+    public void sendVideoCallImg(int aId) {
         AnyChatOutParam anyChatOutParam = new AnyChatOutParam();
-        mAnyChat.TransFile(aId, filePath, 0, CommandJson.CommandType.DOORBELL_VIDEO_CALL_PARAM,
-                0, anyChatOutParam);
+        File file = new File(FileUtil.getInstance().getDoorbellImgThumbnailPath());
+        if (file.list() != null && file.list().length > 0) {
+            String filePath = file.getAbsolutePath() + File.separator + file.list()[file.list().length - 1];
+            mAnyChat.TransFile(aId, filePath, 0, CommandJson.CommandType.DOORBELL_VIDEO_CALL_PARAM,
+                    0, anyChatOutParam);
+        }
+
     }
 
 
@@ -593,7 +600,7 @@ public class DoorBellControlCenter extends ControlCenter {
 //    public void requestLastedPicsNames(int userId) {
 ////        String command = "{\"command\":{\"type\":\"requestLastedPicsNames\",\"nums\":\"3\"}}";
 ////        mAnyChat.TransBuffer(userId, command.getBytes(), command.getBytes().length);
-////        Timber.e("-------->requestLastedPicsNames" + userId + "--->" + mAnyChat + "--->" +
+////        L.e("-------->requestLastedPicsNames" + userId + "--->" + mAnyChat + "--->" +
 /// command);
 //        CommandJson.Command command = new CommandJson.Command();
 //        command.setType(ConstantUtil.REQUEST_LASTED_PICS_NAME);
@@ -667,7 +674,7 @@ public class DoorBellControlCenter extends ControlCenter {
     public DoorbellConfig getDoorbellConfig() {
         DoorbellConfig config;
         String configJson = FileUtil.readFile(FileUtil.getDoorbellDataPath());
-//        Timber.e("-------config:" + configJson);
+//        L.e("-------config:" + configJson);
         if (TextUtils.isEmpty(configJson)) {
             config = new DoorbellConfig();
             saveDoorbellConfig(config);
@@ -689,14 +696,14 @@ public class DoorBellControlCenter extends ControlCenter {
             users = "";
         else
             users = mGson.toJson(bindUsers);
-        SharePreUtil.getInstance().setString(ConstantUtil.DOORBELL_BIND_USERS, users);
+        SPUtil.getInstance().put(ConstantUtil.DOORBELL_BIND_USERS, users);
     }
 
     /**
      * 获取绑定猫眼的用户列表
      */
     public List<User> getBindUsers() {
-        return mGson.fromJson(SharePreUtil.getInstance()
+        return mGson.fromJson(SPUtil.getInstance()
                 .getString(ConstantUtil.DOORBELL_BIND_USERS, ""), new TypeToken<List<User>>() {
         }.getType());
     }

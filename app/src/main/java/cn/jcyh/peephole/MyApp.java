@@ -4,24 +4,15 @@ import android.app.Application;
 import android.content.Context;
 import android.support.multidex.MultiDex;
 
-import com.squareup.leakcanary.RefWatcher;
-
-import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.utils.SystemUtil;
+import cn.jcyh.peephole.utils.Util;
 
 
 public class MyApp extends Application {
-    private RefWatcher refWatcher;
-
-    public static RefWatcher getRefWatcher(Context context) {
-        MyApp application = (MyApp) context.getApplicationContext();
-        return application.refWatcher;
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
-        ControlCenter.init(this);
+        Util.init(this);
     }
 
     @Override

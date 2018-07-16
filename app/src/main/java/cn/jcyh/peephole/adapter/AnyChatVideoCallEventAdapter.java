@@ -7,9 +7,10 @@ import android.support.v4.content.LocalBroadcastManager;
 import com.bairuitech.anychat.AnyChatDefine;
 import com.bairuitech.anychat.AnyChatVideoCallEvent;
 
+import cn.jcyh.eaglelock.constant.Constant;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.service.VideoService;
-import timber.log.Timber;
+import cn.jcyh.peephole.utils.L;
 
 import static cn.jcyh.peephole.utils.ConstantUtil.ACTION_ANYCHAT_VIDEO_CALL_EVENT;
 import static cn.jcyh.peephole.utils.ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_FINISH;
@@ -32,17 +33,17 @@ public class AnyChatVideoCallEventAdapter implements AnyChatVideoCallEvent {
 
     @Override
     public void OnAnyChatVideoCallEvent(int dwEventType, int dwUserId, int dwErrorCode, int dwFlags, int dwParam, String userStr) {
-        Timber.e("---------OnAnyChatVideoCallEvent");
+        L.e("---------OnAnyChatVideoCallEvent");
         Intent intent = new Intent(ACTION_ANYCHAT_VIDEO_CALL_EVENT);
-        intent.putExtra("dwUserId", dwUserId);
-        intent.putExtra("dwErrorCode", dwErrorCode);
-        intent.putExtra("dwFlags", dwFlags);
-        intent.putExtra("dwParam", dwParam);
+        intent.putExtra(Constant.DW_USERID, dwUserId);
+        intent.putExtra(Constant.DW_ERROR_CODE, dwErrorCode);
+        intent.putExtra(Constant.DW_FLAGS, dwFlags);
+        intent.putExtra(Constant.DW_PARAM, dwParam);
         String type = "";
-        intent.putExtra("userStr", userStr);
+        intent.putExtra(Constant.USER_STR, userStr);
         switch (dwEventType) {
             case AnyChatDefine.BRAC_VIDEOCALL_EVENT_REQUEST:// < 呼叫请求
-                Timber.e("----有人发呼叫请求过来了" + DoorBellControlCenter.sIsBinding);
+                L.e("----有人发呼叫请求过来了" + DoorBellControlCenter.sIsBinding);
                 if (DoorBellControlCenter.sIsBinding) {
                     //正在绑定中，不能会话
                     mControlCenter.rejectVideoCall(dwUserId);
@@ -55,41 +56,41 @@ public class AnyChatVideoCallEventAdapter implements AnyChatVideoCallEvent {
 
                 break;
             case AnyChatDefine.BRAC_VIDEOCALL_EVENT_START:// 视频呼叫会话开始事件
-                Timber.e("--------->开始进入会话窗口");
+                L.e("--------->开始进入会话窗口");
                 Intent videoIntent = new Intent(mContext, VideoService.class);
-                videoIntent.putExtra("roomId", dwParam);
-                videoIntent.putExtra("userId", dwUserId);
+                videoIntent.putExtra(Constant.DW_ROOM_ID, dwParam);
+                videoIntent.putExtra(Constant.DW_USERID, dwUserId);
                 mContext.startService(videoIntent);
                 break;
             case AnyChatDefine.BRAC_VIDEOCALL_EVENT_FINISH:// < 挂断（结束）呼叫会话
 //                        DialogFactory.getDialogFactory().dismiss();
-                Timber.e("--------结束通话");
+                L.e("--------结束通话");
                 mContext.stopService(new Intent(mContext, VideoService.class));
                 break;
         }
 
         switch (dwEventType) {
             case AnyChatDefine.BRAC_VIDEOCALL_EVENT_REQUEST:// < 呼叫请求
-                Timber.e("----有人发呼叫请求过来了");
+                L.e("----有人发呼叫请求过来了");
                 type = TYPE_BRAC_VIDEOCALL_EVENT_REQUEST;
                 break;
             case AnyChatDefine.BRAC_VIDEOCALL_EVENT_REPLY:// < 呼叫请求回复 开始向设备端发送视频请求
-                Timber.e("------呼叫请求得到回复");
+                L.e("------呼叫请求得到回复");
                 type = TYPE_BRAC_VIDEOCALL_EVENT_REPLY;
                 break;
             case AnyChatDefine.BRAC_VIDEOCALL_EVENT_START:// 视频呼叫会话开始事件
-                Timber.e("-----视频呼叫会话开始事件");
+                L.e("-----视频呼叫会话开始事件");
                 type = TYPE_BRAC_VIDEOCALL_EVENT_START;
                 break;
             case AnyChatDefine.BRAC_VIDEOCALL_EVENT_FINISH:// < 挂断（结束）呼叫会话
-                Timber.e(" -------挂断（结束）呼叫会话");
+                L.e(" -------挂断（结束）呼叫会话");
                 type = TYPE_BRAC_VIDEOCALL_EVENT_FINISH;
                 break;
             default:
-                Timber.i(" -------?????");
+                L.i(" -------?????");
                 break;
         }
-        intent.putExtra("type", type);
+        intent.putExtra(Constant.TYPE, type);
         LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 }

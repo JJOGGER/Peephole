@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import cn.jcyh.peephole.utils.L;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -23,7 +24,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import timber.log.Timber;
 
 /**
  * Created by it on 2017/2/22.
@@ -101,7 +101,7 @@ public class HttpUtil {
                         mOkHttpClient.newCall(request).enqueue(new Callback() {
                             @Override
                             public void onFailure(Call call, IOException e) {
-                                Timber.e("---------onFailure");
+                                L.e("---------onFailure");
                                 mHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -137,7 +137,7 @@ public class HttpUtil {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Timber.i("---error" + e);
+            L.i("---error" + e);
         }
     }
 
@@ -256,7 +256,7 @@ public class HttpUtil {
         mOkHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Timber.e("-------onFailure");
+                L.e("-------onFailure");
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {

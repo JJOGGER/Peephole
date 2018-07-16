@@ -25,7 +25,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         //再次注册闹钟广播
         if (!DoorBellControlCenter.sIsAnychatLogin) {
             //唤醒
-//            Timber.e("-----------10分钟重连：" + DoorBellControlCenter.sIsAnychatLogin);
+//            L.e("-----------10分钟重连：" + DoorBellControlCenter.sIsAnychatLogin);
             //获取电源管理器对象
             PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
             //获取PowerManager.WakeLock对象,后面的参数|表示同时传入两个值,最后的是LogCat里用的Tag

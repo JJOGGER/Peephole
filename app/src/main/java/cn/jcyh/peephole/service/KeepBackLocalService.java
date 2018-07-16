@@ -28,6 +28,7 @@ import com.szjcyh.mysmart.IMyAidlInterface;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import cn.jcyh.peephole.MainActivity;
 import cn.jcyh.peephole.R;
@@ -38,9 +39,11 @@ import cn.jcyh.peephole.adapter.AnychatBaseEventAdapter;
 import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.BcManager;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.entity.Advert;
 import cn.jcyh.peephole.http.HttpAction;
+import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.receiver.AlarmReceiver;
-import timber.log.Timber;
+import cn.jcyh.peephole.utils.L;
 
 
 /**
@@ -128,13 +131,12 @@ public class KeepBackLocalService extends Service {
 
     private void initConfig() {
         //初始化配置
-        BcManager manager = BcManager.getManager(getApplicationContext());
+        BcManager manager = BcManager.getManager();
         DoorbellConfig doorbellConfig = mControlCenter.getDoorbellConfig();
         if (manager != null) {
             manager.setSpeakerPowerOn(0, true);
             manager.setSpeakerPowerOn(1, true);
             manager.setPIRSensorOn(doorbellConfig.getMonitorSwitch() == 1);
-            Timber.e("---------a" + manager.getSpeakerStatus(0) + manager.getSpeakerStatus(1));
         }
         HttpAction.getHttpAction().setDoorbellConfig(DoorBellControlCenter.getIMEI(), doorbellConfig, null);
     }
@@ -181,7 +183,7 @@ public class KeepBackLocalService extends Service {
      */
     private void connectAnyChat() {
         String imei = DoorBellControlCenter.getIMEI();
-        Timber.e("------imei:" + imei);
+        L.e("------imei:" + imei);
         mAnyChat.Logout();
         mAnyChat.Release();
         mAnyChat = null;
@@ -211,8 +213,8 @@ public class KeepBackLocalService extends Service {
 
         @Override
         public void dealThings() throws RemoteException {
-//            ToastUtil.showToast(getApplicationContext(), "dealThings");
-            Timber.e("------------>dealThings");
+//            T.show(getApplicationContext(), "dealThings");
+            L.e("------------>dealThings");
 //            login2DoorBell();
         }
     }
@@ -293,11 +295,22 @@ public class KeepBackLocalService extends Service {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (Intent.ACTION_SCREEN_ON.equals(action)) {
-                Timber.e("---------ACTION_SCREEN_ON" + DoorBellControlCenter.sIsAnychatLogin);
+                L.e("---------ACTION_SCREEN_ON" + DoorBellControlCenter.sIsAnychatLogin);
                 sIsClock = false;
                 sLockTime = 0;
+                HttpAction.getHttpAction().getADPictures(new IDataListener<List<Advert>>() {
+                    @Override
+                    public void onSuccess(List<Advert> adverts) {
+
+                    }
+
+                    @Override
+                    public void onFailure(int errorCode) {
+
+                    }
+                });
             } else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
-                Timber.e("---------ACTION_SCREEN_OFF");
+                L.e("---------ACTION_SCREEN_OFF");
                 sIsClock = true;
                 new Thread(new Runnable() {
                     @Override
@@ -331,7 +344,7 @@ public class KeepBackLocalService extends Service {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             //电量屏幕
-//            Timber.e("-----------10分钟重连：" + DoorBellControlCenter.sIsAnychatLogin);
+//            L.e("-----------10分钟重连：" + DoorBellControlCenter.sIsAnychatLogin);
             KeepBackLocalService service = mServiceWeakReference.get();
             //获取电源管理器对象
             PowerManager pm = (PowerManager) service.getSystemService(Context.POWER_SERVICE);
@@ -350,7 +363,7 @@ public class KeepBackLocalService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Timber.e("-------------onDestroy");
+        L.e("-------------onDestroy");
         stopForeground(true);
         unregisterReceiver(mReceiver);
 //        if (mWriter != null)

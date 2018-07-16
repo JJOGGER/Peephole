@@ -12,7 +12,7 @@
 //import java.net.HttpURLConnection;
 //import java.net.URL;
 //
-//import timber.log.Timber;
+//import timber.log.L;
 //
 ///**
 // * Created by jogger on 2018/1/25.
@@ -122,7 +122,7 @@
 //                // 计算当前已上传的大小
 //                count += bytes;
 //                // 打印上传文件进度(已上传除以总大*100就是进度)
-//                Timber.e("--------progress:" + (count / fileSize * 100) + "%");
+//                L.e("--------progress:" + (count / fileSize * 100) + "%");
 //            }
 //
 //            // 关闭文件流
@@ -160,10 +160,10 @@
 //            reader.close();
 //
 //            // 打印服务器返回的数据
-//            Timber.e("-----上传成功:" + strBuf.toString());
+//            L.e("-----上传成功:" + strBuf.toString());
 //
 //        } catch (Exception e) {
-//            Timber.e("-----上传图片出错:" + e.toString());
+//            L.e("-----上传图片出错:" + e.toString());
 //        } finally {
 //            if (conn != null) {
 //                conn.disconnect();

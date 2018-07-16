@@ -31,103 +31,103 @@
 //			case R.id.btn_get_pir:
 //				ret = mMgr.getPIRStatus();
 //				if (ret){
-//					showToast("检测到有人");
+//					show("检测到有人");
 //				}else {
-//					showToast("检测到无人");
+//					show("检测到无人");
 //				}
 //				break;
 //			case R.id.btn_get_pir_en:
 //				ret = mMgr.getPIRSensorOn();
 //				if (ret){
-//					showToast("PIR传器是打开状态");
+//					show("PIR传器是打开状态");
 //				}else {
-//					showToast("PIR传器是关闭状态");
+//					show("PIR传器是关闭状态");
 //				}
 //				break;
 //			case R.id.btn_pir_en_on:
 //				mMgr.setPIRSensorOn(true);
-//				showToast("PIR传器打开完成");
+//				show("PIR传器打开完成");
 //				break;
 //			case R.id.btn_pir_en_off:
 //				mMgr.setPIRSensorOn(false);
-//				showToast("PIR传器关闭完成");
+//				show("PIR传器关闭完成");
 //				break;
 //			case R.id.btn_get_lock_detect:
 //				ret = mMgr.getTamperSensorStatus();
 //				if (ret){
-//					showToast("已经拆掉了");
+//					show("已经拆掉了");
 //				}else {
-//					showToast("连接正常");
+//					show("连接正常");
 //				}
 //				break;
 //			case R.id.btn_open_irled:
 //				mMgr.setInfraredLightPowerOn(true);
-//				showToast("红外灯打开完成");
+//				show("红外灯打开完成");
 //				break;
 //			case R.id.btn_close_irled:
 //				mMgr.setInfraredLightPowerOn(false);
-//				showToast("红外灯关闭完成");
+//				show("红外灯关闭完成");
 //				break;
 //			case R.id.btn_get_irled_status:
 //				ret = mMgr.getInfraredLightStatus();
 //				if (ret){
-//					showToast("红外灯是打开状态");
+//					show("红外灯是打开状态");
 //				}else {
-//					showToast("红外灯是关闭状态");
+//					show("红外灯是关闭状态");
 //				}
 //				break;
 //
 //			case R.id.btn_open_pa1:
 //				mMgr.setSpeakerPowerOn(0, true);
-//				showToast("PA1打开完成");
+//				show("PA1打开完成");
 //				break;
 //			case R.id.btn_open_pa2:
 //				mMgr.setSpeakerPowerOn(1,true);
-//				showToast("PA2打开完成");
+//				show("PA2打开完成");
 //				break;
 //			case R.id.btn_close_pa1:
 //				mMgr.setSpeakerPowerOn(0,false);
-//				showToast("PA1关闭完成");
+//				show("PA1关闭完成");
 //				break;
 //			case R.id.btn_close_pa2:
 //				mMgr.setSpeakerPowerOn(1,false);
-//				showToast("PA2关闭完成");
+//				show("PA2关闭完成");
 //				break;
 //			case R.id.btn_status_pa1:
 //				ret = mMgr.getSpeakerStatus(0);
 //				if (ret){
-//					showToast("PA1是打开状态");
+//					show("PA1是打开状态");
 //				}else {
-//					showToast("PA1是关闭状态");
+//					show("PA1是关闭状态");
 //				}
 //				break;
 //			case R.id.btn_status_pa2:
 //				ret = mMgr.getSpeakerStatus(1);
 //				if (ret){
-//					showToast("PA2是打开状态");
+//					show("PA2是打开状态");
 //				}else {
-//					showToast("PA2是关闭状态");
+//					show("PA2是关闭状态");
 //				}
 //				break;
 //			case R.id.btn_bell_key_led_on:
 //				mMgr.setRingKeyLedOn(true);
-//				showToast("门铃键背光灯打开完成");
+//				show("门铃键背光灯打开完成");
 //				break;
 //			case R.id.btn_bell_key_led_off:
 //				mMgr.setRingKeyLedOn(false);
-//				showToast("门铃键背光灯关闭完成");
+//				show("门铃键背光灯关闭完成");
 //				break;
 //			case R.id.btn_bell_key_led_status:
 //				ret = mMgr.getRingKeyLedStatus();
 //				if (ret){
-//					showToast("门铃键背光灯是打开状态");
+//					show("门铃键背光灯是打开状态");
 //				}else {
-//					showToast("门铃键背光灯是关闭状态");
+//					show("门铃键背光灯是关闭状态");
 //				}
 //				break;
 //			case R.id.btn_light_value:
 //				int x=mMgr.getLightSensorValue();
-//				showToast("光感值为:" + x);
+//				show("光感值为:" + x);
 ////			Message msg = new Message();
 ////			msg.what = 1;
 ////			mHandler.sendMessage(msg);
@@ -159,7 +159,7 @@
 //			}
 //		}
 //	};
-//	public void showToast(String mes) {
+//	public void show(String mes) {
 //		mTxtInfo.setText(mes);
 //	}
 //}

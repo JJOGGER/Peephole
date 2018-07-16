@@ -23,7 +23,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import timber.log.Timber;
 
 /**
  * Created by Jogger on 2018/2/4.
@@ -55,9 +54,14 @@ public class FileUtil {
     public String getDoorbellImgPath() {
         String path = Environment.getExternalStoragePublicDirectory(Environment
                 .DIRECTORY_DCIM).getAbsolutePath() + File.separator + "Camera";
-        File file = new File(path);
-        if (!file.exists()) file.mkdir();
+        File file = new File(path + File.separator + "thumbnail");
+        if (!file.exists()) file.mkdirs();
         return path;
+    }
+
+    public String getDoorbellImgThumbnailPath() {
+        String doorbellDataPath = getDoorbellImgPath();
+        return doorbellDataPath + File.separator + "thumbnail";
     }
 
     /**
@@ -104,7 +108,7 @@ public class FileUtil {
                     paths.add(path);
                 }
             }
-            Timber.e("-----------path:" + paths);
+            L.e("-----------path:" + paths);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
@@ -351,12 +355,12 @@ public class FileUtil {
         OutputStream out = null;
         ByteArrayInputStream bais = null;
         BufferedOutputStream bos = null;
-        Timber.e("---------file.exist:" + file.exists() + "-->" + file.canRead() + "-->" + file.canWrite());
+        L.e("---------file.exist:" + file.exists() + "-->" + file.canRead() + "-->" + file.canWrite());
         if (file.exists())
             file.delete();
         try {
             out = new FileOutputStream(file);
-            Timber.e("-----------json:" + json + "---" + file.getAbsolutePath());
+            L.e("-----------json:" + json + "---" + file.getAbsolutePath());
             bos = new BufferedOutputStream(out);
             bais = new ByteArrayInputStream(json.getBytes());
             int ret;
@@ -368,7 +372,7 @@ public class FileUtil {
             result = true;
         } catch (Exception e) {
             e.printStackTrace();
-            Timber.e("----------e1:" + e);
+            L.e("----------e1:" + e);
         } finally {
             try {
                 if (bos != null)
@@ -379,7 +383,7 @@ public class FileUtil {
                     bais.close();
             } catch (IOException e) {
                 e.printStackTrace();
-                Timber.e("----------e2:" + e.getMessage());
+                L.e("----------e2:" + e.getMessage());
             }
         }
         return result;

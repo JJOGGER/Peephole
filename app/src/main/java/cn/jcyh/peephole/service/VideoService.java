@@ -26,13 +26,15 @@ import com.bairuitech.anychat.AnyChatDefine;
 
 import java.lang.ref.WeakReference;
 
+import cn.jcyh.eaglelock.constant.Constant;
 import cn.jcyh.peephole.R;
-import cn.jcyh.peephole.bean.CommandJson;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.control.DoorbellVideoHelper;
+import cn.jcyh.peephole.entity.CommandJson;
 import cn.jcyh.peephole.utils.ConstantUtil;
-import cn.jcyh.peephole.utils.ToastUtil;
-import timber.log.Timber;
+import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.T;
+import cn.jcyh.peephole.utils.Util;
 
 /**
  * Created by jogger on 2018/2/2.
@@ -86,21 +88,21 @@ public class VideoService extends Service {
 
     private void createToucher() {
         mParams = new WindowManager.LayoutParams();
-        mWindowManager = (WindowManager) getApplication().getSystemService(WINDOW_SERVICE);
-        mParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+        mWindowManager = (WindowManager) Util.getApp().getSystemService(WINDOW_SERVICE);
+        mParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;//TYPE_SYSTEM_ALERT
         mParams.format = PixelFormat.RGBA_8888;
         mParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
         //设置窗口初始停靠位置.
         mParams.gravity = Gravity.LEFT | Gravity.TOP;
-        mParams.x = 10;
-        mParams.y = 10;
+        mParams.x = 110;
+        mParams.y = 110;
 
         //设置悬浮窗口长宽数据.
         //注意，这里的width和height均使用px而非dp.这里我偷了个懒
         //如果你想完全对应布局设置，需要先获取到机器的dpi
         //px与dp的换算为px = dp * (dpi / 160).
-        mParams.width = 1;
-        mParams.height = 1;
+        mParams.width = 110;
+        mParams.height = 110;
 
         LayoutInflater inflater = LayoutInflater.from(getApplication());
         //获取浮动窗口视图所在布局.
@@ -122,8 +124,8 @@ public class VideoService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
-            mRoomId = intent.getIntExtra("roomId", -1);
-            mUserId = intent.getIntExtra("userId", -1);
+            mRoomId = intent.getIntExtra(Constant.DW_ROOM_ID, -1);
+            mUserId = intent.getIntExtra(Constant.DW_USERID, -1);
         }
         DoorBellControlCenter.sCurrentVideoUser = DoorBellControlCenter.getInstance().getUserAccountByAId(mUserId);
         if (mRoomId != -1) {
@@ -178,7 +180,7 @@ public class VideoService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Timber.e("-------onDestroy");
+        L.e("-------onDestroy");
         DoorBellControlCenter.sIsVideo = false;
         DoorBellControlCenter.sCurrentVideoUser = null;
         mDoorbellVideoHelper.userCameraControl(-1, 0);
@@ -213,13 +215,14 @@ public class VideoService extends Service {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            String type = intent.getStringExtra("type");
+            if (intent.getAction() == null) return;
+            String type = intent.getStringExtra(Constant.TYPE);
             switch (intent.getAction()) {
                 case ConstantUtil.ACTION_ANYCHAT_BASE_EVENT:
                     switch (type) {
                         case ConstantUtil.TYPE_ANYCHAT_ENTER_ROOM:
-                            Timber.e("------------进入房间");
-                            int dwErrorCode = intent.getIntExtra("dwErrorCode", -1);
+                            L.e("------------进入房间");
+                            int dwErrorCode = intent.getIntExtra(Constant.DW_ERROR_CODE, -1);
                             if (dwErrorCode == 0) {
                                 mDoorbellVideoHelper.userCameraControl(-1, 1);
                                 mDoorbellVideoHelper.userSpeakControl(-1, 1);
@@ -238,7 +241,7 @@ public class VideoService extends Service {
                     break;
                 case ConstantUtil.ACTION_ANYCHAT_TRANS_DATA_EVENT:
                     if (ConstantUtil.TYPE_ANYCHAT_TRANS_BUFFER.equals(type)) {
-                        CommandJson command = intent.getParcelableExtra("command");
+                        CommandJson command = intent.getParcelableExtra(Constant.COMMAND);
                         if (CommandJson.CommandType.CHANGE_CAMERA_REQUEST.equals(command.getCommandType())) {
                             //切换摄像头
                             mDoorbellVideoHelper.changeCamera();
@@ -247,18 +250,18 @@ public class VideoService extends Service {
                     break;
                 case ConstantUtil.ACTION_ANYCHAT_VIDEO_CALL_EVENT:
                     if (ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_FINISH.equals(type)) {
-                        Timber.e("------------TYPE_BRAC_VIDEOCALL_EVENT_FINISH");
+                        L.e("------------TYPE_BRAC_VIDEOCALL_EVENT_FINISH");
                         finishVideoCall();
                     }
                     break;
                 case ConstantUtil.ACTION_ANYCHAT_RECORD_EVENT:
                     if (ConstantUtil.TYPE_ANYCHAT_RECORD.equals(type)) {
-                        String lpFileName = intent.getStringExtra("lpFileName");
+                        String lpFileName = intent.getStringExtra(Constant.FILE_NAME);
                         Uri data = Uri.parse("file://" + lpFileName);
                         sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, data));
                     } else if (ConstantUtil.TYPE_ANYCHAT_SNAP_SHOT.equals(type)) {
                         //获取到截屏文件
-//                        ToastUtil.showToast(getApplicationContext(), R.string.cut_picture);
+//                        T.show(getApplicationContext(), R.string.cut_picture);
                     }
                     break;
             }
@@ -270,7 +273,7 @@ public class VideoService extends Service {
      */
     private void finishVideoCall() {
         if (DoorBellControlCenter.sCurrentVideoUser != null)
-            ToastUtil.showToast(getApplicationContext(), String.format(getString(R.string._finish_video_format), DoorBellControlCenter.sCurrentVideoUser.getAccount()));
+            T.show(String.format(getString(R.string._finish_video_format), DoorBellControlCenter.sCurrentVideoUser.getAccount()));
         stopSelf();
     }
 

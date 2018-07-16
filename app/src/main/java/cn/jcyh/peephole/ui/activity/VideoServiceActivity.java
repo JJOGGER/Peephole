@@ -11,19 +11,23 @@ import android.widget.TextView;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import cn.jcyh.eaglelock.constant.Constant;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
+import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.BcManager;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.utils.ConstantUtil;
-import cn.jcyh.peephole.utils.ToastUtil;
-import timber.log.Timber;
+import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.T;
 
 public class VideoServiceActivity extends BaseActivity {
     @BindView(R.id.tv_state)
     TextView tvState;
     @BindView(R.id.tv_device_number)
     TextView tvDeviceNumber;
+    @BindView(R.id.tv_device_name)
+    TextView tvDeviceName;
     private MyReceiver mReceiver;
 
     private DoorBellControlCenter mControlCenter;
@@ -37,6 +41,8 @@ public class VideoServiceActivity extends BaseActivity {
     @Override
     protected void init() {
         tvDeviceNumber.setText(String.format(getString(R.string.device_no_), IMEI));
+        DoorbellConfig doorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
+        tvDeviceName.setText(TextUtils.isEmpty(doorbellConfig.getNickName()) ? IMEI : doorbellConfig.getNickName() + "(" + IMEI + ")");
         if (DoorBellControlCenter.sIsAnychatLogin) {
             if (DoorBellControlCenter.sIsVideo && DoorBellControlCenter.sCurrentVideoUser != null) {
                 tvState.setText(String.format(getString(R.string.video_with_user_format), DoorBellControlCenter.sCurrentVideoUser.getAccount()));
@@ -55,7 +61,7 @@ public class VideoServiceActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Timber.e("---------------onResume");
+        L.e("---------------onResume");
     }
 
     @Override
@@ -71,11 +77,11 @@ public class VideoServiceActivity extends BaseActivity {
                 startNewActivity(VideoMenuActivity.class);
                 break;
             case R.id.btn_exit:
-                ToastUtil.showToast(getApplicationContext(), "开锁");
-                BcManager.getManager(this).setLock(!BcManager.getManager(this).getLockStatus());
-                boolean lockStatus = BcManager.getManager(this).getLockStatus();
-                Timber.e("--------lockStatus:" + lockStatus);
-                BcManager.getManager(this).setInfraredLightPowerOn(!BcManager.getManager(this).getInfraredLightStatus());
+                T.show("开锁");
+                BcManager.getManager().setLock(true);
+                boolean lockStatus = BcManager.getManager().getLockStatus();
+                L.e("--------lockStatus:" + lockStatus);
+//                BcManager.getManager(this).setInfraredLightPowerOn(!BcManager.getManager(this).getInfraredLightStatus());
 //                if (DoorBellControlCenter.sIsVideo) {
 //                    mControlCenter.finishVideoCall(-1, DoorBellControlCenter.sCurrentVideoUser.getAid());
 //                }
@@ -95,10 +101,10 @@ public class VideoServiceActivity extends BaseActivity {
             if (isFinishing() || getSupportFragmentManager() == null) return;
             String action = intent.getAction();
             if (TextUtils.isEmpty(action)) return;
-            String type = intent.getStringExtra("type");
+            String type = intent.getStringExtra(Constant.TYPE);
             switch (action) {
                 case ConstantUtil.ACTION_ANYCHAT_VIDEO_CALL_EVENT:
-                    Timber.e("---------ACTION_ANYCHAT_VIDEO_CALL_EVENT");
+                    L.e("---------ACTION_ANYCHAT_VIDEO_CALL_EVENT");
                     if (ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_START.equals(type)) {
                         if (!TextUtils.isEmpty(DoorBellControlCenter.sCurrentVideoUser.getAccount())) {
                             tvState.setText(String.format(getString(R.string.video_with_user_format), DoorBellControlCenter.sCurrentVideoUser.getAccount()));
@@ -112,8 +118,8 @@ public class VideoServiceActivity extends BaseActivity {
                     break;
                 case ConstantUtil.ACTION_ANYCHAT_BASE_EVENT:
                     if (ConstantUtil.TYPE_ANYCHAT_LOGIN_STATE.equals(type)) {
-                        int errorCode = intent.getIntExtra("dwErrorCode", -1);
-                        if (errorCode > 0) {
+                        int errorCode = intent.getIntExtra(Constant.DW_ERROR_CODE, -1);
+                        if (errorCode >= 0) {
                             tvState.setText(getText(R.string.ready_connect));
                         } else {
                             tvState.setText(getText(R.string.connecting));

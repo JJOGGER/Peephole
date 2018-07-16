@@ -10,8 +10,8 @@ import cn.jcyh.peephole.config.DoorbellConfig;
 import cn.jcyh.peephole.control.DoorBellControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
+import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.widget.MyDeviceParam;
-import timber.log.Timber;
 
 //门铃设置
 public class DoorbellSetActivity extends BaseActivity {
@@ -181,7 +181,7 @@ public class DoorbellSetActivity extends BaseActivity {
         HttpAction.getHttpAction().setDoorbellConfig(IMEI, mDoorbellConfig, new IDataListener<Boolean>() {
             @Override
             public void onSuccess(Boolean aBoolean) {
-                Timber.e("----------设置成功"+mDoorbellConfig);
+                L.e("----------设置成功"+mDoorbellConfig);
                 //保存到本地
                 DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
             }

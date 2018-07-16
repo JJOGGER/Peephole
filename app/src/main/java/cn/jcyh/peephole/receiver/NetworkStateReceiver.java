@@ -8,7 +8,8 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.text.TextUtils;
 
-import timber.log.Timber;
+import cn.jcyh.peephole.utils.L;
+
 
 /**
  * Created by jogger on 2018/5/12.
@@ -22,7 +23,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
         if (TextUtils.isEmpty(action)) return;
         if (WifiManager.WIFI_STATE_CHANGED_ACTION.equals(action)) {//监听wifi是否打开
             int wifiState = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, 0);
-            Timber.e("-----------WIFI_STATE_CHANGED_ACTION:"+wifiState);
+            L.e("-----------WIFI_STATE_CHANGED_ACTION:"+wifiState);
             switch (wifiState) {
                 case WifiManager.WIFI_STATE_DISABLED:
                     break;
@@ -39,7 +40,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
             }
 
         } else if (WifiManager.NETWORK_STATE_CHANGED_ACTION.equals(action)) {
-            Timber.e("-----------NETWORK_STATE_CHANGED_ACTION");
+            L.e("-----------NETWORK_STATE_CHANGED_ACTION");
             NetworkInfo networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
             if (networkInfo != null) {
                 NetworkInfo.State state = networkInfo.getState();
@@ -49,7 +50,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
                 }
             }
         } else if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action)) {
-            Timber.e("-----------CONNECTIVITY_ACTION");
+            L.e("-----------CONNECTIVITY_ACTION");
             ConnectivityManager manager = (ConnectivityManager) context
                     .getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo activeNetwork = manager.getActiveNetworkInfo();
@@ -57,25 +58,25 @@ public class NetworkStateReceiver extends BroadcastReceiver {
                 if (activeNetwork.isConnected()) {
                     if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
                         // connected to wifi
-                        Timber.e("当前WiFi连接可用 ");
+                        L.e("当前WiFi连接可用 ");
                     } else if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
                         // connected to the mobile provider's data plan
-                        Timber.e("当前移动网络连接可用 ");
+                        L.e("当前移动网络连接可用 ");
                     }
                 } else {
-                    Timber.e("当前没有网络连接，请确保你已经打开网络 ");
+                    L.e("当前没有网络连接，请确保你已经打开网络 ");
                 }
 
 
-                Timber.e("info.getTypeName()" + activeNetwork.getTypeName());
-                Timber.e("getSubtypeName()" + activeNetwork.getSubtypeName());
-                Timber.e("getState()" + activeNetwork.getState());
-                Timber.e("getDetailedState()"
+                L.e("info.getTypeName()" + activeNetwork.getTypeName());
+                L.e("getSubtypeName()" + activeNetwork.getSubtypeName());
+                L.e("getState()" + activeNetwork.getState());
+                L.e("getDetailedState()"
                         + activeNetwork.getDetailedState().name());
-                Timber.e("getDetailedState()" + activeNetwork.getExtraInfo());
-                Timber.e("getType()" + activeNetwork.getType());
+                L.e("getDetailedState()" + activeNetwork.getExtraInfo());
+                L.e("getType()" + activeNetwork.getType());
             } else {   // not connected to the internet
-                Timber.e("当前没有网络连接，请确保你已经打开网络 ");
+                L.e("当前没有网络连接，请确保你已经打开网络 ");
             }
         }
     }
