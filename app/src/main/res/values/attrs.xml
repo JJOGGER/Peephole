@@ -36,4 +36,5 @@
             <enum name="matrix" value="7"/>
         </attr>
     </declare-styleable>
+
 </resources>

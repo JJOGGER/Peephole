@@ -91,17 +91,25 @@ public class CommandJson implements Parcelable {
     }
 
     public class CommandType {
+        public static final int ERROR = -1;
         public static final String BIND_DOORBELL_REQUEST = "bind_doorbell_request";
         public static final String BIND_DOORBELL_RESPONSE = "bind_doorbell_response";
-
+        public static final String BIND_RESPONSE_FLAG_RECEIVED = "1";
+        public static final String BIND_RESPONSE_FLAG_BINDED = "2";
+        public static final String BIND_RESPONSE_FLAG_REJECT = "0";
+        public static final String BIND_RESPONSE_FLAG_ERROR = "3";
         public static final String BIND_DOORBELL_COMPLETED = "bind_doorbell_completed";//接收猫眼绑定成功
         public static final String UNBIND_DOORBELL_COMPLETED = "unbind_doorbell_completed";
+
+        public static final String BIND_DOORBELL_REFRESH = "bind_doorbell_refresh";//猫眼刷新
 
         public static final String UNLOCK_DOORBELL_REQUEST = "unlock_doorbell_request";//解锁请求
         public static final String UNLOCK_DOORBELL_RESPONSE = "unlock_doorbell_response";//解锁响应
 
         public static final String DOORBELL_PARAMS_REQUEST = "doorbell_params_request";//参数设置
         public static final String DOORBELL_PARAMS_RESPONSE = "doorbell_params_response";//参数设置响应
+        public static final String DOORBELL_PARAMS_GET_REQUEST = "doorbell_params_get_request";//猫眼参数获取
+        public static final String DOORBELL_PARAMS_GET_RESPONSE = "doorbell_params_get_response";
 
         public static final String CHANGE_CAMERA_REQUEST = "change_camera_request";//切换摄像头
         public static final String CHANGE_CAMERA_RESPONSE = "change_camera_response";

@@ -1,28 +1,116 @@
 package cn.jcyh.peephole.ui.activity;
 
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
+import android.content.Intent;
+import android.view.View;
+import android.widget.TextView;
 
-import java.util.List;
-import java.util.Map;
-
+import butterknife.BindView;
+import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
+import cn.jcyh.peephole.constant.Constant;
+import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.entity.Version;
+import cn.jcyh.peephole.http.HttpAction;
+import cn.jcyh.peephole.http.IDataListener;
+import cn.jcyh.peephole.service.UpdateService;
+import cn.jcyh.peephole.ui.dialog.DialogHelper;
+import cn.jcyh.peephole.ui.dialog.HintDialogFragmemt;
+import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.SystemUtil;
+import cn.jcyh.peephole.utils.T;
 
 public class AboutActivity extends BaseActivity {
-    private ListView listview;
-    private List<Map<String, Object>> dataList;
-    private SimpleAdapter adapter;
-    private String mAndroid;
-    private String mBuildNumber;
-    private String setnumber[];
+    @BindView(R.id.tv_version)
+    TextView tvVersion;
+    @BindView(R.id.tv_version_code)
+    TextView tvVersionCode;
+    @BindView(R.id.tv_wifi_update)
+    TextView tvWifiUpdate;
+    private DialogHelper mUpdateDialog;
 
     @Override
     public int getLayoutId() {
         return R.layout.activity_about;
     }
 
-//    @Override
+    @Override
+    protected void init() {
+        super.init();
+        String androidVersion = android.os.Build.VERSION.RELEASE;
+        tvVersion.setText(androidVersion);
+        tvVersionCode.setText(SystemUtil.getVersionName());
+    }
+
+
+    @OnClick({R.id.tv_wifi_update})
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.tv_wifi_update:
+                if (ControlCenter.sIsDownloadUpdate) {
+                    T.show(R.string.updating);
+                    return;
+                }
+                checkUpdate();
+                break;
+        }
+    }
+
+    /**
+     * 检查更新
+     */
+    private void checkUpdate() {
+        // TODO: 2018/8/7 先从猫眼文件中获取是否存在可更新的apk 
+//        if (ControlCenter.getNewVersion() == null) {
+        showProgressDialog();
+        HttpAction.getHttpAction().getVersion(new IDataListener<Version>() {
+            @Override
+            public void onSuccess(final Version version) {
+                cancelProgressDialog();
+                if (Integer.valueOf(version.getNumber()) > SystemUtil.getVersionCode()) {
+//                        ControlCenter.setNewVersion(version);
+                    update(version);
+                } else {
+                    T.show(R.string.no_new_version);
+                }
+//                    else {
+//                        ControlCenter.setNewVersion(null);
+//                    }
+//                    startNewActivity(AppUpdateActivity.class);
+            }
+
+            @Override
+            public void onFailure(int errorCode, String desc) {
+                cancelProgressDialog();
+                L.e("--------------error:" + errorCode);
+            }
+        });
+//        } else {
+//            startNewActivity(AppUpdateActivity.class);
+//        }
+    }
+
+    private void update(final Version version) {
+        if (mUpdateDialog == null) {
+            HintDialogFragmemt hintDialogFragmemt = new HintDialogFragmemt();
+            hintDialogFragmemt.setHintContent(getString(R.string.new_version_msg));
+            hintDialogFragmemt.setOnHintDialogListener(new HintDialogFragmemt.OnHintDialogListener() {
+                @Override
+                public void onConfirm(boolean isConfirm) {
+                    if (isConfirm) {
+                        Intent intent = new Intent(AboutActivity.this, UpdateService.class);
+                        intent.putExtra(Constant.VERSION, version);
+                        startService(intent);
+                    }
+                    mUpdateDialog.dismiss();
+                }
+            });
+            mUpdateDialog = new DialogHelper(this, hintDialogFragmemt);
+        }
+        mUpdateDialog.commit();
+
+    }
+    //    @Override
 //    protected void init() {
 //        //得到版本号|系统版本信息
 //        getsystem();

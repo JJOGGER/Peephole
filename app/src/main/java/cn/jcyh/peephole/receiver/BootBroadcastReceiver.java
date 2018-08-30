@@ -17,8 +17,8 @@ public class BootBroadcastReceiver extends BroadcastReceiver {
             bootActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(bootActivityIntent);
             WifiManager wifiManager= (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            assert wifiManager != null;
             wifiManager.setWifiEnabled(true);
-
         }
     }
 }

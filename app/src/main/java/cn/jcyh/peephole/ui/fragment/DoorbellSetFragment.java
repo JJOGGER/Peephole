@@ -2,13 +2,17 @@ package cn.jcyh.peephole.ui.fragment;
 
 import android.view.View;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import butterknife.BindView;
 import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseFragment;
-import cn.jcyh.peephole.config.DoorbellConfig;
-import cn.jcyh.peephole.control.DoorBellControlCenter;
-import cn.jcyh.peephole.http.HttpAction;
+import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.entity.DoorbellConfig;
+import cn.jcyh.peephole.event.NIMMessageAction;
 import cn.jcyh.peephole.widget.MyDeviceParam;
 
 
@@ -39,11 +43,15 @@ public class DoorbellSetFragment extends BaseFragment {
 
     @Override
     public void init() {
-        mDoorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
-        initView();
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
     }
 
-    private void initView() {
+    @Override
+    public void loadData() {
+        super.loadData();
+        mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
         myNetPush.setCheck(mDoorbellConfig.getDoorbellNetPush() == 1);
         myVideotap.setCheck(mDoorbellConfig.getDoorbellVideotap() == 1);
 
@@ -180,9 +188,25 @@ public class DoorbellSetFragment extends BaseFragment {
      */
     private void setParam() {
         //保存到本地
-        DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
+        ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
         //保存到服务器
-        HttpAction.getHttpAction().setDoorbellConfig(DoorBellControlCenter.getIMEI(), mDoorbellConfig, null);
+        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getIMEI(), mDoorbellConfig, null);
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageAction(NIMMessageAction action) {
+        if (!NIMMessageAction.NIMMESSAGE_DOORBELL_CONFIG.equals(action.getType())) {
+            return;
+        }
+        //更新门铃信息
+        loadData();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
+    }
 }

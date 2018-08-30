@@ -2,6 +2,9 @@ package cn.jcyh.peephole.utils;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.os.PowerManager;
 import android.text.TextUtils;
 
 /**
@@ -9,9 +12,9 @@ import android.text.TextUtils;
  */
 
 public class SystemUtil {
-    public static final String getProcessName(Context context) {
-        String processName = null;
 
+    public static String getProcessName(Context context) {
+        String processName = null;
         // ActivityManager
         ActivityManager am = ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE));
 
@@ -35,5 +38,51 @@ public class SystemUtil {
                 ex.printStackTrace();
             }
         }
+    }
+
+
+    public static String getVersionName() {
+        String versionName = null;
+        try {
+            PackageInfo packageInfo = Util.getApp().getPackageManager().getPackageInfo(Util.getApp().getPackageName(), 0);
+            versionName = packageInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return versionName;
+    }
+
+    public static int getVersionCode() {
+        int versionCode = 1;
+        try {
+            PackageInfo packageInfo = Util.getApp().getPackageManager().getPackageInfo(Util.getApp().getPackageName(), 0);
+            versionCode = packageInfo.versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return versionCode;
+    }
+
+    public static String getPackageName() {
+        String packageName = "";
+        try {
+            PackageInfo packageInfo = Util.getApp().getPackageManager().getPackageInfo(Util.getApp().getPackageName(), 0);
+            packageName = packageInfo.packageName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return packageName;
+    }
+
+    public static void wakeLock(int levelAndFlags) {
+        //唤醒
+        //获取电源管理器对象
+        PowerManager pm = (PowerManager) Util.getApp().getSystemService(Context.POWER_SERVICE);
+        //获取PowerManager.WakeLock对象,后面的参数|表示同时传入两个值,最后的是LogCat里用的Tag
+        assert pm != null;
+        PowerManager.WakeLock wl = pm.newWakeLock(levelAndFlags, "bright");
+        //点亮屏幕
+        wl.acquire(20000);
+        wl.release();
     }
 }

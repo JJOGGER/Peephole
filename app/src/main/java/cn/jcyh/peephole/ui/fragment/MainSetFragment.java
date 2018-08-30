@@ -1,5 +1,6 @@
 package cn.jcyh.peephole.ui.fragment;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -9,6 +10,10 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,16 +25,15 @@ import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.adapter.ChooseSetAdapter;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.base.BaseFragment;
-import cn.jcyh.peephole.config.DoorbellConfig;
-import cn.jcyh.peephole.control.BcManager;
-import cn.jcyh.peephole.control.DoorBellControlCenter;
-import cn.jcyh.peephole.http.HttpAction;
+import cn.jcyh.peephole.constant.Constant;
+import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.entity.DoorbellConfig;
+import cn.jcyh.peephole.event.NIMMessageAction;
 import cn.jcyh.peephole.ui.dialog.AutoSensorTimeDialog;
 import cn.jcyh.peephole.ui.dialog.ChooseSetDialog;
 import cn.jcyh.peephole.ui.dialog.CommonEditDialog;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.OnDialogListener;
-import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.T;
 import cn.jcyh.peephole.utils.Tool;
 
@@ -40,6 +44,10 @@ import cn.jcyh.peephole.utils.Tool;
  */
 
 public class MainSetFragment extends BaseFragment {
+    private static final int MIN_LOOK_TIME = 5;
+    private static final int MAX_LOOK_TIME = 300;
+    private static final int MIN_RECORD_TIME = 5;
+    private static final int MAX_RECORD_TIME = 30;
     @BindView(R.id.cb_monitor)
     CheckBox cbMonitor;
     @BindView(R.id.tv_monitor_state)
@@ -65,7 +73,6 @@ public class MainSetFragment extends BaseFragment {
     @BindView(R.id.tv_doorbell_look_time)
     TextView tvDoorbellLookTime;
     private DoorbellConfig mDoorbellConfig;
-    private DoorBellControlCenter mControlCenter;
     private DialogHelper mAutoSensorTimeDialog, mMasterNumberDialog, mSOSNumberDialog,
             mVideotapTimeDialog, mDoorbellLookDialog, mDoorbellLeavelTimeDialog;
     private FragmentManager mFragmentManager;
@@ -78,25 +85,26 @@ public class MainSetFragment extends BaseFragment {
     @Override
     public void init() {
         super.init();
-        mControlCenter = DoorBellControlCenter.getInstance();
-        mDoorbellConfig = mControlCenter.getDoorbellConfig();
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
         mFragmentManager = getFragmentManager();
         updateView();
     }
 
     @OnClick({R.id.rl_doorbell_set, R.id.rl_sensor_set, R.id.rl_monitor, R.id.rl_sensor_time,
             R.id.rl_ring_volume, R.id.rl_master_number, R.id.rl_sos_number, R.id.rl_doorbell_leavel_time, R.id.rl_doorbell_videotap_time,
-            R.id.rl_doorbell_look_time, R.id.rl_extend_function})
+            R.id.rl_doorbell_look_time})
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.rl_doorbell_set:
+            case R.id.rl_doorbell_set://门铃设置
                 FragmentTransaction transaction = mFragmentManager.beginTransaction();
                 DoorbellSetFragment doorbellSetFragment = new DoorbellSetFragment();
                 transaction.add(R.id.fl_container, doorbellSetFragment, DoorbellSetFragment.class.getName());
                 transaction.hide(mFragmentManager.findFragmentByTag(MainSetFragment.class.getName()));
                 transaction.commit();
                 break;
-            case R.id.rl_sensor_set:
+            case R.id.rl_sensor_set://传感设置
                 transaction = mFragmentManager.beginTransaction();
                 SensorSetFragment sensorSetFragment = new SensorSetFragment();
                 transaction.add(R.id.fl_container, sensorSetFragment, SensorSetFragment.class.getName());
@@ -105,41 +113,41 @@ public class MainSetFragment extends BaseFragment {
                     transaction.hide(fragmentByTag);
                 transaction.commit();
                 break;
-            case R.id.rl_monitor:
+            case R.id.rl_monitor://监控开关
                 switchMonitor();
                 break;
-            case R.id.rl_sensor_time:
+            case R.id.rl_sensor_time://感应时长
                 autoSensorTimeSet();
                 break;
-            case R.id.rl_ring_volume:
+            case R.id.rl_ring_volume://铃声音量
                 transaction = mFragmentManager.beginTransaction();
                 DoorbellRingVolumeSetFragment ringVolumeSetFragment = new DoorbellRingVolumeSetFragment();
                 transaction.add(R.id.fl_container, ringVolumeSetFragment, DoorbellRingVolumeSetFragment.class.getName());
                 transaction.hide(mFragmentManager.findFragmentByTag(MainSetFragment.class.getName()));
                 transaction.commit();
                 break;
-            case R.id.rl_master_number:
+            case R.id.rl_master_number://主人号码
                 showMasterNumberDialog();
                 break;
-            case R.id.rl_sos_number:
+            case R.id.rl_sos_number://sos
                 showSOSDialog();
                 break;
-            case R.id.rl_doorbell_leavel_time:
+            case R.id.rl_doorbell_leavel_time://留言时间
                 showLeavelTimeDialog();
                 break;
-            case R.id.rl_doorbell_videotap_time:
+            case R.id.rl_doorbell_videotap_time://录像时间
                 showVideoTimeDialog();
                 break;
-            case R.id.rl_doorbell_look_time:
+            case R.id.rl_doorbell_look_time://猫眼查看时间
                 showLookTimeDialog();
                 break;
-            case R.id.rl_extend_function:
-                transaction = mFragmentManager.beginTransaction();
-                ExtendFunctionFragment extendFunctionFragment = new ExtendFunctionFragment();
-                transaction.add(R.id.fl_container, extendFunctionFragment, ExtendFunctionFragment.class.getName());
-                transaction.hide(mFragmentManager.findFragmentByTag(MainSetFragment.class.getName()));
-                transaction.commit();
-                break;
+//            case R.id.rl_extend_function:
+//                transaction = mFragmentManager.beginTransaction();
+//                ExtendFunctionFragment extendFunctionFragment = new ExtendFunctionFragment();
+//                transaction.add(R.id.fl_container, extendFunctionFragment, ExtendFunctionFragment.class.getName());
+//                transaction.hide(mFragmentManager.findFragmentByTag(MainSetFragment.class.getName()));
+//                transaction.commit();
+//                break;
         }
     }
 
@@ -167,7 +175,7 @@ public class MainSetFragment extends BaseFragment {
                         }
                     }
                     mDoorbellConfig.setVideoLeaveMsgTime(number);
-                    DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
+                    ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
                     chooseSetDialog.dismiss();
                 }
             });
@@ -186,19 +194,20 @@ public class MainSetFragment extends BaseFragment {
             commonEditDialog.setTitle(getString(R.string.doorbell_look_time));
             commonEditDialog.setContent(String.valueOf(mDoorbellConfig.getDoorbellLookTime()));
             commonEditDialog.setOnDialogListener(new OnDialogListener() {
+                @SuppressLint({"StringFormatInvalid", "SetTextI18n"})
                 @Override
                 public void onConfirm(Object o) {
                     int time = Integer.parseInt(o.toString());
-                    if (time > 300) {
-                       T.show( getString(R.string.more_than_time_msg));
-                        time = 300;
-                    } else if (time < 5) {
-                       T.show(getString(R.string.low_than_time_msg));
-                        time = 5;
+                    if (time > MAX_LOOK_TIME) {
+                        T.show(String.format(getString(R.string.more_than_time_msg), MAX_LOOK_TIME));
+                        time = MAX_LOOK_TIME;
+                    } else if (time < MIN_LOOK_TIME) {
+                        T.show(String.format(getString(R.string.low_than_time_msg), MIN_LOOK_TIME));
+                        time = MIN_LOOK_TIME;
                     }
                     mDoorbellConfig.setDoorbellLookTime(time);
-                    tvDoorbellLookTime.setText(String.valueOf(time));
-                    DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
+                    tvDoorbellLookTime.setText(String.valueOf(time) + getString(R.string.second));
+                    ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
                 }
             });
             mDoorbellLookDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
@@ -215,19 +224,20 @@ public class MainSetFragment extends BaseFragment {
             commonEditDialog.setTitle(getString(R.string.doorbell_videotap_time_set));
             commonEditDialog.setContent(String.valueOf(mDoorbellConfig.getVideotapTime()));
             commonEditDialog.setOnDialogListener(new OnDialogListener() {
+                @SuppressLint({"StringFormatInvalid", "SetTextI18n"})
                 @Override
                 public void onConfirm(Object o) {
                     int time = Integer.parseInt(o.toString());
-                    if (time > 300) {
-                       T.show( getString(R.string.more_than_time_msg));
-                        time = 300;
-                    } else if (time < 5) {
-                       T.show( getString(R.string.low_than_time_msg));
-                        time = 5;
+                    if (time > MAX_RECORD_TIME) {
+                        T.show(String.format(getString(R.string.more_than_time_msg), MAX_RECORD_TIME));
+                        time = MAX_RECORD_TIME;
+                    } else if (time < MIN_RECORD_TIME) {
+                        T.show(String.format(getString(R.string.low_than_time_msg), MIN_RECORD_TIME));
+                        time = MIN_RECORD_TIME;
                     }
                     mDoorbellConfig.setVideotapTime(time);
-                    tvDoorbellVideotapTime.setText(String.valueOf(time));
-                    DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
+                    tvDoorbellVideotapTime.setText(String.valueOf(time) + getString(R.string.second));
+                    ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
                 }
             });
             mVideotapTimeDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
@@ -251,12 +261,12 @@ public class MainSetFragment extends BaseFragment {
                 @Override
                 public void onConfirm(Object o) {
                     if (!o.toString().matches(getString(R.string.regex_phone))) {
-                       T.show( getString(R.string.phone_no_regex));
+                        T.show(getString(R.string.phone_no_regex));
                         return;
                     }
                     mDoorbellConfig.setMasterNumber(o.toString());
                     tvMasterNumber.setText(o.toString());
-                    DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
+                    ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
                 }
             });
             mMasterNumberDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
@@ -280,12 +290,12 @@ public class MainSetFragment extends BaseFragment {
                 @Override
                 public void onConfirm(Object o) {
                     if (!o.toString().matches(getString(R.string.regex_phone))) {
-                       T.show(getString(R.string.phone_no_regex));
+                        T.show(getString(R.string.phone_no_regex));
                         return;
                     }
                     mDoorbellConfig.setSosNumber(o.toString());
                     tvSOSNumber.setText(o.toString());
-                    DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
+                    ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
                 }
             });
             mSOSNumberDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
@@ -301,7 +311,7 @@ public class MainSetFragment extends BaseFragment {
     private void switchMonitor() {
         cbMonitor.setChecked(!cbMonitor.isChecked());
         mDoorbellConfig.setMonitorSwitch(cbMonitor.isChecked() ? 1 : 0);
-        mControlCenter.saveDoorbellConfig(mDoorbellConfig);
+        ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
         tvMonitorState.setText(cbMonitor.isChecked() ? R.string.monitor_opened : R.string.monitor_closed);
         rlSensorTime.setEnabled(cbMonitor.isChecked());
         tvSensorTime.setEnabled(cbMonitor.isChecked());
@@ -309,22 +319,22 @@ public class MainSetFragment extends BaseFragment {
         rlSensorSet.setEnabled(cbMonitor.isChecked());
         tvSensorSetTitle.setEnabled(cbMonitor.isChecked());
         tvSensorSet.setEnabled(cbMonitor.isChecked());
-        BcManager.getManager().setPIRSensorOn(mDoorbellConfig.getMonitorSwitch() == 1);
-        HttpAction.getHttpAction().setDoorbellConfig(DoorBellControlCenter.getIMEI(), mDoorbellConfig, null);
+        ControlCenter.getBCManager().setPIRSensorOn(mDoorbellConfig.getMonitorSwitch() == 1);
+        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getIMEI(), mDoorbellConfig, null);
     }
 
     /**
      * 自动感应设置
      */
     private void autoSensorTimeSet() {
-        L.e("---------autoSensorTimeSet");
         if (mAutoSensorTimeDialog == null) {
             AutoSensorTimeDialog autoSensorTimeDialog = new AutoSensorTimeDialog();
             Bundle bundle = new Bundle();
-            bundle.putInt("time", mDoorbellConfig.getAutoSensorTime());
+            bundle.putInt(Constant.TIME, mDoorbellConfig.getAutoSensorTime());
             autoSensorTimeDialog.setArguments(bundle);
             autoSensorTimeDialog.setCancelable(false);
             autoSensorTimeDialog.setOnDialogListener(new OnDialogListener() {
+                @SuppressLint("SetTextI18n")
                 @Override
                 public void onConfirm(Object isConfirm) {
                     if ((int) isConfirm == 60)
@@ -339,7 +349,9 @@ public class MainSetFragment extends BaseFragment {
 
     }
 
+    @SuppressLint("SetTextI18n")
     private void updateView() {
+        mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
         //获取智能监控开关
         boolean isMonitor = mDoorbellConfig.getMonitorSwitch() == 1;
         cbMonitor.setChecked(isMonitor);
@@ -368,9 +380,21 @@ public class MainSetFragment extends BaseFragment {
         tvDoorbellVideotapTime.setText(mDoorbellConfig.getVideotapTime() + getString(R.string.second));
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageAction(NIMMessageAction action) {
+        if (!NIMMessageAction.NIMMESSAGE_DOORBELL_CONFIG.equals(action.getType())) {
+            return;
+        }
+        //更新门铃信息
+        updateView();
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
         if (mAutoSensorTimeDialog != null)
             mAutoSensorTimeDialog.dismiss();
         if (mMasterNumberDialog != null)

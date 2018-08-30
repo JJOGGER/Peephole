@@ -8,7 +8,6 @@ package cn.jcyh.peephole.http;
 public class HttpResult<T> {
     private T data;
     private int code;
-
     public T getData() {
         return data;
     }
@@ -24,7 +23,6 @@ public class HttpResult<T> {
     public void setCode(int code) {
         this.code = code;
     }
-
     @Override
     public String toString() {
         return "HttpResult{" +

@@ -1,11 +1,11 @@
 ext {
     android = [
-            compileSdkVersion: 25,
-            buildToolsVersion: "25.0.2",
-            minSdkVersion    : 21,
-            targetSdkVersion : 25,
-            versionCode      : 1,
-            versionName      : "1.0.0"
+            compileSdkVersion: 27,
+            buildToolsVersion: "27.0.3",
+            minSdkVersion    : 18,
+            targetSdkVersion : 27,
+            versionCode      : 3,
+            versionName      : "K1V1.0_EAGLEKING_20180830_854x480"
     ]
 
     dependVersion = [
@@ -37,7 +37,16 @@ ext {
             permission          : 'com.yanzhenjie:permission:2.0.0-rc4',
             photoview           : 'com.github.chrisbanes:PhotoView:1.2.6',
             photopicker         : 'me.iwf.photopicker:PhotoPicker:0.1.8',
+            eventbus            : 'org.greenrobot:eventbus:3.1.1',
             tinker_android_anno : 'com.tencent.tinker:tinker-android-anno:1.9.1',
-            tinker              : 'com.tencent.tinker:tinker-android-lib:1.9.1'
+            tinker              : 'com.tencent.tinker:tinker-android-lib:1.9.1',
+            umeng_common        : 'com.umeng.sdk:common:1.5.0',
+            umeng_analytics     : 'com.umeng.sdk:analytics:7.5.0',
+            adapter_helper      : 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.30',
+            rxbinding:'com.jakewharton.rxbinding2:rxbinding:2.1.1',
+            rxbinding_v7:'com.jakewharton.rxbinding2:rxbinding-appcompat-v7:2.1.1',
+
+
+//            progressbar: 'com.github.HotBitmapGG:RingProgressBar:V1.2.3'
     ]
 }

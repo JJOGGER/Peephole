@@ -2,13 +2,17 @@ package cn.jcyh.peephole.ui.fragment;
 
 import android.view.View;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import butterknife.BindView;
 import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseFragment;
-import cn.jcyh.peephole.config.DoorbellConfig;
-import cn.jcyh.peephole.control.DoorBellControlCenter;
-import cn.jcyh.peephole.http.HttpAction;
+import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.entity.DoorbellConfig;
+import cn.jcyh.peephole.event.NIMMessageAction;
 import cn.jcyh.peephole.widget.MyDeviceParam;
 
 
@@ -31,31 +35,36 @@ public class SensorSetFragment extends BaseFragment {
     @BindView(R.id.my_videotap)
     MyDeviceParam myVideotap;
     private DoorbellConfig mDoorbellConfig;
+
     @Override
     public int getLayoutId() {
         return R.layout.fragment_sensor_set;
     }
+
     @Override
     public void init() {
-        mDoorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
-        initView();
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
     }
 
-    private void initView() {
-        myNetPush.setCheck(mDoorbellConfig.getDoorbellNetPush() == 1);
-        myVideotap.setCheck(mDoorbellConfig.getDoorbellVideotap() == 1);
+    @Override
+    public void loadData() {
+        mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
+        myNetPush.setCheck(mDoorbellConfig.getSensorNetPush() == 1);
+        myVideotap.setCheck(mDoorbellConfig.getSensorVideotap() == 1);
         myRingAlarm.setCheck(mDoorbellConfig.getSensorRingAlarm() == 1);
 
-        boolean sendMsg = mDoorbellConfig.getDoorbellSendMsg() == 1;
+        boolean sendMsg = mDoorbellConfig.getSensorSendMsg() == 1;
         mySendMsg.setCheck(sendMsg);
         myDial.setCheckable(!sendMsg);
 
-        boolean dial = mDoorbellConfig.getDoorbellDial() == 1;
+        boolean dial = mDoorbellConfig.getSensorDial() == 1;
         myDial.setCheck(dial);
         myVideoCall.setCheckable(!dial);
         mySendMsg.setCheckable(!dial);
 
-        boolean videoCall = mDoorbellConfig.getDoorbellVideoCall() == 1;
+        boolean videoCall = mDoorbellConfig.getSensorVideoCall() == 1;
         myVideoCall.setCheck(videoCall);
     }
 
@@ -65,23 +74,22 @@ public class SensorSetFragment extends BaseFragment {
         switch (v.getId()) {
             case R.id.my_net_push:
                 myNetPush.setCheck(!myNetPush.isChecked());
-                mDoorbellConfig.setDoorbellNetPush(myNetPush.isChecked() ? 1 : 0);
+                mDoorbellConfig.setSensorNetPush(myNetPush.isChecked() ? 1 : 0);
                 break;
             case R.id.my_videotap:
                 if (myVideotap.isChecked()) {
                     myVideotap.setCheck(false);
-                    mDoorbellConfig.setDoorbellVideotap(0);
+                    mDoorbellConfig.setSensorVideotap(0);
                 } else {
                     myVideotap.setCheck(true);
                     myVideotap.setCheckable(true);
-                    mDoorbellConfig.setDoorbellVideotap(1);
-                    mDoorbellConfig.setDoorbellLeaveMessage(0);
+                    mDoorbellConfig.setSensorVideotap(1);
                 }
                 break;
             case R.id.my_video_call:
                 if (myVideoCall.isChecked()) {
                     myVideoCall.setCheck(false);
-                    mDoorbellConfig.setDoorbellVideoCall(0);
+                    mDoorbellConfig.setSensorVideoCall(0);
                 } else {
                     myVideoCall.setCheck(true);
                     myVideoCall.setCheckable(true);
@@ -89,30 +97,29 @@ public class SensorSetFragment extends BaseFragment {
                     if (!mySendMsg.isChecked())
                         myDial.setCheckable(true);
                     mySendMsg.setCheckable(true);
-                    mDoorbellConfig.setDoorbellVideoCall(1);
-                    mDoorbellConfig.setDoorbellLeaveMessage(0);
-                    mDoorbellConfig.setDoorbellDial(0);
+                    mDoorbellConfig.setSensorVideoCall(1);
+                    mDoorbellConfig.setSensorDial(0);
                 }
                 break;
             case R.id.my_send_msg:
                 if (mySendMsg.isChecked()) {
                     mySendMsg.setCheck(false);
                     myDial.setCheckable(true);
-                    mDoorbellConfig.setDoorbellSendMsg(0);
+                    mDoorbellConfig.setSensorSendMsg(0);
                 } else {
                     mySendMsg.setCheck(true);
                     mySendMsg.setCheckable(true);
                     myDial.setCheck(false);
                     myDial.setCheckable(false);
-                    mDoorbellConfig.setDoorbellSendMsg(1);
-                    mDoorbellConfig.setDoorbellDial(0);
+                    mDoorbellConfig.setSensorSendMsg(1);
+                    mDoorbellConfig.setSensorDial(0);
                 }
                 break;
             case R.id.my_dial:
                 if (myDial.isChecked()) {
                     myDial.setCheck(false);
                     mySendMsg.setCheckable(true);
-                    mDoorbellConfig.setDoorbellDial(0);
+                    mDoorbellConfig.setSensorDial(0);
                 } else {
                     myDial.setCheck(true);
                     myDial.setCheckable(true);
@@ -124,9 +131,9 @@ public class SensorSetFragment extends BaseFragment {
                         myVideoCall.setCheck(false);
                     }
                     myVideoCall.setCheckable(false);
-                    mDoorbellConfig.setDoorbellDial(1);
-                    mDoorbellConfig.setDoorbellSendMsg(0);
-                    mDoorbellConfig.setDoorbellVideoCall(0);
+                    mDoorbellConfig.setSensorDial(1);
+                    mDoorbellConfig.setSensorSendMsg(0);
+                    mDoorbellConfig.setSensorVideoCall(0);
                 }
                 break;
             case R.id.my_ring_alarm:
@@ -142,8 +149,25 @@ public class SensorSetFragment extends BaseFragment {
      */
     private void setParam() {
         //保存到本地
-        DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
+        ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
         //保存到服务器
-        HttpAction.getHttpAction().setDoorbellConfig(DoorBellControlCenter.getIMEI(), mDoorbellConfig, null);
+        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getIMEI(), mDoorbellConfig, null);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageAction(NIMMessageAction action) {
+        if (!NIMMessageAction.NIMMESSAGE_DOORBELL_CONFIG.equals(action.getType())) {
+            return;
+        }
+        //更新门铃信息
+        loadData();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
     }
 }

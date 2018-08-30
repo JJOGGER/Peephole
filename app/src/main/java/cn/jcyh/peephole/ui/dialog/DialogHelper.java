@@ -1,5 +1,6 @@
 package cn.jcyh.peephole.ui.dialog;
 
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
@@ -58,9 +59,11 @@ public class DialogHelper {
 
     public void commit() {
         FragmentTransaction transaction = mFragmentManager.beginTransaction();
-        transaction.add(mDialogFragment, mDialogFragment.getClass().getName());
         if (isShowing())
             return;
+        Fragment fragmentByTag = mFragmentManager.findFragmentByTag(mDialogFragment.getClass().getSimpleName());
+        if (!mDialogFragment.isAdded() && !mDialogFragment.isVisible() && fragmentByTag == null)
+            transaction.add(mDialogFragment, mDialogFragment.getClass().getSimpleName());
         transaction.commitAllowingStateLoss();
     }
 

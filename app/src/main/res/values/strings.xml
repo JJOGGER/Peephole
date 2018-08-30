@@ -125,7 +125,7 @@
     <string name="leave_message_time_msg">设置留言模式下视频留言的时间</string>
     <string name="doorbell_videotap_time_set">猫眼录像时间设置</string>
     <string name="doorbell_look_time">猫眼查看时间</string>
-    <string name="five_s">5s</string>
+    <string name="five_s">5秒</string>
     <string name="ten_s">10秒</string>
     <string name="fifteen_s">15秒</string>
     <string name="twenty_s">20秒</string>
@@ -152,8 +152,8 @@
     <string name="running">正在运行</string>
     <string name="doorbell_volume">门铃音量</string>
     <string name="alarm_volume">报警音量</string>
-    <string name="more_than_time_msg">超过最大时间，更改为300s</string>
-    <string name="low_than_time_msg">小于最短时间，更改为5s</string>
+    <string name="more_than_time_msg">超过最大时间，更改为%ds</string>
+    <string name="low_than_time_msg">小于最短时间，更改为%ds</string>
     <string name="face_set_msg">设置人脸识别</string>
     <string name="face_set">人脸识别</string>
     <string name="extend_function">扩展功能</string>
@@ -161,6 +161,62 @@
     <string name="no_camera">未检测到摄像头</string>
     <string name="leave_message_audio_start_msg">主人不在家，请再次按下门铃键开始留言</string>
     <string name="leave_message_audio_end_msg">留言结束</string>
+    <string name="video_leave_msg">视频留言</string>
+    <string name="sensor_set_changed">传感动作已更改</string>
+    <string name="send_msg_content_format">【%1$s】%2$s，来自%3$s</string>
+    <string name="someone_doorbell">有人按门铃</string>
+    <string name="android_version">Android版本</string>
+    <string name="wifi_update">无线升级</string>
+    <string name="version_code">版本号</string>
+    <string name="click_update_name">点击修改设备名称</string>
+    <string name="update_success">修改成功</string>
+    <string name="update_nickname">修改设备名称</string>
+    <string name="unbind_success">解绑成功</string>
+    <string name="unbind_failure">解绑失败</string>
+    <string name="waiting">请稍候</string>
+    <string name="choose_expend_function">选择扩展功能</string>
+    <string name="look_outdoor">查看门外</string>
+    <string name="input_auth_code">请输入授权码</string>
+    <string name="unbind_user">解绑用户</string>
+    <string name="adminer">管理员</string>
+    <string name="unbind_admin_msg">当前用户是管理员，解绑之后，设备下的所有用户将会一起解绑！</string>
+    <!--                   系统设置start             -->
+    <string name="wifi_network">无线和网络</string>
+    <string name="device">设备</string>
+    <string name="personal">个人</string>
+    <string name="system">系统</string>
+
+    <string name="wlan">WLAN</string>
+    <string name="bluetooth">蓝牙</string>
+    <string name="flow_use_desc">流量使用情况</string>
+    <string name="more">更多</string>
+
+    <string name="show">显示</string>
+    <string name="storage">存储</string>
+    <string name="battery">电池</string>
+    <string name="app">应用</string>
+
+    <string name="language">语言和输入法</string>
+    <string name="mark_reset">备份和重置</string>
+
+    <string name="date_time">日期和时间</string>
+    <string name="developer">开发者选项</string>
+    <string name="three_s">3秒</string>
+    <string name="local_video_start_fail">本地音视频启动失败</string>
+    <string name="create_connect_fail">建立连接失败</string>
+    <string name="check_update">检查更新</string>
+    <string name="go_on">继续</string>
+    <string name="down_new_version">下载安装包</string>
+    <string name="new_version_msg">检查到有新版本，是否下载更新？</string>
+    <string name="download_update">下载更新</string>
+    <string name="no_new_version">当前已是最新版本</string>
+    <string name="updating">正在升级</string>
+    <string name="video_resolution">视频分辨率</string>
+    <string name="video_resolution_set_msg">设置视频通话的分辨率</string>
+    <string name="download_file_des_failure">文件解析失败</string>
+    <string name="start_download">开始下载</string>
+
+    <!--                   系统设置end             -->
     <!--<string name="date_week_format">%d年%d月%d日&#160;%s</string>-->
     <!--<string name="calendar_date_format">农历%d年%s月%s</string>-->
 </resources>

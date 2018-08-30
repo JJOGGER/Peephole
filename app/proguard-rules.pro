@@ -32,7 +32,25 @@
      <init>(...);
 }
 
-
+#-------------------------应用本身-----------------------------#
+#-dontwarn cn.jcyh.peephole.entity.**
+#-keep class cn.jcyh.peephole.entity.** { *;}
+#-dontwarn cn.jcyh.peephole.event.**
+#-keep class cn.jcyh.peephole.event.** { *;}
+#-dontwarn cn.jcyh.peephole.utils.**
+#-keep class cn.jcyh.peephole.utils.** { *;}
+-dontwarn cn.jcyh.peephole.**
+-keep class cn.jcyh.peephole.** { *;}
+-dontwarn cn.jcyh.eaglelock.**
+-keep class cn.jcyh.eaglelock.** { *;}
+-dontwarn cn.jcyh.locklib.**
+-keep class cn.jcyh.locklib.** { *;}
+-dontwarn android.**
+-keep class android.** { *;}
+-dontwarn com.android.**
+-keep class com.android.** { *;}
+-dontwarn javax.microedition.**
+-keep class javax.microedition.** { *;}
 #---------------------------------2.第三方包-------------------------------
 #butterknife
 -keep class butterknife.** { *; }
@@ -125,12 +143,20 @@
     native <methods>;
 }
 
-#讯飞
+#---------------------------讯飞start------------------------------#
 -dontwarn com.iflytek.**
 -keep class com.iflytek.**{*;}
 -keepattributes Signature
+#---------------------------讯飞end------------------------------#
 
-#
+#------------------------------------网易start---------------------------------#
+-dontwarn com.netease.**
+-keep class com.netease.** {*;}
+#如果你使用全文检索插件，需要加入
+-dontwarn org.apache.lucene.**
+-keep class org.apache.lucene.** {*;}
+#------------------------------------网易end---------------------------------#
+
 #-----------------------
 -keepclassmembers class * implements java.io.Serializable {
     static final long serialVersionUID;
@@ -174,9 +200,7 @@
 -keep class  org.apache.log4j.** { *;}
 -keep class com.fbee.zllctl.** {*;}
 -dontwarn com.fbee.zllctl.**
-#anychat
--keep class com.bairuitech.anychat.** {*;}
--dontwarn com.bairuitech.anychat.**
+
 #技威
 -keep class com.example.p2p_core.**{ *;}
 -dontwarn com.example.p2p_core.**

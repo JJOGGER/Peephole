@@ -1,9 +1,12 @@
 package cn.jcyh.peephole.utils;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Environment;
 import android.os.storage.StorageManager;
+import android.text.TextUtils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -19,7 +22,6 @@ import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,11 +32,9 @@ import java.util.List;
 
 public class FileUtil {
     private static FileUtil sUtils;
-    private SimpleDateFormat mSimpleDateFormat;
-    private static final String DOORBELL_DATA_PATH = "/protect_s/prod_info";
+    public static final String DOORBELL_DATA_PATH = "/protect_s/prod_info";
 
     private FileUtil() {
-        mSimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     }
 
     public static FileUtil getInstance() {
@@ -51,15 +51,18 @@ public class FileUtil {
     /**
      * 猫眼图片路径
      */
-    public String getDoorbellImgPath() {
+    public static String getDoorbellImgPath() {
         String path = Environment.getExternalStoragePublicDirectory(Environment
                 .DIRECTORY_DCIM).getAbsolutePath() + File.separator + "Camera";
         File file = new File(path + File.separator + "thumbnail");
-        if (!file.exists()) file.mkdirs();
+        if (!file.exists()) {
+            boolean mkdirs = file.mkdirs();
+            if (mkdirs) return path;
+        }
         return path;
     }
 
-    public String getDoorbellImgThumbnailPath() {
+    public static String getDoorbellImgThumbnailPath() {
         String doorbellDataPath = getDoorbellImgPath();
         return doorbellDataPath + File.separator + "thumbnail";
     }
@@ -67,15 +70,18 @@ public class FileUtil {
     /**
      * 猫眼图片路径
      */
-    public String getDoorbellVideoPath() {
+    public static String getDoorbellVideoPath() {
         String path = Environment.getExternalStoragePublicDirectory(Environment
                 .DIRECTORY_DCIM).getAbsolutePath() + File.separator + "Camera";
         File file = new File(path);
-        if (!file.exists()) file.mkdir();
+        if (!file.exists()) {
+            boolean mkdir = file.mkdir();
+            if (mkdir) return path;
+        }
         return path;
     }
 
-    public String getDoorbellMediaThumbnailPath() {
+    public static String getDoorbellMediaThumbnailPath() {
         return getDoorbellVideoPath() + File.separator + "thumbnail";
     }
 
@@ -85,19 +91,21 @@ public class FileUtil {
     }
 
     /**
-     * Return the paths of sdcard.
-     *
-     * @param removable True to return the paths of removable sdcard, false otherwise.
-     * @return the paths of sdcard
+     * @param removable true返回外部存储，false返回内部存储
+     *                  不存在则列表为空
      */
-    public List<String> getSDCardPaths(Context context, final boolean removable) {
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public static List<String> getSDCardPaths(Context context, final boolean removable) {
         List<String> paths = new ArrayList<>();
+        String methodName = "getVolumeList";
+        String pathMethod = "getPath";
+        String removableMethod = "isRemovable";
         StorageManager sm = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
         try {
             Class<?> storageVolumeClazz = Class.forName("android.os.storage.StorageVolume");
-            Method getVolumeList = StorageManager.class.getMethod("getVolumeList");
-            Method getPath = storageVolumeClazz.getMethod("getPath");
-            Method isRemovable = storageVolumeClazz.getMethod("isRemovable");
+            Method getVolumeList = StorageManager.class.getMethod(methodName);
+            Method getPath = storageVolumeClazz.getMethod(pathMethod);
+            Method isRemovable = storageVolumeClazz.getMethod(removableMethod);
             Object result = getVolumeList.invoke(sm);
             final int length = Array.getLength(result);
             for (int i = 0; i < length; i++) {
@@ -108,23 +116,25 @@ public class FileUtil {
                     paths.add(path);
                 }
             }
-            L.e("-----------path:" + paths);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }
         return paths;
     }
 
+    public static String getAPKPath() {
+        String fileDir = getSDCardPath() + Util.getApp().getPackageName();
+        File file = new File(fileDir);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        return fileDir;
+    }
+
     /**
      * 获取sd卡路径
      */
-    public String getSDCardPath() {
+    public static String getSDCardPath() {
         File sdcardDir = null;
         // 判断SDCard是否存在
         boolean sdcardExist = Environment.getExternalStorageState().equals(
@@ -140,8 +150,26 @@ public class FileUtil {
         }
     }
 
+    public static String getAppCacheDir() {
+        String storageRootPath = null;
+        try {
+            // SD卡应用扩展存储区(APP卸载后，该目录下被清除，用户也可以在设置界面中手动清除)，请根据APP对数据缓存的重要性及生命周期来决定是否采用此缓存目录.
+            // 该存储区在API 19以上不需要写权限，即可配置 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="18"/>
+            if (Util.getApp().getExternalCacheDir() != null) {
+                storageRootPath = Util.getApp().getExternalCacheDir().getCanonicalPath();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (TextUtils.isEmpty(storageRootPath)) {
+            // SD卡应用公共存储区(APP卸载后，该目录不会被清除，下载安装APP后，缓存数据依然可以被加载。SDK默认使用此目录)，该存储区域需要写权限!
+            storageRootPath = Environment.getExternalStorageDirectory() + "/" + Util.getApp().getPackageName();
+        }
 
-    public void saveBitmap2File(Bitmap bitmap, String filePath) {
+        return storageRootPath;
+    }
+
+    public static void saveBitmap2File(Bitmap bitmap, String filePath) {
         File file = new File(filePath);
         BufferedOutputStream bos = null;
         try {
@@ -171,7 +199,7 @@ public class FileUtil {
      * @param destDirName 目的目录完整路径
      * @return 文件移动成功返回true，否则返回false
      */
-    public boolean moveFile(String srcFileName, String destDirName) {
+    public static void moveFile(String srcFileName, String destDirName) {
         boolean result = false;
         FileInputStream fis = null;
         FileOutputStream fos = null;
@@ -216,7 +244,6 @@ public class FileUtil {
                 }
             }
         }
-        return result;
     }
 
     /**
@@ -226,7 +253,7 @@ public class FileUtil {
      * @param destDirName 目的目录完整路径
      * @return 目录移动成功返回true，否则返回false
      */
-    public boolean moveDirectory(String srcDirName, String destDirName) {
+    public static boolean moveDirectory(String srcDirName, String destDirName) {
 
         File srcDir = new File(srcDirName);
         if (!srcDir.exists() || !srcDir.isDirectory())
@@ -260,7 +287,7 @@ public class FileUtil {
      * @param destFileName 目的完整路径
      * @return 文件复制成功返回true，否则返回false
      */
-    public boolean copyFile(String srcFileName, String destFileName) {
+    public static boolean copyFile(String srcFileName, String destFileName) {
         boolean result = false;
         FileInputStream fis = null;
         FileOutputStream fos = null;
@@ -347,20 +374,15 @@ public class FileUtil {
 
     /**
      * 写入文件。
-     *
-     * @return content
      */
-    public static boolean writeFile(File file, String json) {
-        boolean result = false;
+    public static void writeFile(File file, String json) {
         OutputStream out = null;
         ByteArrayInputStream bais = null;
         BufferedOutputStream bos = null;
-        L.e("---------file.exist:" + file.exists() + "-->" + file.canRead() + "-->" + file.canWrite());
         if (file.exists())
             file.delete();
         try {
             out = new FileOutputStream(file);
-            L.e("-----------json:" + json + "---" + file.getAbsolutePath());
             bos = new BufferedOutputStream(out);
             bais = new ByteArrayInputStream(json.getBytes());
             int ret;
@@ -369,10 +391,8 @@ public class FileUtil {
                 bos.write(buf, 0, ret);
             }
             bos.flush();
-            result = true;
         } catch (Exception e) {
             e.printStackTrace();
-            L.e("----------e1:" + e);
         } finally {
             try {
                 if (bos != null)
@@ -386,6 +406,5 @@ public class FileUtil {
                 L.e("----------e2:" + e.getMessage());
             }
         }
-        return result;
     }
 }

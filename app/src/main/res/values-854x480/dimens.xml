@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="home_iv_w">607px</dimen>
+    <dimen name="home_iv_h">449px</dimen>
+    <dimen name="home_iv_margin_l">14px</dimen>
+    <dimen name="home_iv_margin_r">12px</dimen>
+    <dimen name="home_menu_margin_r">14px</dimen>
+    <dimen name="home_menu_bg_h">449px</dimen>
+    <dimen name="home_tv_time_margin_l">8px</dimen>
+    <dimen name="home_tv_time_margin_t">10px</dimen>
+    <dimen name="home_v_line_h">2px</dimen>
+    <dimen name="home_menu_w">100px</dimen>
+    <dimen name="home_menu_t">5px</dimen>
+    <dimen name="home_menu_padding_t">14px</dimen>
+    <dimen name="home_iv_menu_size">41px</dimen>
+</resources>

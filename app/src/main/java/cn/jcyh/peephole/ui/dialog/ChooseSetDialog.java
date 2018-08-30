@@ -1,7 +1,6 @@
 package cn.jcyh.peephole.ui.dialog;
 
 import android.content.DialogInterface;
-import android.media.MediaPlayer;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -12,8 +11,6 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.adapter.ChooseSetAdapter;
-import cn.jcyh.peephole.config.DoorbellConfig;
-import cn.jcyh.peephole.control.DoorBellControlCenter;
 
 
 public class ChooseSetDialog extends BaseDialogFragment {
@@ -23,10 +20,8 @@ public class ChooseSetDialog extends BaseDialogFragment {
     RecyclerView rvContent;
     private String mTitle;
     private ChooseSetAdapter mChooseSetAdapter;
-    private int mCurrentType;
+    //    private int mCurrentType;
     private String mCurrentData;
-    private DoorbellConfig mDoorbellConfig;
-    private MediaPlayer mPlayer;
 
     public String getTitle() {
         return mTitle;
@@ -40,9 +35,9 @@ public class ChooseSetDialog extends BaseDialogFragment {
         mChooseSetAdapter = chooseSetAdapter;
     }
 
-    public void setType(int type) {
-        mCurrentType = type;
-    }
+//    public void setType(int type) {
+//        mCurrentType = type;
+//    }
 
     @Override
     int getLayoutId() {
@@ -55,7 +50,6 @@ public class ChooseSetDialog extends BaseDialogFragment {
         if (!TextUtils.isEmpty(mTitle)) {
             tvTitle.setText(mTitle);
         }
-        mDoorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
         rvContent.setLayoutManager(new LinearLayoutManager(mActivity));
         if (mChooseSetAdapter != null) {
             rvContent.setAdapter(mChooseSetAdapter);
@@ -75,10 +69,10 @@ public class ChooseSetDialog extends BaseDialogFragment {
 
     @OnClick({R.id.tv_confirm, R.id.tv_cancel})
     public void onClick(View v) {
-        if (mOnDialogListener == null) return;
         switch (v.getId()) {
             case R.id.tv_confirm:
-                mOnDialogListener.onConfirm(mCurrentData);
+                if (mOnDialogListener != null)
+                    mOnDialogListener.onConfirm(mCurrentData);
                 break;
             case R.id.tv_cancel:
                 break;
@@ -89,6 +83,5 @@ public class ChooseSetDialog extends BaseDialogFragment {
     @Override
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
-
     }
 }

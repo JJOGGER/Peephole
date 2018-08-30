@@ -1,65 +1,80 @@
 package cn.jcyh.peephole.ui.fragment;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.TypedArray;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.telephony.TelephonyManager;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
+import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
-import android.text.style.AbsoluteSizeSpan;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.jakewharton.rxbinding2.view.RxView;
+import com.youth.banner.Banner;
 import com.youth.banner.loader.ImageLoader;
 
-import java.lang.ref.WeakReference;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseFragment;
-import cn.jcyh.peephole.config.DoorbellConfig;
-import cn.jcyh.peephole.control.BcManager;
-import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.constant.Constant;
+import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.entity.AdvertData;
+import cn.jcyh.peephole.entity.DoorbellConfig;
+import cn.jcyh.peephole.event.NetworkAction;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
+import cn.jcyh.peephole.ui.activity.BannerDescActivity;
 import cn.jcyh.peephole.ui.activity.DoorbellLookActivity;
 import cn.jcyh.peephole.utils.FileUtil;
 import cn.jcyh.peephole.utils.L;
-import cn.jcyh.peephole.utils.LunarCalendar;
+import cn.jcyh.peephole.utils.PhoneUtil;
 import cn.jcyh.peephole.utils.T;
-
-import static cn.jcyh.peephole.R.id.tv_time;
+import cn.jcyh.peephole.video.AVChatProfile;
+import cn.jcyh.peephole.widget.MsgCircleView;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 
 
 public class MainFragment extends BaseFragment {
-    @BindView(tv_time)
-    TextView tvTime;
-    @BindView(R.id.tv_date)
-    TextView tvDate;
-    @BindView(R.id.tv_date2)
-    TextView tvDate2;
-    @BindView(R.id.iv_home)
-    ImageView ivHome;
-    //    @BindView(R.id.banner)
-//    Banner banner;
+    private static final String IMAGE_DIR = "vnd.android.cursor.dir/image";
+    private static final String VIDEO_DIR = "vnd.android.cursor.dir/video";
+    //    @BindView(tv_time)
+//    TextView tvTime;
+//    @BindView(R.id.tv_date)
+//    TextView tvDate;
+//    @BindView(R.id.tv_date2)
+//    TextView tvDate2;
+//    @BindView(R.id.iv_home)
+//    ImageView ivHome;
+    @BindView(R.id.tv_monitor_switch)
+    TextView tvMonitorSwitch;
+    @BindView(R.id.banner)
+    Banner mBanner;
+    @BindView(R.id.tv_media_record_msg)
+    MsgCircleView tvMediaRecordMsg;
+    @BindView(R.id.tv_leave_message_msg)
+    MsgCircleView tvLeaveMessageMsg;
+    @SuppressLint("StaticFieldLeak")
     private static MainFragment sInstance;
     private ProgressDialog mProgressDialog;
     private DoorbellConfig mDoorbellConfig;
     private MyReceiver mReceiver;
+    private Disposable mSubscribe;
 
     public static MainFragment getInstance(Bundle bundle) {
         if (sInstance == null) {
@@ -81,101 +96,113 @@ public class MainFragment extends BaseFragment {
 
     @Override
     public void init() {
-        new TimeThread(this).start();
         mProgressDialog = new ProgressDialog(mActivity);
         mProgressDialog.setMessage(getString(R.string.waitting));
-        mDoorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
+        mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
         mReceiver = new MyReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_SCREEN_ON);
+        if (!EventBus.getDefault().isRegistered(this))
+            EventBus.getDefault().register(this);
         mActivity.registerReceiver(mReceiver, intentFilter);
-//        banner.setImageLoader(new GlideImageLoader());
+        mBanner.setImageLoader(new GlideImageLoader());
 //        banner.start();
 //        banner.setVisibility(View.GONE);
-        ivHome.setVisibility(View.VISIBLE);
+//        ivHome.setVisibility(View.VISIBLE);
+        //特殊处理的点击按钮
+        mSubscribe = RxView.clicks(tvMonitorSwitch)
+                .throttleFirst(1, TimeUnit.SECONDS)
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Object>() {
+                    @Override
+                    public void accept(Object o) {
+                        switchMonitor();
+                    }
+                });
+        initBanners();
     }
 
-    @OnClick({R.id.rl_media_record, R.id.rl_leave_message, R.id.rl_monitor_switch, R.id.rl_sos,
-            R.id.iv_home})
+    private void initBanners() {
+        HttpAction.getHttpAction().getBanners(7, new IDataListener<AdvertData>() {
+            @Override
+            public void onSuccess(AdvertData advertData) {
+                L.e("-------------advertData:" + advertData);
+                List<AdvertData.Advert> adverts = advertData.getAdverts();
+                mBanner.setImages(adverts);
+                mBanner.setDelayTime(advertData.getAdvertConfig().getDisplayTime() * 1000);
+                mBanner.start();
+            }
+
+            @Override
+            public void onFailure(int errorCode, String desc) {
+                L.e("-------------onFailure");
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        int doorbellMediaCount = ControlCenter.getDoorbellManager().getDoorbellMediaCount();
+        int doorbellLeaveMsgCount = ControlCenter.getDoorbellManager().getDoorbellLeaveMsgCount();
+        tvMediaRecordMsg.setVisibility(doorbellMediaCount > 0 ? View.VISIBLE : View.GONE);
+        tvLeaveMessageMsg.setVisibility(doorbellLeaveMsgCount > 0 ? View.VISIBLE : View.GONE);
+        tvMediaRecordMsg.setText(String.valueOf(doorbellMediaCount));
+        tvLeaveMessageMsg.setText(String.valueOf(doorbellLeaveMsgCount));
+    }
+
+    @OnClick({R.id.fl_media_record, R.id.fl_leave_message, R.id.tv_sos_number, R.id.tv_doorbell_look})
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.rl_media_record:
+            case R.id.fl_media_record:
+                ControlCenter.getDoorbellManager().setDoorbellMediaCount(0);
                 openAlbum();
                 break;
-            case R.id.rl_leave_message:
-                mActivity.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + FileUtil.getInstance().getDoorbellImgPath())));
+            case R.id.fl_leave_message:
+                //清空本地未查看记录
+                ControlCenter.getDoorbellManager().setDoorbellLeaveMsgCount(0);
+                mActivity.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + FileUtil.getDoorbellImgPath())));
                 Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.putExtra("type", 1);
-                intent.setType("vnd.android.cursor.dir/video");
+                intent.putExtra(Constant.TYPE, 1);
+                intent.setType(VIDEO_DIR);
                 startActivity(intent);
                 break;
-            case R.id.rl_monitor_switch:
-                if (mProgressDialog.isShowing()) return;
-                switchMonitor();
+            case R.id.tv_sos_number:
+                if (!PhoneUtil.isPhoneCallable()) {
+                    T.show(getString(R.string.no_sim_msg));
+                    return;
+                }
+                mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
+                if (!TextUtils.isEmpty(mDoorbellConfig.getSosNumber())) {
+                    if (!PhoneNumberUtils.isGlobalPhoneNumber(mDoorbellConfig.getSosNumber())) {
+                        T.show(R.string.phone_no_regex);
+                        return;
+                    }
+                    PhoneUtil.callPhone(mDoorbellConfig.getSosNumber());
+                } else {
+                    T.show(getString(R.string.no_sos_number));
+                }
                 break;
-            case R.id.rl_sos:
-                calSOS();
-                break;
-            case R.id.iv_home:
-//                intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);// 启动系统相机
-//                startActivity(intent);
-                if (!DoorBellControlCenter.sIsVideo)
+            case R.id.tv_doorbell_look:
+                if (!AVChatProfile.getInstance().isAVChatting())
                     startNewActivity(DoorbellLookActivity.class);
                 break;
         }
     }
 
-    private void calSOS() {
-        //检查是否有手机卡可用
-        TelephonyManager telMgr = (TelephonyManager)
-                mActivity.getSystemService(Context.TELEPHONY_SERVICE);
-        int simState = telMgr.getSimState();
-        boolean result = true;
-        switch (simState) {
-            case TelephonyManager.SIM_STATE_ABSENT:
-                result = false; // 没有SIM卡
-                break;
-            case TelephonyManager.SIM_STATE_UNKNOWN:
-                result = false;
-                break;
-        }
-        if (!result) {
-            T.show(getString(R.string.no_sim_msg));
-            return;
-        }
-        if (!TextUtils.isEmpty(mDoorbellConfig.getSosNumber())) {
-            Intent intent = new Intent(Intent.ACTION_CALL);
-            Uri data = Uri.parse("tel:" + mDoorbellConfig.getSosNumber());
-            intent.setData(data);
-            startActivity(intent);
-        } else {
-            T.show(getString(R.string.no_sos_number));
-        }
-    }
-
     private void switchMonitor() {
-        final DoorBellControlCenter controlCenter = DoorBellControlCenter.getInstance();
-        final DoorbellConfig doorbellConfig = controlCenter.getDoorbellConfig();
+        final DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
         doorbellConfig.setMonitorSwitch(1 - doorbellConfig.getMonitorSwitch());
-        HttpAction.getHttpAction().setDoorbellConfig(DoorBellControlCenter.getIMEI(),
-                doorbellConfig, new IDataListener<Boolean>() {
-                    @Override
-                    public void onSuccess(Boolean aBoolean) {
-                        controlCenter.saveDoorbellConfig(doorbellConfig);
-                        if (doorbellConfig.getMonitorSwitch() == 1) {
-                            T.show(R.string.monitor_opened);
-                        } else {
-                            T.show(R.string.monitor_closed);
-                        }
-                        BcManager.getManager().setPIRSensorOn(doorbellConfig.getMonitorSwitch()
-                                == 1);
-                    }
-
-                    @Override
-                    public void onFailure(int errorCode) {
-                        T.show(getString(R.string.set_failure) + errorCode);
-                    }
-                });
+        if (doorbellConfig.getMonitorSwitch() == 1) {
+            T.show(R.string.monitor_opened);
+        } else {
+            T.show(R.string.monitor_closed);
+        }
+        ControlCenter.getDoorbellManager().setDoorbellConfig(doorbellConfig);
+        ControlCenter.getBCManager().setPIRSensorOn(doorbellConfig.getMonitorSwitch()
+                == 1);
+        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getIMEI(),
+                doorbellConfig, null);
     }
 
     @Override
@@ -184,186 +211,40 @@ public class MainFragment extends BaseFragment {
         if (mProgressDialog != null && mProgressDialog.isShowing())
             mProgressDialog.dismiss();
         mActivity.unregisterReceiver(mReceiver);
+        mSubscribe.dispose();
+        if (EventBus.getDefault().isRegistered(this))
+            EventBus.getDefault().unregister(this);
     }
 
     /**
      * 打开系统相册
      */
     public void openAlbum() {
-        mActivity.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + FileUtil.getInstance().getDoorbellImgPath())));
+        mActivity.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + FileUtil.getDoorbellImgPath())));
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.putExtra("type", 1);
-        intent.setType("vnd.android.cursor.dir/image");
+        intent.putExtra(Constant.TYPE, 1);
+        intent.setType(IMAGE_DIR);
         startActivity(intent);
     }
 
-    private static class MyHandler extends Handler {
-        static final int WHAT = 0x001;
-        private WeakReference<MainFragment> mWeakReference;
-
-        private MyHandler(MainFragment fragment) {
-            mWeakReference = new WeakReference<>(fragment);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            MainFragment mainFragment = mWeakReference.get();
-            if (mainFragment == null || mainFragment.mActivity == null || mainFragment.mActivity.isFinishing() || mainFragment.mActivity.getFragmentManager() ==
-                    null)
-                return;
-            if (msg.what != WHAT) return;
-            Bundle data = msg.getData();
-            if (data == null) return;
-            try {
-                CharSequence spannableString = data.getCharSequence("spannableString", "");
-                if (mainFragment.tvTime != null)
-                    mainFragment.tvTime.setText(spannableString, TextView.BufferType.SPANNABLE);
-                if (mainFragment.tvDate != null)
-                    mainFragment.tvDate.setText(data.getString("date", ""));
-                if (mainFragment.tvDate2 != null)
-                    mainFragment.tvDate2.setText(data.getString("lunarDate", ""));
-            } catch (IndexOutOfBoundsException e) {
-                e.printStackTrace();
-            }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onNetworkAction(NetworkAction networkAction) {
+        if (NetworkAction.TYPE_NETWORK_CONNECTED.equals(networkAction.getType())) {
+            //
+            initBanners();
         }
     }
-
-    // 时间线程
-    @SuppressWarnings("InfiniteLoopStatement")
-    private static class TimeThread extends Thread {
-        private WeakReference<MainFragment> mWeakReference;
-        private SpannableStringBuilder mSpannableString;
-        private AbsoluteSizeSpan mSizeSpanTime;
-        private AbsoluteSizeSpan mSizeSpanAmPm;
-        private Date mHourMinDate;
-        private Date mSimpleDate;
-        private String mDate;
-        private SimpleDateFormat mHMformat;//时分转换
-        private SimpleDateFormat mYMDFormat;//年月日转换
-        private String mAmPm;
-        private final Calendar mCalendar;
-        private final String[] mLunarMonth;
-        private final String[] mLunarDay;
-        private boolean mStartTime = true;
-        private MyHandler mHandler;
-        private Bundle mHandleData;
-
-        TimeThread(MainFragment fragment) {
-            mWeakReference = new WeakReference<>(fragment);
-            mHandler = new MyHandler(fragment);
-            mHandleData = new Bundle();
-            mHourMinDate = new Date();
-            mSimpleDate = new Date();
-            mHMformat = new SimpleDateFormat("hh:mm");
-            mYMDFormat = new SimpleDateFormat("yyyy" + fragment.getString(R.string.year)
-                    + "MM" + fragment.getString(R.string.month) + "dd" + fragment.getString(R.string.day));
-            mCalendar = Calendar.getInstance();
-            // 农历月数组
-            TypedArray a = fragment.getResources().obtainTypedArray(R.array.setting_month);
-            int len0 = a.length();
-            mLunarMonth = new String[len0];
-            for (int i = 0; i < len0; i++) {
-                mLunarMonth[i] = fragment.getString(a.getResourceId(i, 0));
-            }
-            a.recycle();
-            // 农历日数组
-            TypedArray ar1 = fragment.getResources().obtainTypedArray(
-                    R.array.setting_ChinaDate);
-            int len1 = ar1.length();
-            mLunarDay = new String[len1];
-            for (int i = 0; i < len1; i++) {
-                mLunarDay[i] = fragment.getString(ar1.getResourceId(i, 0));
-            }
-            ar1.recycle();
-        }
-
-        @Override
-        public void run() {
-            super.run();
-            while (mStartTime) {
-                MainFragment mainFragment = mWeakReference.get();
-                if (mainFragment == null || mainFragment.mActivity == null || mainFragment.mActivity.isFinishing() || mainFragment.mActivity.getFragmentManager() ==
-                        null) {
-                    mStartTime = false;
-                    return;
-                }
-                long time = System.currentTimeMillis();
-                mCalendar.setTimeInMillis(time);
-                int apm = mCalendar.get(Calendar.AM_PM);
-                // apm=0 表示上午，apm=1表示下午。
-                mAmPm = apm == 0 ? mainFragment.getString(R.string.am) : mainFragment.getString(R.string.pm);//获取上下午
-                if (!TextUtils.isEmpty(mAmPm)) {
-                    mHourMinDate.setTime(System.currentTimeMillis());
-                    String hmTime = mHMformat.format(mHourMinDate);//获取时分
-                    if (mSpannableString == null) {
-                        mSpannableString = new SpannableStringBuilder(hmTime + " " + mAmPm);
-                        mSizeSpanTime = new AbsoluteSizeSpan(40);
-                        mSizeSpanAmPm = new AbsoluteSizeSpan(20);
-                    }
-                    mSpannableString.clear();
-                    mSpannableString.append(hmTime).append(" ").append(mAmPm);
-                    mSpannableString.setSpan(mSizeSpanTime, 0, hmTime.length(),
-                            Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-                    mSpannableString.setSpan(mSizeSpanAmPm, hmTime.length(), hmTime.length() + " ".length() + mAmPm.length(),
-                            Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-                    mHandleData.putCharSequence("spannableString", mSpannableString);
-                }
-
-                //设置年月日 星期
-                mSimpleDate.setTime(time);
-                mDate = mYMDFormat.format(mSimpleDate);//获取年月日
-                int week = mCalendar.get(Calendar.DAY_OF_WEEK);
-                // 星期换算
-                switch (week) {
-                    case Calendar.SUNDAY:
-                        mDate += " " + mainFragment.getString(R.string.sunday);
-                        break;
-                    case Calendar.MONDAY:
-                        mDate += " " + mainFragment.getString(R.string.monday);
-                        break;
-                    case Calendar.TUESDAY:
-                        mDate += " " + mainFragment.getString(R.string.tuesday);
-                        break;
-                    case Calendar.WEDNESDAY:
-                        mDate += " " + mainFragment.getString(R.string.wednesday);
-                        break;
-                    case Calendar.THURSDAY:
-                        mDate += " " + mainFragment.getString(R.string.thursday);
-                        break;
-                    case Calendar.FRIDAY:
-                        mDate += " " + mainFragment.getString(R.string.friday);
-                        break;
-                    case Calendar.SATURDAY:
-                        mDate += " " + mainFragment.getString(R.string.saturday);
-                        break;
-                    default:
-                        break;
-                }
-                mHandleData.putString("date", mDate);
-                //计算农历
-                int year = mCalendar.get(Calendar.YEAR);
-                int month = mCalendar.get(Calendar.MONTH) + 1;
-                int day = mCalendar.get(Calendar.DAY_OF_MONTH);
-                // 农历时间换算
-                int[] lunarDate = LunarCalendar.solarToLunar(year, month, day);
-                String ChinaYear = lunarDate[0] + "";//得到农历年
-                String ChinaMonth = mLunarMonth[lunarDate[1] - 1];//得到农历月
-                String ChinaDay = mLunarDay[lunarDate[2] - 1];//得到农历日
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                // TODO: 2018/6/20 java.lang.IllegalStateException: Fragment MainFragment{32be3539} not attached to Activity
-                mHandleData.putString("lunarDate", ChinaYear + mainFragment.getString(R.string.year) + ChinaMonth + ChinaDay);
-                Message message = Message.obtain();
-                message.what = MyHandler.WHAT;
-                message.setData(mHandleData);
-                mHandler.sendMessage(message);
-            }
-        }
-    }
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    public void onTimeUpdateAction(TimerUpdateAction updateAction) {
+//        try {
+//            CharSequence spannableString = updateAction.getCharSequenceExtra(Constant.TIME_AM_PM);
+//            tvTime.setText(spannableString, TextView.BufferType.SPANNABLE);
+//            tvDate.setText(updateAction.getStringExtra(Constant.DATE));
+//            tvDate2.setText(updateAction.getStringExtra(Constant.LUNAR_DATE));
+//        } catch (IndexOutOfBoundsException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     private class MyReceiver extends BroadcastReceiver {
         @Override
@@ -395,12 +276,20 @@ public class MainFragment extends BaseFragment {
 
     public class GlideImageLoader extends ImageLoader {
         @Override
-        public void displayImage(Context context, Object path, ImageView imageView) {
+        public void displayImage(Context context, final Object path, ImageView imageView) {
             //Glide 加载图片简单用法
-            Glide.with(context).load(path).into(imageView);
-        }
+            Glide.with(context).
+                    load(((AdvertData.Advert) path).getImageUrl())
+                    .error(R.mipmap.no_banner)
+                    .into(imageView);
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    startNewActivity(BannerDescActivity.class, Constant.URL, ((AdvertData.Advert) path).getUrl());
+                }
+            });
+        }//提供createImageView 方法，如果不用可以不重写这个方法，主要是方便自定义ImageView的创建
 
-        //提供createImageView 方法，如果不用可以不重写这个方法，主要是方便自定义ImageView的创建
         @Override
         public ImageView createImageView(Context context) {
             return new ImageView(context);

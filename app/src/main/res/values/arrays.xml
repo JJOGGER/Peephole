@@ -53,4 +53,53 @@
         <item>@string/twenty_s</item>
     </string-array>
 
+
+    <string-array name="SETTINT_TITLE">
+        <item>@string/wifi_network</item>
+        <item>@string/device</item>
+        <item>@string/personal</item>
+        <item>@string/system</item>
+    </string-array>
+
+    <string-array name="SETTING_WIFI_NETWORK">
+        <item>@string/wlan</item>
+        <item>@string/bluetooth</item>
+        <item>@string/flow_use_desc</item>
+        <item>@string/more</item>
+    </string-array>
+    <integer-array name="SETTING_WIFI_NETWORK_RES">
+        <item>@mipmap/ic_wifi</item>
+        <item>@mipmap/ic_bluetooth</item>
+        <item>@mipmap/ic_flow</item>
+        <item>@mipmap/ic_more</item>
+    </integer-array>
+
+    <string-array name="SETTING_DEVICE">
+        <item>@string/show</item>
+        <item>@string/battery</item>
+        <item>@string/storage</item>
+        <item>@string/app</item>
+    </string-array>
+    <integer-array name="SETTING_DEVICE_RES">
+        <item>@mipmap/ic_show</item>
+        <item>@mipmap/ic_battery</item>
+        <item>@mipmap/ic_storage</item>
+        <item>@mipmap/ic_app</item>
+    </integer-array>
+
+    <string-array name="SETTING_PERSONAL">
+        <item>@string/language</item>
+        <!--<item>@string/mark_reset</item>-->
+    </string-array>
+    <integer-array name="SETTING_PERSONAL_RES">
+        <item>@mipmap/ic_language</item>
+        <!--<item>@mipmap/wifi</item>-->
+    </integer-array>
+
+    <string-array name="SETTING_SYSTEM">
+        <item>@string/date_time</item>
+    </string-array>
+    <string-array name="SETTING_SYSTEM_RES">
+        <item>@mipmap/ic_date</item>
+    </string-array>
 </resources>

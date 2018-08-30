@@ -5,7 +5,81 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     android:orientation="vertical"
     tools:context="cn.jcyh.peephole.ui.activity.AboutActivity">
 
+    <include layout="@layout/doorbell_title_layout"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="16dp"
+        android:paddingTop="22dp"
+        android:text="@string/android_version"
+        android:textColor="@color/black_333333"
+        android:textSize="18sp"/>
+
+    <TextView
+        android:id="@+id/tv_version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="4dp"
+        android:paddingLeft="16dp"
+        android:paddingTop="4dp"
+        android:text="@string/android_version"
+        android:textColor="@color/black_333333"
+        android:textSize="12sp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:background="@color/gray_dedede"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="16dp"
+        android:paddingTop="22dp"
+        android:text="@string/version_code"
+        android:textColor="@color/black_333333"
+        android:textSize="18sp"/>
+
+    <TextView
+        android:id="@+id/tv_version_code"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="4dp"
+        android:paddingLeft="16dp"
+        android:paddingTop="4dp"
+        android:text="@string/android_version"
+        android:textColor="@color/black_333333"
+        android:textSize="12sp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:background="@color/gray_dedede"/>
+
+    <TextView
+        android:id="@+id/tv_wifi_update"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="4dp"
+        android:paddingLeft="16dp"
+        android:paddingTop="22dp"
+        android:text="@string/wifi_update"
+        android:textColor="@color/black_333333"
+        android:textSize="18sp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:background="@color/gray_dedede"/>
 </LinearLayout>

@@ -8,9 +8,10 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/anychat" />
+            <option value="$PROJECT_DIR$/OpenCVLibrary320" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/eaglelock" />
+            <option value="$PROJECT_DIR$/nimlib" />
             <option value="$PROJECT_DIR$/zxinglib" />
           </set>
         </option>

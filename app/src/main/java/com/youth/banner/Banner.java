@@ -132,7 +132,7 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
         titleTextColor = typedArray.getColor(R.styleable.Banner_title_textcolor, BannerConfig.TITLE_TEXT_COLOR);
         titleTextSize = typedArray.getDimensionPixelSize(R.styleable.Banner_title_textsize, BannerConfig.TITLE_TEXT_SIZE);
         mLayoutResId = typedArray.getResourceId(R.styleable.Banner_banner_layout, mLayoutResId);
-        bannerBackgroundImage = typedArray.getResourceId(R.styleable.Banner_banner_default_image, R.drawable.no_banner);
+        bannerBackgroundImage = typedArray.getResourceId(R.styleable.Banner_banner_default_image, R.mipmap.no_banner);
         typedArray.recycle();
     }
 

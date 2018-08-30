@@ -1,19 +1,18 @@
 package cn.jcyh.peephole.ui.dialog;
 
 import android.content.DialogInterface;
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.media.MediaPlayer;
+import android.content.Intent;
 import android.view.View;
 import android.widget.SeekBar;
-
-import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.OnClick;
 import cn.jcyh.peephole.R;
-import cn.jcyh.peephole.config.DoorbellConfig;
-import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.constant.Constant;
+import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.entity.DoorbellConfig;
+import cn.jcyh.peephole.service.MediaPlayService;
+import cn.jcyh.peephole.utils.ServiceUtil;
 
 /**
  * Created by jogger on 2018/5/11.
@@ -25,10 +24,7 @@ public class VolumeSetDialog extends BaseDialogFragment implements SeekBar.OnSee
     SeekBar sbDoorbell;
     @BindView(R.id.sb_alarm)
     SeekBar sbAlarm;
-    private MediaPlayer mPlayer;
     private DoorbellConfig mDoorbellConfig;
-    private static final int TYPE_RING = 0X01;
-    private static final int TYPE_ALARM = 0X02;
 
     @Override
     int getLayoutId() {
@@ -44,14 +40,14 @@ public class VolumeSetDialog extends BaseDialogFragment implements SeekBar.OnSee
     @Override
     public void onResume() {
         super.onResume();
-        mDoorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
+        mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
         sbDoorbell.setProgress(mDoorbellConfig.getRingVolume());
         sbAlarm.setProgress(mDoorbellConfig.getAlarmVolume());
     }
 
     @OnClick(R.id.tv_confirm)
     public void onClick(View v) {
-        DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
+        ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
         dismiss();
     }
 
@@ -66,14 +62,23 @@ public class VolumeSetDialog extends BaseDialogFragment implements SeekBar.OnSee
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
+        Intent intent = new Intent(mActivity, MediaPlayService.class);
         switch (seekBar.getId()) {
             case R.id.sb_doorbell:
+                ControlCenter.getBCManager().setMainSpeakerOn(true);
                 mDoorbellConfig.setRingVolume(seekBar.getProgress());
-                play(TYPE_RING, seekBar.getProgress());
+                intent.putExtra(Constant.RESOURCE_PATH, mDoorbellConfig.getDoorbellRingName());
+                intent.putExtra(Constant.VOLUME, seekBar.getProgress() / 100f);
+                mActivity.startService(intent);
+//                play(TYPE_RING, seekBar.getProgress());
                 break;
             case R.id.sb_alarm:
+                ControlCenter.getBCManager().setMainSpeakerOn(false);
                 mDoorbellConfig.setAlarmVolume(seekBar.getProgress());
-                play(TYPE_ALARM, seekBar.getProgress());
+                intent.putExtra(Constant.RESOURCE_PATH, mDoorbellConfig.getDoorbellAlarmName());
+                intent.putExtra(Constant.VOLUME, seekBar.getProgress() / 100f);
+                mActivity.startService(intent);
+//                play(TYPE_ALARM, seekBar.getProgress());
                 break;
         }
     }
@@ -81,35 +86,6 @@ public class VolumeSetDialog extends BaseDialogFragment implements SeekBar.OnSee
     @Override
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
-        if (mPlayer != null) {
-            mPlayer.stop();
-            mPlayer.release();
-            mPlayer = null;
-        }
-    }
-
-    private void play(int type, int progress) {
-        try {
-            AssetFileDescriptor descriptor;
-            AssetManager assets = getResources().getAssets();
-            if (type == TYPE_RING) {
-                descriptor = assets.openFd("ring/" + mDoorbellConfig.getDoorbellRingName());
-            } else {
-                descriptor = assets.openFd("alarm/" + mDoorbellConfig.getDoorbellAlarmName());
-            }
-            if (mPlayer == null) {
-                mPlayer = new MediaPlayer();
-                mPlayer.setLooping(false);
-            } else {
-                mPlayer.stop();
-                mPlayer.reset();
-            }
-            mPlayer.setVolume(progress / 100f, progress / 100f);
-            mPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
-            mPlayer.prepare();
-            mPlayer.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        ServiceUtil.stopService(MediaPlayService.class);
     }
 }

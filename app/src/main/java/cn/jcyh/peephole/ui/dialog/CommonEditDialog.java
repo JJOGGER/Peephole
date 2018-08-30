@@ -1,5 +1,6 @@
 package cn.jcyh.peephole.ui.dialog;
 
+import android.text.InputType;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
@@ -20,6 +21,8 @@ public class CommonEditDialog extends BaseDialogFragment {
     EditText etContent;
     private String mTitle;
     private String mContent;
+    private String mHintContent;
+    private int mType = InputType.TYPE_CLASS_NUMBER;
 
     @Override
     int getLayoutId() {
@@ -42,11 +45,30 @@ public class CommonEditDialog extends BaseDialogFragment {
         mContent = content;
     }
 
+    public String getHintContent() {
+        return mHintContent;
+    }
+
+    public void setHintContent(String hintContent) {
+        mHintContent = hintContent;
+    }
+
+    public int getType() {
+        return mType;
+    }
+
+    public void setType(int type) {
+        mType = type;
+    }
+
     @Override
     protected void init(View view) {
         super.init(view);
         if (!TextUtils.isEmpty(mTitle))
             tvTitle.setText(mTitle);
+        if (!TextUtils.isEmpty(mHintContent))
+            etContent.setHint(mHintContent);
+        etContent.setInputType(mType);
     }
 
     @Override

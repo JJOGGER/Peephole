@@ -61,22 +61,5 @@ public class Constant {
     public static final String PWD_RESET_TIMESTAMP = "pwd_reset_timestamp";
     public static final String UNIQUE_ID = "unique_id";
     public static final String LOCK_ADDRESS = "lock_address";
-    public static final String FILE_PATH = "filePath";
-    public static final String DW_USERID = "dw_userid";
-    public static final String FILE_LENGTH = "file_length";
-    public static final String W_PARAM = "w_param";
-    public static final String L_PARAM = "l_param";
-    public static final String DW_TASK_ID = "dw_task_id";
-    public static final String RESULT = "result";
-    public static final String COMMAND = "command";
-    public static final String FILE_NAME = "file_name";
-    public static final String DW_ERROR_CODE = "dw_error_code";
-    public static final String DW_ROOM_ID = "dw_room_id";
-    public static final String DW_USER_NUM = "dw_user_num";
-    public static final String ENTER = "enter";
-    public static final String DW_TYPE = "dw_type";
-    public static final String DW_STATUS = "dw_status";
-    public static final String DW_FLAGS = "dw_flags";
-    public static final String DW_PARAM = "dw_param";
-    public static final String USER_STR = "user_str";
+
 }

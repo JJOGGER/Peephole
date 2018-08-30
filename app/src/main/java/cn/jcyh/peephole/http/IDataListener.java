@@ -5,7 +5,8 @@ package cn.jcyh.peephole.http;
  */
 
 public interface IDataListener<T> {
+
     void onSuccess(T t);
 
-    void onFailure(int errorCode);
+    void onFailure(int errorCode, String desc);
 }

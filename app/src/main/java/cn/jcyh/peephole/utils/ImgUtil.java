@@ -31,7 +31,7 @@ public class ImgUtil {
             Context context, Bitmap src, Bitmap watermark,
             int paddingLeft, int paddingTop) {
         return createWaterMaskBitmap(src, watermark,
-                dp2px(context, paddingLeft), dp2px(context, paddingTop));
+                dp2px(paddingLeft), dp2px(paddingTop));
     }
 
 
@@ -65,8 +65,8 @@ public class ImgUtil {
             Context context, Bitmap src, Bitmap watermark,
             int paddingRight, int paddingBottom) {
         return createWaterMaskBitmap(src, watermark,
-                src.getWidth() - watermark.getWidth() - dp2px(context, paddingRight),
-                src.getHeight() - watermark.getHeight() - dp2px(context, paddingBottom));
+                src.getWidth() - watermark.getWidth() - dp2px(paddingRight),
+                src.getHeight() - watermark.getHeight() - dp2px(paddingBottom));
     }
 
     /**
@@ -76,8 +76,8 @@ public class ImgUtil {
             Context context, Bitmap src, Bitmap watermark,
             int paddingRight, int paddingTop) {
         return createWaterMaskBitmap(src, watermark,
-                src.getWidth() - watermark.getWidth() - dp2px(context, paddingRight),
-                dp2px(context, paddingTop));
+                src.getWidth() - watermark.getWidth() - dp2px(paddingRight),
+                dp2px(paddingTop));
     }
 
     /**
@@ -86,8 +86,8 @@ public class ImgUtil {
     public static Bitmap createWaterMaskLeftBottom(
             Context context, Bitmap src, Bitmap watermark,
             int paddingLeft, int paddingBottom) {
-        return createWaterMaskBitmap(src, watermark, dp2px(context, paddingLeft),
-                src.getHeight() - watermark.getHeight() - dp2px(context, paddingBottom));
+        return createWaterMaskBitmap(src, watermark, dp2px(paddingLeft),
+                src.getHeight() - watermark.getHeight() - dp2px(paddingBottom));
     }
 
     /**
@@ -106,18 +106,18 @@ public class ImgUtil {
                                            int size, int color, int paddingLeft, int paddingTop) {
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(color);
-        paint.setTextSize(dp2px(context, size));
+        paint.setTextSize(dp2px(size));
         Rect bounds = new Rect();
         paint.getTextBounds(text, 0, text.length(), bounds);
-        return drawTextToBitmap(context, bitmap, text, paint, bounds,
-                dp2px(context, paddingLeft),
-                dp2px(context, paddingTop) + bounds.height());
+        return drawTextToBitmap(bitmap, text, paint, bounds,
+                dp2px(paddingLeft),
+                dp2px(paddingTop) + bounds.height());
     }
 
     /**
      * 绘制文字到右下角
      */
-    public static Bitmap drawTextToRightBottom(Context context, Bitmap bitmap, String text,
+    public static Bitmap drawTextToRightBottom(Bitmap bitmap, String text,
                                                int size, int color, int paddingRight, int
                                                        paddingBottom) {
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -125,7 +125,7 @@ public class ImgUtil {
         paint.setTextSize(size);
         Rect bounds = new Rect();
         paint.getTextBounds(text, 0, text.length(), bounds);
-        return drawTextToBitmap(context, bitmap, text, paint, bounds,
+        return drawTextToBitmap(bitmap, text, paint, bounds,
                 bitmap.getWidth() - bounds.width() - paddingRight,
                 bitmap.getHeight() - paddingBottom);
     }
@@ -137,12 +137,12 @@ public class ImgUtil {
                                             int size, int color, int paddingRight, int paddingTop) {
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(color);
-        paint.setTextSize(dp2px(context, size));
+        paint.setTextSize(dp2px(size));
         Rect bounds = new Rect();
         paint.getTextBounds(text, 0, text.length(), bounds);
-        return drawTextToBitmap(context, bitmap, text, paint, bounds,
-                bitmap.getWidth() - bounds.width() - dp2px(context, paddingRight),
-                dp2px(context, paddingTop) + bounds.height());
+        return drawTextToBitmap(bitmap, text, paint, bounds,
+                bitmap.getWidth() - bounds.width() - dp2px(paddingRight),
+                dp2px(paddingTop) + bounds.height());
     }
 
     /**
@@ -153,12 +153,12 @@ public class ImgUtil {
                                                       paddingBottom) {
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(color);
-        paint.setTextSize(dp2px(context, size));
+        paint.setTextSize(dp2px(size));
         Rect bounds = new Rect();
         paint.getTextBounds(text, 0, text.length(), bounds);
-        return drawTextToBitmap(context, bitmap, text, paint, bounds,
-                dp2px(context, paddingLeft),
-                bitmap.getHeight() - dp2px(context, paddingBottom));
+        return drawTextToBitmap(bitmap, text, paint, bounds,
+                dp2px(paddingLeft),
+                bitmap.getHeight() - dp2px(paddingBottom));
     }
 
     /**
@@ -168,16 +168,16 @@ public class ImgUtil {
                                           int size, int color) {
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(color);
-        paint.setTextSize(dp2px(context, size));
+        paint.setTextSize(dp2px(size));
         Rect bounds = new Rect();
         paint.getTextBounds(text, 0, text.length(), bounds);
-        return drawTextToBitmap(context, bitmap, text, paint, bounds,
+        return drawTextToBitmap(bitmap, text, paint, bounds,
                 (bitmap.getWidth() - bounds.width()) / 2,
                 (bitmap.getHeight() + bounds.height()) / 2);
     }
 
     //图片上绘制文字
-    private static Bitmap drawTextToBitmap(Context context, Bitmap bitmap, String text,
+    private static Bitmap drawTextToBitmap(Bitmap bitmap, String text,
                                            Paint paint, Rect bounds, int paddingLeft, int
                                                    paddingTop) {
         android.graphics.Bitmap.Config bitmapConfig = bitmap.getConfig();
@@ -219,8 +219,8 @@ public class ImgUtil {
     /**
      * dip转pix
      */
-    private static int dp2px(Context context, float dp) {
-        final float scale = context.getResources().getDisplayMetrics().density;
+    private static int dp2px(float dp) {
+        final float scale = Util.getApp().getResources().getDisplayMetrics().density;
         return (int) (dp * scale + 0.5f);
     }
 
@@ -230,8 +230,8 @@ public class ImgUtil {
     public static boolean createWaterMaskRightBottom2File(Context context, String filePath, Bitmap
             src, Bitmap watermark, int paddingRight, int paddingBottom) {
         Bitmap waterMaskBitmap = createWaterMaskBitmap(src, watermark,
-                src.getWidth() - watermark.getWidth() - dp2px(context, paddingRight),
-                src.getHeight() - watermark.getHeight() - dp2px(context, paddingBottom));
+                src.getWidth() - watermark.getWidth() - dp2px(paddingRight),
+                src.getHeight() - watermark.getHeight() - dp2px(paddingBottom));
         File file = new File(filePath);
         BufferedOutputStream bos = null;
         try {
@@ -258,11 +258,11 @@ public class ImgUtil {
     }
 
 
-    public static boolean createWaterMaskWidthText(Context context, String filePath, String thumbPath, Bitmap
+    public static boolean createWaterMaskWidthText(String filePath, String thumbPath, Bitmap
             src, Bitmap watermark, String text, int heightPixels, int widthPixels) {
         L.e("---->h:" + heightPixels + "---w:" + widthPixels);
 //        Bitmap waterMaskBitmap = createWaterMaskBitmap(src, watermark, 30, 24);
-        Bitmap bitmap = drawTextToRightBottom(context, src, text, ScreenUtil.dip2px(context, 64), Color.WHITE, ScreenUtil.dip2px(context, 15), ScreenUtil.dip2px(context, 12));
+        Bitmap bitmap = drawTextToRightBottom(src, text, ScreenUtil.dip2px(64), Color.WHITE, ScreenUtil.dip2px( 15), ScreenUtil.dip2px( 12));
         File file = new File(filePath);
         BufferedOutputStream bos = null;
         try {

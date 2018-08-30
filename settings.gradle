@@ -1,1 +1,1 @@
-include ':app', ':anychat', ':zxinglib', ':eaglelock'
+include ':app', ':zxinglib', ':eaglelock', ':nimlib',':OpenCVLibrary320'

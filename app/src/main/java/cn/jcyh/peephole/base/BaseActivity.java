@@ -1,5 +1,6 @@
 package cn.jcyh.peephole.base;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
@@ -9,14 +10,16 @@ import android.os.Parcelable;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 
+import com.umeng.analytics.MobclickAgent;
+
 import java.io.Serializable;
 
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.control.ActivityCollector;
-import cn.jcyh.peephole.control.DoorBellControlCenter;
+import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.utils.StatusUtil;
-import cn.jcyh.peephole.utils.Util;
 
 /**
  * Created by jogger on 2018/1/10.
@@ -26,6 +29,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     private static final int STATUS_COLOR = Color.parseColor("#3f000000");
     public String IMEI;
     private Unbinder mBind;
+    private ProgressDialog mProgressDialog;
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -44,7 +48,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         if (isFullScreen()) {
             statusUtil.setActivityFullScreen(this);
         }
-        IMEI = DoorBellControlCenter.getIMEI();
+        IMEI = ControlCenter.getIMEI();
         init();
         loadData();
     }
@@ -52,11 +56,13 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        MobclickAgent.onResume(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        MobclickAgent.onPause(this);
     }
 
     protected void init() {
@@ -163,6 +169,41 @@ public abstract class BaseActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public boolean isDialogShowing() {
+        if (isFinishing() || getSupportFragmentManager() == null)
+            return false;
+        return mProgressDialog != null && mProgressDialog.isShowing();
+    }
+
+    public void showProgressDialog(String message) {
+        if (isFinishing() || getSupportFragmentManager() == null)
+            return;
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(this);
+        }
+        mProgressDialog.setMessage(message);
+        if (!mProgressDialog.isShowing())
+            mProgressDialog.show();
+    }
+
+    public void cancelProgressDialog() {
+        if (mProgressDialog == null) return;
+        if (mProgressDialog.isShowing())
+            mProgressDialog.cancel();
+        mProgressDialog = null;
+    }
+
+    public void showProgressDialog() {
+        if (isFinishing() || getSupportFragmentManager() == null)
+            return;
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(this);
+            mProgressDialog.setMessage(getString(R.string.waiting));
+        }
+        if (!mProgressDialog.isShowing())
+            mProgressDialog.show();
+    }
+
 
     public void startNewActivity(Class cls, Bundle bundle) {
         Intent intent = new Intent(this, cls);
@@ -173,8 +214,9 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        cancelProgressDialog();
         ActivityCollector.removeActivity(this);
-        Util.watch(this);
+//        Util.watch(this);
         mBind.unbind();
     }
 }

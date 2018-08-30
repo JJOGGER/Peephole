@@ -4,6 +4,9 @@ import android.os.Handler;
 
 import com.google.gson.Gson;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.util.Map;
 
@@ -18,12 +21,12 @@ import cn.jcyh.peephole.utils.ParseJsonUtil;
 class HttpTask implements Runnable {
     //含有请求服务器的接口引用
     private IHttpService mHttpService;
-    private Gson mGson;
     private Handler mHandler;
 
     /**
      * 上传文件
      */
+
     HttpTask(String url, File file, IHttpListener httpListener) {
 //        mHttpService = new UploadHttpService();
 //        mHttpService.setUrl(url);
@@ -33,26 +36,36 @@ class HttpTask implements Runnable {
 //        ((UploadHttpService) mHttpService).setFilePath(file.getAbsolutePath());
     }
 
-    <T> HttpTask(String url, Map<String, Object> params, final IDataListener<T> listener) {
-        mGson = new Gson();
+    <T> HttpTask(final String url, final Map<String, Object> params, final Class<T> clazz, final IDataListener listener) {
         mHandler = new Handler();
+//        final Class<T> entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
         mHttpService = new JsonHttpService();
         mHttpService.setUrl(url);
         mHttpService.setParams(params);
         mHttpService.setHttpListener(new IHttpListener() {
             @Override
             public void onSuccess(final String result) {
-                L.e("------------result:" + result);
                 if (listener != null) {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            final int code = ParseJsonUtil.getErrorCode(result);
+                            L.e("----------------result:"+result+":"+url);
+                            int code = ParseJsonUtil.getErrorCode(result);
+                            String desc = ParseJsonUtil.getErrorDesc(result);
                             if (code == 200) {
-                                final HttpResult<T> httpResult = mGson.fromJson(result, HttpResult.class);
-                                listener.onSuccess(httpResult.getData());
+//                                final HttpResult httpResult = new HttpResult();
+                                try {
+                                    JSONObject jsonObject = new JSONObject(result);
+                                    JSONObject data = jsonObject.getJSONObject("data");
+                                    T t = new Gson().fromJson(data.toString(), clazz);
+                                    listener.onSuccess(t);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
                             } else {
-                                listener.onFailure(code);
+                                listener.onFailure(code, desc);
+                                L.e("-------result:" + result + url);
                             }
                         }
                     });
@@ -65,11 +78,10 @@ class HttpTask implements Runnable {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            listener.onFailure(-1);
+                            listener.onFailure(-1, "");
                         }
                     });
                 }
-
             }
         });
     }

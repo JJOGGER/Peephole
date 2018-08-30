@@ -42,4 +42,14 @@ public class ParseJsonUtil {
         }
         return code;
     }
+    public static String getErrorDesc(String str) {
+        String desc = "";
+        try {
+            JSONObject json = new JSONObject(str);
+            desc = json.getString("desc");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return desc;
+    }
 }

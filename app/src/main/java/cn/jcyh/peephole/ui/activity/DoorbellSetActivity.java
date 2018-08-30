@@ -6,9 +6,8 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
-import cn.jcyh.peephole.config.DoorbellConfig;
-import cn.jcyh.peephole.control.DoorBellControlCenter;
-import cn.jcyh.peephole.http.HttpAction;
+import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.entity.DoorbellConfig;
 import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.widget.MyDeviceParam;
@@ -37,7 +36,7 @@ public class DoorbellSetActivity extends BaseActivity {
 
     @Override
     public void init() {
-        mDoorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
+        mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
         initView();
     }
 
@@ -178,16 +177,16 @@ public class DoorbellSetActivity extends BaseActivity {
      */
     private void setParam() {
         //保存到服务器
-        HttpAction.getHttpAction().setDoorbellConfig(IMEI, mDoorbellConfig, new IDataListener<Boolean>() {
+        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(IMEI, mDoorbellConfig, new IDataListener<Boolean>() {
             @Override
             public void onSuccess(Boolean aBoolean) {
                 L.e("----------设置成功"+mDoorbellConfig);
                 //保存到本地
-                DoorBellControlCenter.getInstance().saveDoorbellConfig(mDoorbellConfig);
+                ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
             }
 
             @Override
-            public void onFailure(int errorCode) {
+            public void onFailure(int errorCode, String desc) {
 
             }
         });

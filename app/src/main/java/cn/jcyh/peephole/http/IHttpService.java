@@ -16,5 +16,5 @@ public interface IHttpService {
      */
     void excute();
 
-    void setHttpListener(IHttpListener listener);
+    <T> void setHttpListener(T listener);
 }

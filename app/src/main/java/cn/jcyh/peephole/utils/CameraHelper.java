@@ -8,7 +8,7 @@
 //import android.view.SurfaceHolder;
 //import android.view.WindowManager;
 //
-//import com.bairuitech.anychat.AnyChatCameraHelper;
+//import com.bairuitech.anychat.VideoCameraHelper;
 //import com.bairuitech.anychat.AnyChatCoreSDK;
 //import com.bairuitech.anychat.AnyChatDefine;
 //

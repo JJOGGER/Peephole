@@ -17,7 +17,7 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile rootProject.ext.dependencies.junit
-    compile rootProject.ext.dependencies.appcompatV7
+    api fileTree(include: ['*.jar'], dir: 'libs')
+    testImplementation rootProject.ext.dependencies.junit
+    implementation rootProject.ext.dependencies.appcompatV7
 }

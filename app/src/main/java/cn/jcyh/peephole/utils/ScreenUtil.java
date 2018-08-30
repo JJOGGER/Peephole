@@ -11,15 +11,15 @@ public class ScreenUtil {
     /**
      * 获取屏幕宽度
      */
-    public static int getSrceenWidth(Context context) {
-        return context.getApplicationContext().getResources().getDisplayMetrics().widthPixels;
+    public static int getSrceenWidth() {
+        return Util.getApp().getResources().getDisplayMetrics().widthPixels;
     }
 
     /**
      * 获取屏幕高度
      */
-    public static int getSrceenHeight(Context context) {
-        return context.getApplicationContext().getResources().getDisplayMetrics().heightPixels;
+    public static int getSrceenHeight() {
+        return Util.getApp().getResources().getDisplayMetrics().heightPixels;
     }
 
     /**
@@ -41,9 +41,10 @@ public class ScreenUtil {
      */
     public static int getStatusBarHeight(Context context) {
         Resources resources = context.getApplicationContext().getResources();
-        int resourceId = resources.getIdentifier("navigation_bar_height","dimen", "android");
+        int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
         return resources.getDimensionPixelSize(resourceId);
     }
+
     /**
      * sp转px
      *
@@ -78,11 +79,12 @@ public class ScreenUtil {
     public static float px2sp(Context context, float pxVal) {
         return (pxVal / context.getApplicationContext().getResources().getDisplayMetrics().scaledDensity);
     }
+
     /**
      * 根据手机的分辨率从 dp 的单位 转成为 px(像素)
      */
-    public static int dip2px(Context context, int dpValue) {
-        final float scale = context.getApplicationContext().getResources().getDisplayMetrics().density;
+    public static int dip2px(int dpValue) {
+        final float scale = Util.getApp().getResources().getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);
     }
 }

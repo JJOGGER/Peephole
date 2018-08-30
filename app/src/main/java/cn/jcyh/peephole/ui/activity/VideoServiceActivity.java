@@ -1,25 +1,37 @@
 package cn.jcyh.peephole.ui.activity;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.support.v4.content.LocalBroadcastManager;
+import android.media.AudioManager;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.Observer;
+import com.netease.nimlib.sdk.StatusCode;
+import com.netease.nimlib.sdk.auth.AuthServiceObserver;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import butterknife.BindView;
 import butterknife.OnClick;
-import cn.jcyh.eaglelock.constant.Constant;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
-import cn.jcyh.peephole.config.DoorbellConfig;
-import cn.jcyh.peephole.control.BcManager;
-import cn.jcyh.peephole.control.DoorBellControlCenter;
-import cn.jcyh.peephole.utils.ConstantUtil;
+import cn.jcyh.peephole.constant.Constant;
+import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.entity.DoorbellConfig;
+import cn.jcyh.peephole.entity.User;
+import cn.jcyh.peephole.event.AVChatAction;
+import cn.jcyh.peephole.http.IDataListener;
+import cn.jcyh.peephole.ui.dialog.CommonEditDialog;
+import cn.jcyh.peephole.ui.dialog.DialogHelper;
+import cn.jcyh.peephole.ui.dialog.OnDialogListener;
 import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.T;
+import cn.jcyh.peephole.video.AVChatProfile;
 
 public class VideoServiceActivity extends BaseActivity {
     @BindView(R.id.tv_state)
@@ -28,10 +40,8 @@ public class VideoServiceActivity extends BaseActivity {
     TextView tvDeviceNumber;
     @BindView(R.id.tv_device_name)
     TextView tvDeviceName;
-    private MyReceiver mReceiver;
-
-    private DoorBellControlCenter mControlCenter;
-
+    private DialogHelper mNameDialog;
+    private DoorbellConfig mDoorbellConfig;
 
     @Override
     public int getLayoutId() {
@@ -41,53 +51,102 @@ public class VideoServiceActivity extends BaseActivity {
     @Override
     protected void init() {
         tvDeviceNumber.setText(String.format(getString(R.string.device_no_), IMEI));
-        DoorbellConfig doorbellConfig = DoorBellControlCenter.getInstance().getDoorbellConfig();
-        tvDeviceName.setText(TextUtils.isEmpty(doorbellConfig.getNickName()) ? IMEI : doorbellConfig.getNickName() + "(" + IMEI + ")");
-        if (DoorBellControlCenter.sIsAnychatLogin) {
-            if (DoorBellControlCenter.sIsVideo && DoorBellControlCenter.sCurrentVideoUser != null) {
-                tvState.setText(String.format(getString(R.string.video_with_user_format), DoorBellControlCenter.sCurrentVideoUser.getAccount()));
+        mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
+        if (mDoorbellConfig.getDoorbell() != null && TextUtils.isEmpty(mDoorbellConfig.getDoorbell().getName())) {
+            tvDeviceName.setText(R.string.click_update_name);
+        } else {
+            tvDeviceName.setText(mDoorbellConfig.getDoorbell().getName());
+        }
+        StatusCode status = NIMClient.getStatus();
+        showState(status);
+        if (!EventBus.getDefault().isRegistered(this))
+            EventBus.getDefault().register(this);
+        NIMClient.getService(AuthServiceObserver.class).observeOnlineStatus(mUserStatusObserver, true);
+    }
+
+    private void showState(StatusCode status) {
+        if (status == StatusCode.LOGINED) {
+            if (AVChatProfile.getInstance().isAVChatting()) {
+                String chattingAccount = AVChatProfile.getInstance().getChattingAccount();
+                User userByUserID = ControlCenter.getUserManager().getUserByUserID(chattingAccount);
+                tvState.setText(String.format(getString(R.string.video_with_user_format), userByUserID == null ? chattingAccount :
+                        userByUserID.getNickname() + "(" + userByUserID.getUserName() + ")"));
             } else
                 tvState.setText(R.string.ready_connect);
         } else {
             tvState.setText(R.string.connecting);
         }
-        mControlCenter = DoorBellControlCenter.getInstance();
-        mReceiver = new MyReceiver();
-        IntentFilter intentFilter = new IntentFilter(ConstantUtil.ACTION_ANYCHAT_VIDEO_CALL_EVENT);
-        intentFilter.addAction(ConstantUtil.ACTION_ANYCHAT_BASE_EVENT);
-        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, intentFilter);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        L.e("---------------onResume");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
+        if (mNameDialog != null && mNameDialog.isShowing())
+            mNameDialog.dismiss();
+        if (EventBus.getDefault().isRegistered(this))
+            EventBus.getDefault().unregister(this);
+        //用户状态监听
+        NIMClient.getService(AuthServiceObserver.class).observeOnlineStatus(mUserStatusObserver, false);
     }
 
-    @OnClick({R.id.ibtn_menu, R.id.btn_exit})
+    @OnClick({R.id.ibtn_menu, R.id.btn_exit, R.id.tv_device_name})
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.ibtn_menu:
                 startNewActivity(VideoMenuActivity.class);
                 break;
             case R.id.btn_exit:
-                T.show("开锁");
-                BcManager.getManager().setLock(true);
-                boolean lockStatus = BcManager.getManager().getLockStatus();
-                L.e("--------lockStatus:" + lockStatus);
-//                BcManager.getManager(this).setInfraredLightPowerOn(!BcManager.getManager(this).getInfraredLightStatus());
-//                if (DoorBellControlCenter.sIsVideo) {
-//                    mControlCenter.finishVideoCall(-1, DoorBellControlCenter.sCurrentVideoUser.getAid());
-//                }
 //                finish();
+//                ControlCenter.getBCManager().setLock(true);
+//                ControlCenter.connectNIM();
+                AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                assert audioManager != null;
+//        audioManager.setParameters("ForceUseSpecificMic=1");
+//        audioManager.setMicrophoneMute(true);
+                audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 6, AudioManager.FLAG_SHOW_UI);
+                break;
+            case R.id.tv_device_name:
+                updateNickname();
                 break;
         }
+    }
+
+    /**
+     * 修改设备名称
+     */
+    private void updateNickname() {
+        if (mNameDialog == null) {
+            final CommonEditDialog commonEditDialog = new CommonEditDialog();
+            commonEditDialog.setTitle(getString(R.string.update_nickname));
+            commonEditDialog.setType(InputType.TYPE_CLASS_TEXT);
+            commonEditDialog.setContent(mDoorbellConfig.getNickName() == null ? "" : mDoorbellConfig.getNickName());
+            commonEditDialog.setOnDialogListener(new OnDialogListener() {
+                @Override
+                public void onConfirm(final Object content) {
+                    ControlCenter.getDoorbellManager().updateNickname(IMEI, content.toString(), new IDataListener<Boolean>() {
+                        @Override
+                        public void onSuccess(Boolean o) {
+                            L.e("-------------onSuccess:" + content);
+                            if (isFinishing() || getSupportFragmentManager() == null) return;
+                            T.show(R.string.update_success);
+                            tvDeviceName.setText(content.toString());
+                            DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
+                            doorbellConfig.getDoorbell().setName(content.toString());
+                            ControlCenter.getDoorbellManager().setDoorbellConfig(doorbellConfig);
+                            mNameDialog.dismiss();
+                        }
+
+                        @Override
+                        public void onFailure(int errorCode, String desc) {
+                            mNameDialog.dismiss();
+                            T.show(desc);
+                        }
+                    });
+                }
+            });
+            mNameDialog = new DialogHelper(VideoServiceActivity.this, commonEditDialog);
+        }
+        mNameDialog.commit();
     }
 
     @Override
@@ -95,40 +154,28 @@ public class VideoServiceActivity extends BaseActivity {
         return true;
     }
 
-    private class MyReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (isFinishing() || getSupportFragmentManager() == null) return;
-            String action = intent.getAction();
-            if (TextUtils.isEmpty(action)) return;
-            String type = intent.getStringExtra(Constant.TYPE);
-            switch (action) {
-                case ConstantUtil.ACTION_ANYCHAT_VIDEO_CALL_EVENT:
-                    L.e("---------ACTION_ANYCHAT_VIDEO_CALL_EVENT");
-                    if (ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_START.equals(type)) {
-                        if (!TextUtils.isEmpty(DoorBellControlCenter.sCurrentVideoUser.getAccount())) {
-                            tvState.setText(String.format(getString(R.string.video_with_user_format), DoorBellControlCenter.sCurrentVideoUser.getAccount()));
-                        }
-                    } else if (ConstantUtil.TYPE_BRAC_VIDEOCALL_EVENT_FINISH.equals(type)) {
-                        if (DoorBellControlCenter.sIsAnychatLogin)
-                            tvState.setText(R.string.ready_connect);
-                        else
-                            tvState.setText(getText(R.string.connecting));
-                    }
-                    break;
-                case ConstantUtil.ACTION_ANYCHAT_BASE_EVENT:
-                    if (ConstantUtil.TYPE_ANYCHAT_LOGIN_STATE.equals(type)) {
-                        int errorCode = intent.getIntExtra(Constant.DW_ERROR_CODE, -1);
-                        if (errorCode >= 0) {
-                            tvState.setText(getText(R.string.ready_connect));
-                        } else {
-                            tvState.setText(getText(R.string.connecting));
-                        }
-                    } else if (ConstantUtil.TYPE_ANYCHAT_LINK_CLOSE.equals(type)) {
-                        tvState.setText(getText(R.string.connecting));
-                    }
-                    break;
-            }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onAVChatAction(AVChatAction avChatAction) {
+        if (isFinishing() || isDestroyed() || getSupportFragmentManager() == null) return;
+        if (AVChatAction.AVCHAT_USER_JOIN.equals(avChatAction.getType())) {
+            String account = avChatAction.getStringExtra(Constant.FROM_ACCOUNT);
+            User userByAccount = ControlCenter.getUserManager().getUserByUserID(account);
+            tvState.setText(String.format(getString(R.string.video_with_user_format), userByAccount == null ? account :
+                    userByAccount.getNickname() + "(" + userByAccount.getUserName() + ")"));
+        } else if (AVChatAction.AVCHAT_HANG_UP.equals(avChatAction.getType())) {
+            StatusCode status = NIMClient.getStatus();
+            if (StatusCode.LOGINED == status)
+                tvState.setText(R.string.ready_connect);
+            else
+                tvState.setText(getText(R.string.connecting));
         }
     }
+
+    private Observer<StatusCode> mUserStatusObserver = new Observer<StatusCode>() {
+        @Override
+        public void onEvent(StatusCode statusCode) {
+            showState(statusCode);
+        }
+    };
 }
+

@@ -16,10 +16,12 @@
         <ImageButton
             android:id="@+id/ibtn_back"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="16dp"
-            android:background="@mipmap/back"/>
+            android:background="@null"
+            android:paddingLeft="16dp"
+            android:paddingRight="32dp"
+            android:src="@mipmap/back"/>
 
         <TextView
             android:layout_width="wrap_content"

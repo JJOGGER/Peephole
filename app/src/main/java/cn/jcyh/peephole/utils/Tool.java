@@ -197,8 +197,8 @@ public class Tool {
     /**
      * 判断当前语言环境
      */
-    public static boolean isZh(Context context) {
-        Locale locale = context.getResources().getConfiguration().locale;
+    public static boolean isZh() {
+        Locale locale = Util.getApp().getResources().getConfiguration().locale;
         String language = locale.getLanguage();
         return language.endsWith("zh");
     }
@@ -211,4 +211,6 @@ public class Tool {
         String language = locale.getLanguage();
         return language.endsWith("fr");
     }
+
+
 }

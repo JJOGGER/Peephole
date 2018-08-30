@@ -1,7 +1,5 @@
 package cn.jcyh.peephole.http;
 
-import android.util.Log;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -50,14 +48,13 @@ public class JsonHttpService implements IHttpService {
     }
 
     @Override
-    public void setHttpListener(IHttpListener listener) {
-        mHttpListener = listener;
+    public <T> void setHttpListener(T listener) {
+        mHttpListener = (IHttpListener) listener;
     }
 
     private void post() {
         try {
 //            if (IsHaveInternet()) {
-            Log.i(TAG, "----URL:" + mUrl);
             //创建一个FormBody.Builder
             FormBody.Builder builder = new FormBody.Builder();
             if (mParams != null && mParams.keySet().size() != 0) {
@@ -77,7 +74,7 @@ public class JsonHttpService implements IHttpService {
             mOkHttpClient.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    L.e("---------onFailure");
+                    L.e("---------onFailure"+e.getMessage()+":"+mUrl);
                     mHttpListener.onFailure();
                 }
 

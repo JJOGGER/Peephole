@@ -3,10 +3,30 @@
           xmlns:tools="http://schemas.android.com/tools"
           package="cn.jcyh.peephole">
 
+    <!-- 允许程序发送SMS短信 -->
+    <uses-permission android:name="android.permission.SEND_SMS"/>
+    <!-- 允许程序读取短信息 -->
+    <uses-permission android:name="android.permission.READ_SMS"/>
+    <!-- 允许程序监控一个将收到短信息，记录或处理 -->
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+    <!-- 打电话 -->
+    <uses-permission android:name="android.permission.CALL_PHONE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission
+        android:name="android.permission.DEVICE_POWER"
+        tools:ignore="ProtectedPermissions"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <!-- 权限声明 -->
-    <uses-permission android:name="android.permission.WRITE_SETTINGS"
+    <uses-permission
+        android:name="android.permission.WRITE_SETTINGS"
+        tools:ignore="ProtectedPermissions"/>
+    <uses-permission
+        android:name="android.permission.READ_SYNC_SETTINGS"
+        tools:ignore="ProtectedPermissions"/>
+    <uses-permission
+        android:name="android.permission.WRITE_SECURE_SETTINGS"
+        tools:ignore="ProtectedPermissions"/>
+    <uses-permission android:name="android.permission.DEVICE_POWER"
                      tools:ignore="ProtectedPermissions"/>
     <!-- 访问网络状态 -->
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -19,6 +39,8 @@
     <!-- 外置存储存取权限 -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
+                     tools:ignore="ProtectedPermissions"/>
 
     <!-- 多媒体相关 -->
     <uses-permission android:name="android.permission.CAMERA"/>
@@ -46,31 +68,49 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
+                <category android:name="android.intent.category.HOME"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.MONKEY"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
-        <receiver android:name=".receiver.BootBroadcastReceiver">
+        <receiver android:name=".receiver.BootBroadcastReceiver"> <!-- 开机广播 -->
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
 
                 <category android:name="android.intent.category.HOME"/>
             </intent-filter>
         </receiver>
-        <receiver android:name=".receiver.NetworkStateReceiver">
+        <receiver android:name=".receiver.NetworkStateReceiver"> <!-- 网络状态 -->
             <intent-filter>
                 <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
                 <action android:name="android.net.wifi.STATE_CHANGE"/>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
             </intent-filter>
         </receiver>
-        <receiver android:name=".receiver.AlarmReceiver"/>
+        <receiver android:name=".receiver.AlarmReceiver"/> <!-- 定时器 -->
+        <!-- 安装apk监听 -->
+        <receiver
+            android:name=".receiver.InitApkBroadCastReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED"/>
+                <action android:name="android.intent.action.PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.PACKAGE_REMOVED"/>
 
-        <service android:name=".service.KeepBackLocalService"/>
+                <data android:scheme="package"/>
+            </intent-filter>
+        </receiver>
+
+        <service android:name=".service.MainService">
+        </service>
         <service
-            android:name=".service.KeepBackRemoteService"
+            android:name=".service.MainRemoteService"
             android:process=":remote"/>
-        <service android:name=".service.VideoService"/>
+        <service android:name=".service.AVChatService"/>
+        <service android:name=".service.MediaPlayService"/>
+        <service android:name=".service.UpdateService"/>
 
         <receiver android:name=".receiver.BcReceiver">
             <intent-filter>
@@ -104,6 +144,9 @@
         <activity android:name=".ui.activity.DoorbellLookActivity">
         </activity>
         <activity android:name=".ui.activity.CameraActivity">
+        </activity>
+        <activity android:name=".ui.activity.BannerDescActivity"/>
+        <activity android:name=".ui.activity.SystemSettingActivity">
         </activity>
     </application>
 
