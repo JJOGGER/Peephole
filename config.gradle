@@ -5,7 +5,7 @@ ext {
             minSdkVersion    : 18,
             targetSdkVersion : 27,
             versionCode      : 3,
-            versionName      : "K1V1.0_EAGLEKING_20180830_854x480"
+            versionName      : "K1V1.0_EAGLEKING_20180901_854x480"
     ]
 
     dependVersion = [

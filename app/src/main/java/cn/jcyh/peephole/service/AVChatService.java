@@ -22,6 +22,9 @@ import com.netease.nimlib.sdk.avchat.model.AVChatVideoFrame;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import cn.jcyh.peephole.constant.AVChatExitCode;
 import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
@@ -31,6 +34,7 @@ import cn.jcyh.peephole.observer.PhoneCallStateObserver;
 import cn.jcyh.peephole.observer.SimpleAVChatStateObserver;
 import cn.jcyh.peephole.service.video.AVChatControllerCallback;
 import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.Util;
 import cn.jcyh.peephole.video.AVChatController;
 import cn.jcyh.peephole.video.AVChatProfile;
 
@@ -45,6 +49,20 @@ public class AVChatService extends Service {
     private static final byte SWITCH_CAMERA = AVChatControlCommand.NOTIFY_CUSTOM_BASE + 2;//切换摄像头
     private static final byte UNLOCK = AVChatControlCommand.NOTIFY_CUSTOM_BASE + 3;
     private int mMonitorSwitch;
+    private TimerTask mTimerTask = new TimerTask() {
+        @Override
+        public void run() {
+            AudioManager audioManager = (AudioManager) Util.getApp().getSystemService(Context.AUDIO_SERVICE);
+            assert audioManager != null;
+            int streamVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
+            L.e("-------------当前音量：" + audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL));
+            if (streamVolume != 2) {
+                audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 2, 0);
+                cancel();
+            }
+        }
+    };
+    private Timer mTimer = new Timer();
     //    private FrameLayout flSurfaceContainer;
 //    private SurfaceView mSurfaceView;
 //    private WindowManager mWindowManager;
@@ -58,6 +76,7 @@ public class AVChatService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        mTimer.schedule(mTimerTask, 0, 1000);
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
@@ -104,14 +123,7 @@ public class AVChatService extends Service {
         if (intent == null) return START_NOT_STICKY;
         mAvChatData = (AVChatData) intent.getSerializableExtra(Constant.AVCHAT_DATA);
         mAVChatController = new AVChatController(this, mAvChatData);
-        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        assert audioManager != null;
-//        audioManager.setParameters("ForceUseSpecificMic=1");
-//        audioManager.setMicrophoneMute(true);
-        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 5, AudioManager.FLAG_SHOW_UI );
-        audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 5, AudioManager.FLAG_SHOW_UI );
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 5, AudioManager.FLAG_SHOW_UI );
-        L.e("----------:" + audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL)+":"+audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL));
+
         //接听来电
         mAVChatController.receive(new AVChatControllerCallback<Void>() {
             @Override
@@ -119,7 +131,6 @@ public class AVChatService extends Service {
 
             }
 
-            @Override
             public void onFailed(int code, String errorMsg) {
                 stopSelf();
             }
@@ -148,6 +159,14 @@ public class AVChatService extends Service {
         AVChatProfile.getInstance().setAVChatting(false);
         ControlCenter.getDoorbellManager().setLastVideoTime(System.currentTimeMillis());
         L.e("----------------onDestroy");
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer = null;
+        }
+        if (mTimerTask != null) {
+            mTimerTask.cancel();
+            mTimerTask = null;
+        }
     }
 
 
@@ -212,11 +231,24 @@ public class AVChatService extends Service {
         //音视频连接建立，会回调
         @Override
         public void onCallEstablished() {
+
 //            //移除超时监听
             AVChatTimeoutObserver.getInstance().observeTimeoutNotification(mTimeoutObserver, false, true);
 //            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 //            audioManager.setParameters("ForceUseSpecificMic=1");
 //            audioManager.setMicrophoneMute(true);
+            AudioManager audioManager = (AudioManager) Util.getApp().getSystemService(Context.AUDIO_SERVICE);
+            assert audioManager != null;
+            L.e("----------onCallEstablished1:" + audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL));
+            audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 1, 0);
+            L.e("----------onCallEstablished2:" + audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL)
+                    + ":" + audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL));
+//        audioManager.setParameters("ForceUseSpecificMic=1");
+//        audioManager.setMicrophoneMute(true);
+//            audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 3, 0 );
+//        audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 5, AudioManager.FLAG_SHOW_UI );
+//        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 5, AudioManager.FLAG_SHOW_UI );
+//            L.e("----------onCallEstablished2:" + audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL)+":"+audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL));
         }
 
         @Override
@@ -226,6 +258,8 @@ public class AVChatService extends Service {
 
         @Override
         public boolean onAudioFrameFilter(AVChatAudioFrame frame) {
+            AudioManager audioManager = (AudioManager) Util.getApp().getSystemService(Context.AUDIO_SERVICE);
+            L.e("----------onAudioFrameFilter:" + audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL));
             return true;
         }
     };

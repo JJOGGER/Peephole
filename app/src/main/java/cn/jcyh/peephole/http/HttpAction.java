@@ -83,15 +83,23 @@ public class HttpAction extends BaseHttpAction {
     /**
      * 获取版本信息
      */
+    @Deprecated
     public void getVersion(IDataListener<Version> listener) {
         mHttpRequest.getVersion(listener);
+    }
+
+    /**
+     * 获取版本信息
+     */
+    public void updatePatch(IDataListener<Version> listener) {
+        mHttpRequest.updatePatch(listener);
     }
 
     /**
      * 更新软件版本
      */
     public void updateVersion(String url, String savePath, ProgressHttpListener progressHttpListener, IDataListener<Boolean> listener) {
-        mHttpRequest.updateVersion(url, savePath,progressHttpListener, listener);
+        mHttpRequest.updateVersion(url, savePath, progressHttpListener, listener);
     }
 
     /**
@@ -104,9 +112,9 @@ public class HttpAction extends BaseHttpAction {
     /**
      * 获取banner
      */
-    public void getBanners(int terminalSize,IDataListener<AdvertData> listener) {
+    public void getBanners(int terminalSize, IDataListener<AdvertData> listener) {
         if (!NetworkUtil.isConnected()) return;
-        mHttpRequest.getBanners(terminalSize,listener);
+        mHttpRequest.getBanners(terminalSize, listener);
     }
 
     /**

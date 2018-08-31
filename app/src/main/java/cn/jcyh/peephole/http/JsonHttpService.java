@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import cn.jcyh.peephole.constant.Config;
 import cn.jcyh.peephole.utils.L;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -18,7 +19,6 @@ import okhttp3.Response;
  */
 
 public class JsonHttpService implements IHttpService {
-    private static final String TAG = "JsonHttpService";
     private IHttpListener mHttpListener;
     private String mUrl;
     private Map<String, Object> mParams;
@@ -66,15 +66,20 @@ public class JsonHttpService implements IHttpService {
             //生成表单实体对象
             RequestBody formBody = builder.build();
             //补全请求地址
+            Config.HeaderConfig headerConfig = Config.getHeaderConfig();
             final Request request = new Request.Builder()
                     .url(mUrl)
                     .post(formBody)
 //                                .header("cookie", SharePreUtil.getInstance(mContext).getString("cookie", "no_cookie"))
+                    .addHeader("AppKey", headerConfig.getAppkey())
+                    .addHeader("Nonce", headerConfig.getNonce())
+                    .addHeader("Timestamp", headerConfig.getTimestamp())
+                    .addHeader("Sign", headerConfig.getSign())
                     .build();
             mOkHttpClient.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    L.e("---------onFailure"+e.getMessage()+":"+mUrl);
+                    L.e("---------onFailure" + e.getMessage() + ":" + mUrl);
                     mHttpListener.onFailure();
                 }
 

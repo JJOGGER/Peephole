@@ -63,7 +63,7 @@ public class AboutActivity extends BaseActivity {
         // TODO: 2018/8/7 先从猫眼文件中获取是否存在可更新的apk 
 //        if (ControlCenter.getNewVersion() == null) {
         showProgressDialog();
-        HttpAction.getHttpAction().getVersion(new IDataListener<Version>() {
+        HttpAction.getHttpAction().updatePatch(new IDataListener<Version>() {
             @Override
             public void onSuccess(final Version version) {
                 cancelProgressDialog();

@@ -10,7 +10,7 @@ import cn.jcyh.peephole.entity.Doorbell;
 import cn.jcyh.peephole.entity.User;
 import cn.jcyh.peephole.entity.Version;
 import cn.jcyh.peephole.http.download.ProgressHttpListener;
-import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.SystemUtil;
 
 /**
  * Created by jogger on 2018/7/17.
@@ -26,7 +26,6 @@ public class HttpRequest implements IHttpRequest {
     public void initNIM(String deviceID, IDataListener listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("DeviceId", deviceID);
-        L.e("-----------deviceID:" + deviceID);
         HttpTask httpTask = new HttpTask(HttpUrlIble.INIT_NIM, params, Doorbell.class, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(httpTask, listener));
     }
@@ -122,5 +121,13 @@ public class HttpRequest implements IHttpRequest {
         params.put("authorizationCode", authorizationCode);
         HttpTaskVoid updateVersion = new HttpTaskVoid(HttpUrlIble.DOORBELL_SET_MANAGER_URL, params, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(updateVersion, listener));
+    }
+
+    @Override
+    public void updatePatch(IDataListener listener) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("CurrentVersion", SystemUtil.getVersionCode());
+        HttpTask updatePatch = new HttpTask(HttpUrlIble.DOORBELL_UPDATE_PATCH_URL, params, Version.class, listener);
+        mThreadPoolManager.excute(new FutureTask<Object>(updatePatch, listener));
     }
 }

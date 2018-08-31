@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import cn.jcyh.peephole.constant.Config;
 import cn.jcyh.peephole.utils.L;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -27,9 +28,9 @@ public class UploadService implements IHttpService {
 
     UploadService(String filePath) {
         mOkHttpClient = new OkHttpClient().newBuilder()
-                .connectTimeout(30, TimeUnit.SECONDS)//设置超时时间
-                .readTimeout(30, TimeUnit.SECONDS)//设置读取超时时间
-                .writeTimeout(30, TimeUnit.SECONDS)//设置写入超时时间
+                .connectTimeout(100, TimeUnit.SECONDS)//设置超时时间
+                .readTimeout(100, TimeUnit.SECONDS)//设置读取超时时间
+                .writeTimeout(100, TimeUnit.SECONDS)//设置写入超时时间
                 .build();
         mFilePath = filePath;
     }
@@ -61,9 +62,14 @@ public class UploadService implements IHttpService {
             }
         }
         RequestBody requestBody = builder.build();
+        Config.HeaderConfig headerConfig = Config.getHeaderConfig();
         Request request = new Request.Builder()
                 .url(mUrl)
                 .header("Content-Type", "image/jpeg; charset=utf-8;")
+                .addHeader("AppKey", headerConfig.getAppkey())
+                .addHeader("Nonce", headerConfig.getNonce())
+                .addHeader("Timestamp", headerConfig.getTimestamp())
+                .addHeader("Sign", headerConfig.getSign())
                 .post(requestBody)//传参数、文件或者混合，改一下就行请求体就行
                 .build();
         mOkHttpClient.newCall(request).enqueue(new Callback() {

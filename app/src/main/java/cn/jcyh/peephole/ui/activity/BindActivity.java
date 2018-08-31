@@ -62,7 +62,7 @@ public class BindActivity extends BaseActivity {
                         if (mCount <= 0) {
                             finish();
                         }
-                        if (isFinishing() || getSupportFragmentManager() == null) return;
+                        if (isDestroyed()||isFinishing() || getSupportFragmentManager() == null) return;
                         tvCountDown.setText(String.format(getString(R.string
                                 .close_window_hint_format), mCount));
                     }

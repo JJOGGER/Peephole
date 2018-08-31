@@ -33,4 +33,6 @@ public interface IHttpRequest {
     void getBindUsers(String imei, IDataListener listener);
 
     void setDoorbellManager(String imei, String userID, String authorizationCode, IDataListener listener);
+
+    void updatePatch(IDataListener listener);
 }

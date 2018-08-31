@@ -33,7 +33,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         if (status != StatusCode.LOGINED) {
             SystemUtil.wakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP |
                     PowerManager.PARTIAL_WAKE_LOCK);
-            if (!NetworkUtil.isConnected() && NetworkUtil.isAvailableByPing()) {
+            if (!NetworkUtil.isConnected()) {
                 return;
             }
             context.startService(new Intent(context, MainService.class));

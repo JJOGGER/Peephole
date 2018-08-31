@@ -31,6 +31,7 @@ import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.OnDialogListener;
 import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.T;
+import cn.jcyh.peephole.utils.Util;
 import cn.jcyh.peephole.video.AVChatProfile;
 
 public class VideoServiceActivity extends BaseActivity {
@@ -93,20 +94,37 @@ public class VideoServiceActivity extends BaseActivity {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.ibtn_menu:
-                startNewActivity(VideoMenuActivity.class);
+//                startNewActivity(VideoMenuActivity.class);
+
+                AudioManager audioManager = (AudioManager) Util.getApp().getSystemService(Context.AUDIO_SERVICE);
+                assert audioManager != null;
+                L.e("----------:" + audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL)+":"+audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL));
+//        audioManager.setParameters("ForceUseSpecificMic=1");
+//        audioManager.setMicrophoneMute(true);
+                audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL)-1, 0 );
+//        audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 5, AudioManager.FLAG_SHOW_UI );
+//        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 5, AudioManager.FLAG_SHOW_UI );
+                L.e("----------:" + audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL)+":"+audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL));
                 break;
             case R.id.btn_exit:
 //                finish();
 //                ControlCenter.getBCManager().setLock(true);
 //                ControlCenter.connectNIM();
-                AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                 audioManager = (AudioManager) Util.getApp().getSystemService(Context.AUDIO_SERVICE);
                 assert audioManager != null;
+                L.e("----------:" + audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL)+":"+audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL));
 //        audioManager.setParameters("ForceUseSpecificMic=1");
 //        audioManager.setMicrophoneMute(true);
-                audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 6, AudioManager.FLAG_SHOW_UI);
+                audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL)+1, 0 );
+//        audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 5, AudioManager.FLAG_SHOW_UI );
+//        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 5, AudioManager.FLAG_SHOW_UI );
+                L.e("----------:" + audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL)+":"+audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL));
                 break;
             case R.id.tv_device_name:
-                updateNickname();
+//                updateNickname();
+                audioManager = (AudioManager) Util.getApp().getSystemService(Context.AUDIO_SERVICE);
+                assert audioManager != null;
+                L.e("----------:" + audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL));
                 break;
         }
     }
@@ -174,6 +192,7 @@ public class VideoServiceActivity extends BaseActivity {
     private Observer<StatusCode> mUserStatusObserver = new Observer<StatusCode>() {
         @Override
         public void onEvent(StatusCode statusCode) {
+            if (isDestroyed()||isFinishing()||getSupportFragmentManager()==null)return;
             showState(statusCode);
         }
     };

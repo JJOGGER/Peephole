@@ -15,10 +15,6 @@ public class UserStatusObserver implements Observer<StatusCode> {
         if (statusCode == StatusCode.UNLOGIN) {
             //未登录
             L.e("----------未登录");
-            //NetworkUtil.isConnected():true:false:false:true
-            L.e("----------->NetworkUtil.isConnected():" + NetworkUtil.isConnected() + ":" +
-                    NetworkUtil.isAvailableByPing() + ":" + NetworkUtil.isWifiAvailable() + ":" +
-                    NetworkUtil.isWifiConnected());
 //            NIMClient.getService(AuthService.class).logout();
         } else if (statusCode == StatusCode.NET_BROKEN) {
             //当前网络不可用

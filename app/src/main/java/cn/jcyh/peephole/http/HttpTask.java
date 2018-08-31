@@ -21,7 +21,7 @@ import cn.jcyh.peephole.utils.ParseJsonUtil;
 class HttpTask implements Runnable {
     //含有请求服务器的接口引用
     private IHttpService mHttpService;
-    private Handler mHandler;
+    private static Handler sHandler;
 
     /**
      * 上传文件
@@ -37,7 +37,8 @@ class HttpTask implements Runnable {
     }
 
     <T> HttpTask(final String url, final Map<String, Object> params, final Class<T> clazz, final IDataListener listener) {
-        mHandler = new Handler();
+        if (sHandler == null)
+            sHandler = new Handler();
 //        final Class<T> entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
         mHttpService = new JsonHttpService();
         mHttpService.setUrl(url);
@@ -46,10 +47,10 @@ class HttpTask implements Runnable {
             @Override
             public void onSuccess(final String result) {
                 if (listener != null) {
-                    mHandler.post(new Runnable() {
+                    sHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            L.e("----------------result:"+result+":"+url);
+                            L.e("----------------result:" + result + ":" + url);
                             int code = ParseJsonUtil.getErrorCode(result);
                             String desc = ParseJsonUtil.getErrorDesc(result);
                             if (code == 200) {
@@ -75,7 +76,7 @@ class HttpTask implements Runnable {
             @Override
             public void onFailure() {
                 if (listener != null) {
-                    mHandler.post(new Runnable() {
+                    sHandler.post(new Runnable() {
                         @Override
                         public void run() {
                             listener.onFailure(-1, "");
