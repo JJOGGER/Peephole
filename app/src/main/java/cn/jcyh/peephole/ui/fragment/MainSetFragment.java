@@ -94,7 +94,9 @@ public class MainSetFragment extends BaseFragment {
 
     @OnClick({R.id.rl_doorbell_set, R.id.rl_sensor_set, R.id.rl_monitor, R.id.rl_sensor_time,
             R.id.rl_ring_volume, R.id.rl_master_number, R.id.rl_sos_number, R.id.rl_doorbell_leavel_time, R.id.rl_doorbell_videotap_time,
-            R.id.rl_doorbell_look_time})
+            R.id.rl_doorbell_look_time,
+            R.id.rl_extend_function
+    })
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_doorbell_set://门铃设置
@@ -141,13 +143,13 @@ public class MainSetFragment extends BaseFragment {
             case R.id.rl_doorbell_look_time://猫眼查看时间
                 showLookTimeDialog();
                 break;
-//            case R.id.rl_extend_function:
-//                transaction = mFragmentManager.beginTransaction();
-//                ExtendFunctionFragment extendFunctionFragment = new ExtendFunctionFragment();
-//                transaction.add(R.id.fl_container, extendFunctionFragment, ExtendFunctionFragment.class.getName());
-//                transaction.hide(mFragmentManager.findFragmentByTag(MainSetFragment.class.getName()));
-//                transaction.commit();
-//                break;
+            case R.id.rl_extend_function:
+                transaction = mFragmentManager.beginTransaction();
+                ExtendFunctionFragment extendFunctionFragment = new ExtendFunctionFragment();
+                transaction.add(R.id.fl_container, extendFunctionFragment, ExtendFunctionFragment.class.getName());
+                transaction.hide(mFragmentManager.findFragmentByTag(MainSetFragment.class.getName()));
+                transaction.commit();
+                break;
         }
     }
 

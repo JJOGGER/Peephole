@@ -38,7 +38,6 @@ android {
         main {
             jniLibs.srcDirs = ['libs']
             jni.srcDirs = ['src/main/jni', 'src/main/jni/']
-//            jni.srcDirs = []
         }
     }
     buildTypes {
@@ -52,13 +51,16 @@ android {
             // 移除无用的resource文件
 //            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
         }
         debug {
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.config
+
         }
+
     }
     dexOptions {
         javaMaxHeapSize "4G"
@@ -82,45 +84,45 @@ android {
             applicationId "${APP_ID}"
             dimension "default"
         }
-            peephole_hotel {
+        hotel {
             applicationId "${PEEPHOLE_APP_ID}"
             dimension "default"
 //            applicationIdSuffix ".peephole_hotel"//马甲包appid后缀
 //            manifestPlaceholders = [APP_NAME: '康佳安防',AUTHORITIES:'com.szjcyh.konka.fileprovider']
-            }
         }
     }
+}
 
-    dependencies {
-        implementation fileTree(include: ['*.jar'], dir: 'libs')
-        implementation 'com.android.support.constraint:constraint-layout:1.1.2'
-        androidTestImplementation(rootProject.ext.dependencies.espresso, {
-            exclude group: 'com.android.support', module: 'support-annotations'
-        })
-        implementation rootProject.ext.dependencies.appcompatV7
-        testImplementation 'junit:junit:4.12'
-        implementation rootProject.ext.dependencies.recyclerview
-        //转换器，请求结果转换成Model
-        implementation rootProject.ext.dependencies.okhttp
-        implementation rootProject.ext.dependencies.glide
-        //    compile 'com.journeyapps:zxing-android-embedded:3.5.0'
-        //配合Rxjava 使用
-        implementation rootProject.ext.dependencies.butterknife
-        annotationProcessor rootProject.ext.dependencies.butterknife_compiler
-        implementation rootProject.ext.dependencies.gson
-        implementation rootProject.ext.dependencies.multidex
-        implementation rootProject.ext.dependencies.eventbus
-        implementation rootProject.ext.dependencies.umeng_common
-        implementation rootProject.ext.dependencies.umeng_analytics
-        implementation rootProject.ext.dependencies.rxbinding
-        implementation rootProject.ext.dependencies.adapter_helper
-        //    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.4'
-        //    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
-        compileOnly files('libs/classes-full-debug.jar')
-        api project(':zxinglib')
-        implementation files('libs/Msc.jar')
-        implementation files('libs/Sunflower.jar')
-        implementation project(':eaglelock')
-        implementation project(':nimlib')
-        implementation project(':OpenCVLibrary320')
-    }
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
+    androidTestImplementation(rootProject.ext.dependencies.espresso, {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    implementation rootProject.ext.dependencies.appcompatV7
+    testImplementation 'junit:junit:4.12'
+    implementation rootProject.ext.dependencies.recyclerview
+    //转换器，请求结果转换成Model
+    implementation rootProject.ext.dependencies.okhttp
+    implementation rootProject.ext.dependencies.glide
+    //    compile 'com.journeyapps:zxing-android-embedded:3.5.0'
+    //配合Rxjava 使用
+    implementation rootProject.ext.dependencies.butterknife
+    annotationProcessor rootProject.ext.dependencies.butterknife_compiler
+    implementation rootProject.ext.dependencies.gson
+    implementation rootProject.ext.dependencies.multidex
+    implementation rootProject.ext.dependencies.eventbus
+    implementation rootProject.ext.dependencies.umeng_common
+    implementation rootProject.ext.dependencies.umeng_analytics
+    implementation rootProject.ext.dependencies.rxbinding
+    implementation rootProject.ext.dependencies.adapter_helper
+    //    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.4'
+    //    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
+    compileOnly files('libs/classes-full-debug.jar')
+    api project(':zxinglib')
+    implementation files('libs/Msc.jar')
+    implementation files('libs/Sunflower.jar')
+    implementation project(':eaglelock')
+    implementation project(':nimlib')
+    implementation project(':OpenCVLibrary320')
+}

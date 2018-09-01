@@ -141,4 +141,44 @@ public class ControlCenter {
         String json = SPUtil.getInstance().getString(Constant.VERSION, "");
         return TextUtils.isEmpty(json) ? null : GsonUtil.fromJson(json, Version.class);
     }
+
+    /**
+     * 设置开启拓展功能
+     *
+     * @param function {@link cn.jcyh.peephole.constant.ExtendFunction}
+     * @param isUse    是否被使用
+     */
+    public static void setFunctionUse(String function, boolean isUse) {
+        SPUtil.getInstance().put(function, isUse);
+    }
+
+    /**
+     * 判断拓展功能是否开启
+     */
+    public static boolean isFunctionUse(String function) {
+        return SPUtil.getInstance().getBoolean(function);
+    }
+
+    /**
+     * 注册人脸识别
+     */
+    public static void registFaceVali(boolean isRegist) {
+        SPUtil.getInstance().put(Constant.IS_FACE_VALI_REGISTED, isRegist);
+    }
+
+    public static boolean isRegistedFaceVali() {
+        return SPUtil.getInstance().getBoolean(Constant.IS_FACE_VALI_REGISTED);
+    }
+
+    /**
+     * 注册声纹识别
+     */
+    public static void registAudioVali(boolean isRegist) {
+        SPUtil.getInstance().put(Constant.IS_AUDIO_VALI_REGISTED, isRegist);
+    }
+
+    public static boolean isRegistedAudioVali() {
+        return SPUtil.getInstance().getBoolean(Constant.IS_AUDIO_VALI_REGISTED);
+    }
+
 }

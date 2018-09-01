@@ -28,7 +28,7 @@ import cn.jcyh.peephole.video.AVChatProfile;
 public class AVChatObserver implements Observer<AVChatData> {
     @Override
     public void onEvent(final AVChatData avChatData) {
-        L.e("--------------------AVChatObserver:" + avChatData.getAccount() + ":" + avChatData.getExtra());
+        L.e("--------------------AVChatObserver:" + avChatData.getAccount());
         if (PhoneCallStateObserver.getInstance().getPhoneCallState() != PhoneCallStateObserver.PhoneCallStateEnum.IDLE
                 || AVChatProfile.getInstance().isAVChatting()
                 || AVChatManager.getInstance().getCurrentChatId() != 0) {

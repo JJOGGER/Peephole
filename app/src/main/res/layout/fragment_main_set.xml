@@ -429,29 +429,29 @@
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:layout_marginTop="2dp"
-            android:background="@color/gray_777777"/>
-
-        <!--<RelativeLayout
-            android:id="@+id/rl_resolution"
+            android:background="@color/gray_dedede"/>
+        <RelativeLayout
+            android:id="@+id/rl_extend_function"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/tv_resolution_title"
+                android:id="@+id/tv_extend_function_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingLeft="16dp"
-                android:paddingTop="4dp"
-                android:text="@string/video_resolution"
+                android:paddingTop="2dp"
+                android:text="@string/extend_function"
                 android:textColor="@color/black_333333"
                 android:textSize="16sp"/>
 
             <TextView
+                android:id="@+id/tv_extend_function"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/tv_resolution_title"
+                android:layout_below="@id/tv_extend_function_title"
                 android:paddingLeft="16dp"
-                android:text="@string/video_resolution_set_msg"
+                android:text="@string/choose_expend_function"
                 android:textColor="@color/gray_555555"
                 android:textSize="12sp"/>
         </RelativeLayout>
@@ -462,40 +462,6 @@
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:layout_marginTop="2dp"
-            android:background="@color/gray_dedede"/>-->
-
-        <!--<relativelayout
-            android:id="@+id/rl_extend_function"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <textview
-                android:id="@+id/tv_extend_function_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingleft="16dp"
-                android:paddingtop="2dp"
-                android:text="@string/extend_function"
-                android:textcolor="@color/black_333333"
-                android:textsize="16sp"/>
-
-            <textview
-                android:id="@+id/tv_extend_function"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/tv_extend_function_title"
-                android:paddingleft="16dp"
-                android:text="@string/choose_expend_function"
-                android:textcolor="@color/gray_555555"
-                android:textsize="12sp"/>
-        </relativelayout>
-
-        <view
-            android:layout_width="match_parent"
-            android:layout_height="0.5dp"
-            android:layout_marginleft="16dp"
-            android:layout_marginright="16dp"
-            android:layout_margintop="2dp"
-            android:background="@color/gray_777777"/>-->
+            android:background="@color/gray_777777"/>
     </LinearLayout>
 </ScrollView>

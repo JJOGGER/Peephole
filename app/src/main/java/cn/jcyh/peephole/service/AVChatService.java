@@ -43,6 +43,7 @@ import cn.jcyh.peephole.video.AVChatProfile;
  */
 
 public class AVChatService extends Service {
+    public static final int CURRENT_AUDIO_VOLUME = 2;
     private AVChatController mAVChatController;
     private AVChatData mAvChatData;
     private static final byte IS_DUAL_CAMERA = AVChatControlCommand.NOTIFY_CUSTOM_BASE + 1;
@@ -55,9 +56,8 @@ public class AVChatService extends Service {
             AudioManager audioManager = (AudioManager) Util.getApp().getSystemService(Context.AUDIO_SERVICE);
             assert audioManager != null;
             int streamVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
-            L.e("-------------当前音量：" + audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL));
-            if (streamVolume != 2) {
-                audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 2, 0);
+            if (streamVolume != CURRENT_AUDIO_VOLUME) {
+                audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, CURRENT_AUDIO_VOLUME, 0);
                 cancel();
             }
         }
@@ -231,24 +231,8 @@ public class AVChatService extends Service {
         //音视频连接建立，会回调
         @Override
         public void onCallEstablished() {
-
 //            //移除超时监听
             AVChatTimeoutObserver.getInstance().observeTimeoutNotification(mTimeoutObserver, false, true);
-//            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-//            audioManager.setParameters("ForceUseSpecificMic=1");
-//            audioManager.setMicrophoneMute(true);
-            AudioManager audioManager = (AudioManager) Util.getApp().getSystemService(Context.AUDIO_SERVICE);
-            assert audioManager != null;
-            L.e("----------onCallEstablished1:" + audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL));
-            audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 1, 0);
-            L.e("----------onCallEstablished2:" + audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL)
-                    + ":" + audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL));
-//        audioManager.setParameters("ForceUseSpecificMic=1");
-//        audioManager.setMicrophoneMute(true);
-//            audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 3, 0 );
-//        audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 5, AudioManager.FLAG_SHOW_UI );
-//        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 5, AudioManager.FLAG_SHOW_UI );
-//            L.e("----------onCallEstablished2:" + audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL)+":"+audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL));
         }
 
         @Override
@@ -258,8 +242,6 @@ public class AVChatService extends Service {
 
         @Override
         public boolean onAudioFrameFilter(AVChatAudioFrame frame) {
-            AudioManager audioManager = (AudioManager) Util.getApp().getSystemService(Context.AUDIO_SERVICE);
-            L.e("----------onAudioFrameFilter:" + audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL));
             return true;
         }
     };

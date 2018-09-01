@@ -42,4 +42,6 @@ public class Constant {
     public static final String LAST_VIDEO_TIME = "last_video_time";
     public static final String VERSION = "version";
     public static final String DOWNLOAD_ID = "download_id";
+    public static final String IS_FACE_VALI_REGISTED = "is_face_vail_registed";//是否注册了人脸识别
+    public static final String IS_AUDIO_VALI_REGISTED = "is_audio_vali_registed";
 }

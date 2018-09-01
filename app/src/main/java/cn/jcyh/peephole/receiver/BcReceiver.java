@@ -3,23 +3,27 @@ package cn.jcyh.peephole.receiver;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioService;
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
-import cn.jcyh.peephole.control.DoorbellAudioManager;
-import cn.jcyh.peephole.video.AVChatProfile;
 import cn.jcyh.peephole.constant.Constant;
+import cn.jcyh.peephole.constant.ExtendFunction;
 import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.control.DoorbellAudioManager;
 import cn.jcyh.peephole.entity.DoorbellConfig;
 import cn.jcyh.peephole.event.DoorbellSystemAction;
+import cn.jcyh.peephole.service.AudioValiService;
 import cn.jcyh.peephole.service.MediaPlayService;
 import cn.jcyh.peephole.ui.activity.CameraActivity;
+import cn.jcyh.peephole.ui.activity.ObjectDetectingActivity;
 import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.ServiceUtil;
 import cn.jcyh.peephole.utils.T;
+import cn.jcyh.peephole.video.AVChatProfile;
 
 public class BcReceiver extends BroadcastReceiver {
     private static final String LOCK_DETECT = "kphone.intent.action.LOCK_DETECT";
@@ -44,55 +48,19 @@ public class BcReceiver extends BroadcastReceiver {
                 .getAutoSensorTime();
         String act = intent.getAction();
         if (act == null) return;
+        String extAct = intent.getStringExtra(Constant.VALUE);
         switch (act) {
             case LOCK_DETECT: { // TAMPER
-                String extAct = intent.getStringExtra(Constant.VALUE);
-                if (extAct.equals(NORMAL)) {
-                    T.show("防拆中断:连接正常");
-                } else if (extAct.equals("separate")) {
-                    T.show("防拆中断:设备拆开了");
-                }
+                tamperAction(extAct);
                 break;
             }
             case PIR: {
-                //通话过程、猫眼查看界面、播放铃声过程不报警
-                String extAct = intent.getStringExtra(Constant.VALUE);
-                //视频通话过程不处理
-                if (AVChatProfile.getInstance().isAVChatting()) return;
-                if (extAct.equals(PEOPLE_IN)) {
-                    L.e("---------PIR中断:有人来了");
-                    if (mTimerTask != null && mTimer == null) {
-                        return;
-                    }
-                    if (ServiceUtil.isServiceRunning(MediaPlayService.class)) return;
-                    mTimer = new Timer();
-                    mTimerTask = new MyTimeTask(context);
-                    mTimer.schedule(mTimerTask, 0, 1000);
-                } else if (extAct.equals(PEOPLE_OUT)) {
-                    L.e("----- PIR中断:人走了");
-                }
+                pirAction(context, extAct);
                 break;
             }
             case RING: {
                 //当前查看猫眼界面时不抓拍
-                if (AVChatProfile.getInstance().isAVChatting()) return;
-                String extAct = intent.getStringExtra(Constant.VALUE);
-                if (extAct.equals(PRESSED)) {
-                    play(ControlCenter.DOORBELL_TYPE_RING);
-                    //启动播放服务后且服务未结束、抓拍界面未关闭时，不再重复抓拍
-                    if (!ControlCenter.sIsVideo) {
-                        ControlCenter.sIsVideo = true;
-                        intent = new Intent(context, CameraActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        intent.putExtra(Constant.TYPE, DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_RING);
-                        context.startActivity(intent);
-                    }
-                    //发送
-                    DoorbellSystemAction systemAction = new DoorbellSystemAction(DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_RING);
-                    EventBus.getDefault().post(systemAction);
-                } else if (extAct.equals(RELEASED)) {
-                    break;
-                }
+                ringAction(context, extAct);
 //		}else if (act.equals("kphone.intent.action.HOME_PRESS")) { // INDOOR_PRESS
 //			String extAct = intent.getStringExtra("value");
 //			if (extAct.equals("pressed")) {
@@ -105,13 +73,95 @@ public class BcReceiver extends BroadcastReceiver {
                 break;
             }
             case MAGEINT:
-                String extAct = intent.getStringExtra(Constant.VALUE);
-                if (CLOSE.equals(extAct)) {
-                    T.show("门磁关闭");
-                } else if (OPEN.equals(extAct)) {
-                    T.show("门磁打开");
-                }
+                mageintAction(extAct);
                 break;
+        }
+    }
+
+    /**
+     * 门铃
+     */
+    private void ringAction(Context context, String extAct) {
+        if (AVChatProfile.getInstance().isAVChatting()) return;
+        if (extAct.equals(PRESSED)) {
+            //检测人脸识别
+            Intent intent;
+            boolean faceVali = ControlCenter.isFunctionUse(ExtendFunction.FUNCTION_FACE_VALI);
+            if (faceVali) {
+                intent = new Intent(context, ObjectDetectingActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent);
+                return;
+            } else {
+                //检测声纹识别
+                boolean audioVali = ControlCenter.isFunctionUse(ExtendFunction.FUNCTION_AUDIO_VALI);
+                if (audioVali) {
+                    if (ServiceUtil.isServiceRunning(AudioService.class))
+                        ServiceUtil.stopService(AudioService.class);
+                    intent = new Intent(context, AudioValiService.class);
+                    context.startService(intent);
+                    return;
+                }
+            }
+
+
+            play(ControlCenter.DOORBELL_TYPE_RING);
+            //启动播放服务后且服务未结束、抓拍界面未关闭时，不再重复抓拍
+            if (!ControlCenter.sIsVideo) {
+                ControlCenter.sIsVideo = true;
+                intent = new Intent(context, CameraActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra(Constant.TYPE, DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_RING);
+                context.startActivity(intent);
+            }
+            //发送
+            DoorbellSystemAction systemAction = new DoorbellSystemAction(DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_RING);
+            EventBus.getDefault().post(systemAction);
+        } else if (extAct.equals(RELEASED)) {
+            return;
+        }
+    }
+
+    /**
+     * 门磁
+     */
+    private void mageintAction(String extAct) {
+        if (CLOSE.equals(extAct)) {
+            T.show("门磁关闭");
+        } else if (OPEN.equals(extAct)) {
+            T.show("门磁打开");
+        }
+    }
+
+    /**
+     * 人体感应
+     */
+    private void pirAction(Context context, String extAct) {
+        //通话过程、猫眼查看界面、播放铃声过程不报警
+        //视频通话过程不处理
+        if (AVChatProfile.getInstance().isAVChatting()) return;
+        if (extAct.equals(PEOPLE_IN)) {
+            L.e("---------PIR中断:有人来了");
+            if (mTimerTask != null && mTimer == null) {
+                return;
+            }
+            if (ServiceUtil.isServiceRunning(MediaPlayService.class)) return;
+            mTimer = new Timer();
+            mTimerTask = new MyTimeTask(context);
+            mTimer.schedule(mTimerTask, 0, 1000);
+        } else if (extAct.equals(PEOPLE_OUT)) {
+            L.e("----- PIR中断:人走了");
+        }
+    }
+
+    /**
+     * 防拆
+     */
+    private void tamperAction(String extAct) {
+        if (extAct.equals(NORMAL)) {
+            T.show("防拆中断:连接正常");
+        } else if (extAct.equals("separate")) {
+            T.show("防拆中断:设备拆开了");
         }
     }
 
@@ -128,14 +178,9 @@ public class BcReceiver extends BroadcastReceiver {
         }
         if (type == ControlCenter.DOORBELL_TYPE_RING) {
             DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager.RingerTypeEnum.DOORBELL_RING, null);
-//            intent.putExtra(Constant.VOLUME, doorbellConfig.getRingVolume() / 100f);
-//            intent.putExtra(Constant.RESOURCE_PATH, doorbellConfig.getDoorbellRingName());
         } else {
             DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager.RingerTypeEnum.DOORBELL_ALARM, null);
-//            intent.putExtra(Constant.VOLUME, doorbellConfig.getAlarmVolume() / 100f);
-//            intent.putExtra(Constant.RESOURCE_PATH, doorbellConfig.getDoorbellAlarmName());
         }
-//        context.startService(intent);
     }
 
     private class MyTimeTask extends TimerTask {

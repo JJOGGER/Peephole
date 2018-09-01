@@ -16,7 +16,25 @@ import java.util.concurrent.TimeUnit;
 
     private ThreadPoolManager() {
         mThreadPoolExecutor = new ThreadPoolExecutor(4, 10, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(4));
-        mThreadPoolExecutor.execute(mRunnable);
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    FutureTask futureTask = null;
+                    try {
+                        //在请求队列去取请求，阻塞式
+                        futureTask = (FutureTask) mRequestQueue.take();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    //拿到了请求
+                    if (futureTask != null) {
+                        mThreadPoolExecutor.execute(futureTask);
+                    }
+                }
+            }
+        };
+        mThreadPoolExecutor.execute(runnable);
         mThreadPoolExecutor.setRejectedExecutionHandler(new RejectedHandler());
     }
 
@@ -44,26 +62,7 @@ import java.util.concurrent.TimeUnit;
         }
     }
 
-    private Runnable mRunnable = new Runnable() {
-        @Override
-        public void run() {
-            while (true) {
-                FutureTask futureTask = null;
-                try {
-                    //在请求队列去取请求，阻塞式
-                    futureTask = (FutureTask) mRequestQueue.take();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                //拿到了请求
-                if (futureTask != null) {
-                    mThreadPoolExecutor.execute(futureTask);
-                }
-            }
-        }
-    };
-
-    //拒绝策略
+     //拒绝策略
     private class RejectedHandler implements RejectedExecutionHandler {
 
         @Override

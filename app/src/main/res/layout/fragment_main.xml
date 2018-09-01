@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                                             xmlns:app="http://schemas.android.com/apk/res-auto"
-                                             xmlns:tools="http://schemas.android.com/tools"
-                                             android:layout_width="match_parent"
-                                             android:layout_height="match_parent"
-                                             android:orientation="vertical">
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
 
     <com.youth.banner.Banner
@@ -85,8 +86,8 @@
             android:drawableTop="@mipmap/device_swich"
             android:gravity="center"
             android:includeFontPadding="false"
-            android:paddingStart="@dimen/x39"
             android:paddingEnd="@dimen/x39"
+            android:paddingStart="@dimen/x39"
             android:paddingTop="@dimen/y10"
             android:text="@string/monitor_switch"
             android:textColor="@color/white"
@@ -100,9 +101,9 @@
             android:id="@+id/fl_leave_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingTop="@dimen/y10"
             android:paddingEnd="@dimen/x39"
             android:paddingStart="@dimen/x39"
+            android:paddingTop="@dimen/y10"
             app:layout_constraintBottom_toBottomOf="@+id/tv_monitor_switch"
             app:layout_constraintEnd_toStartOf="@+id/tv_monitor_switch"
             app:layout_constraintTop_toTopOf="@+id/tv_monitor_switch">
@@ -131,8 +132,8 @@
             android:id="@+id/fl_media_record"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingTop="@dimen/y10"
             android:layout_marginEnd="@dimen/x39"
+            android:paddingTop="@dimen/y10"
             app:layout_constraintBottom_toBottomOf="@+id/fl_leave_message"
             app:layout_constraintEnd_toStartOf="@+id/fl_leave_message"
             app:layout_constraintTop_toTopOf="@+id/fl_leave_message">
@@ -152,20 +153,20 @@
             <cn.jcyh.peephole.widget.MsgCircleView
                 android:id="@+id/tv_media_record_msg"
                 android:layout_width="@dimen/x24"
-                android:layout_gravity="end"
-                android:layout_height="@dimen/y24"/>
+                android:layout_height="@dimen/y24"
+                android:layout_gravity="end"/>
         </FrameLayout>
 
         <TextView
             android:id="@+id/tv_sos_number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingStart="@dimen/x39"
             android:drawablePadding="@dimen/y8"
             android:drawableTop="@mipmap/device_phone"
             android:gravity="center"
             android:includeFontPadding="false"
             android:paddingEnd="@dimen/x39"
+            android:paddingStart="@dimen/x39"
             android:paddingTop="@dimen/y10"
             android:text="@string/sos_phone"
             android:textColor="@color/white"
@@ -178,11 +179,11 @@
             android:id="@+id/tv_doorbell_look"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingStart="@dimen/x39"
             android:drawablePadding="@dimen/y8"
             android:drawableTop="@mipmap/device_look"
             android:gravity="center"
             android:includeFontPadding="false"
+            android:paddingStart="@dimen/x39"
             android:paddingTop="@dimen/y10"
             android:text="@string/look_outdoor"
             android:textColor="@color/white"

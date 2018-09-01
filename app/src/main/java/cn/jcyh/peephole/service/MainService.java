@@ -11,10 +11,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.BitmapFactory;
 import android.os.BatteryManager;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
-import android.os.PowerManager;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
@@ -34,7 +31,6 @@ import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.SystemMessage;
 import com.szjcyh.mysmart.IMyAidlInterface;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 
 import cn.jcyh.peephole.MainActivity;
@@ -63,8 +59,6 @@ import cn.jcyh.peephole.utils.SPUtil;
 public class MainService extends Service {
     private MyBinder mBinder;
     private MyServiceConnection mConnection;
-    private static boolean sIsClock;//是否锁屏
-    private static int sLockTime;//记录锁屏时间
     private MyReceiver mReceiver;
     private Observer<StatusCode> mUserStatusObserver;
     private Observer<SystemMessage> mSystemMessageObserver;
@@ -113,6 +107,7 @@ public class MainService extends Service {
         ControlCenter.getDoorbellManager().getDoorbellConfigFromServer(ControlCenter.getIMEI(), new IDataListener<ConfigData>() {
             @Override
             public void onSuccess(ConfigData configData) {
+                L.e("---------配置猫眼"+configData.getCatEyeConfig());
                 doorbellConfig.setVideoConfig(configData.getCatEyeConfig());
                 ControlCenter.getDoorbellManager().setDoorbellConfig(doorbellConfig);
                 ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getIMEI(), doorbellConfig, null);
@@ -201,29 +196,9 @@ public class MainService extends Service {
             String action = intent.getAction();
             if (TextUtils.isEmpty(action)) return;
             if (Intent.ACTION_SCREEN_ON.equals(action)) {
-                sIsClock = false;
-                sLockTime = 0;
                 CacheUtil.clearCache();
             } else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
                 L.e("---------ACTION_SCREEN_OFF");
-                sIsClock = true;
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        while (sIsClock) {
-                            sLockTime += 5;
-                            if (sLockTime >= 60 * 10) {
-                                //10分钟重连
-//                                mMyHandler.sendEmptyMessage(0);
-                            }
-                            try {
-                                Thread.sleep(5000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }).start();
             }
             switch (action) {
                 case Intent.ACTION_BATTERY_CHANGED:
@@ -262,32 +237,6 @@ public class MainService extends Service {
                     L.e("----------------ACTION_BATTERY_LOW");
                     break;
             }
-        }
-    }
-
-    private static class MyHandler extends Handler {
-        private WeakReference<MainService> mServiceWeakReference;
-
-        MyHandler(MainService service) {
-            mServiceWeakReference = new WeakReference<>(service);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            //电量屏幕
-//            L.e("-----------10分钟重连：" + ControlCenter.sIsAnychatLogin);
-            MainService service = mServiceWeakReference.get();
-            //获取电源管理器对象
-            PowerManager pm = (PowerManager) service.getSystemService(Context.POWER_SERVICE);
-            //获取PowerManager.WakeLock对象,后面的参数|表示同时传入两个值,最后的是LogCat里用的Tag
-            assert pm != null;
-            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP |
-                    PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "bright");
-            //点亮屏幕
-            wl.acquire(10 * 60 * 1000L /*10 minutes*/);
-            wl.release();
-            sLockTime = 0;
         }
     }
 

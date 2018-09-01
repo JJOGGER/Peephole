@@ -55,7 +55,6 @@ public class Util {
         NIMClient.init(app, loginInfo(), null);
         CacheUtil.init();
 //        JPushInterface.init(app);
-//        UMConfigure.init(app, Config.UMENG_APP_KEY, null, UMConfigure.DEVICE_TYPE_PHONE, null);
 //        //初始化数据库
 //        DBManager.initDB(app);
 //        PushManager.initPush();

@@ -60,23 +60,9 @@ public class MainActivity extends BaseActivity implements ViewPager.OnPageChange
 //        ivMain.setSelected(true);
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-//        int heightPixels = displayMetrics.heightPixels;
-//        int widthPixels = displayMetrics.widthPixels;
-//        L.e("---->h:" + heightPixels + "---w:" + widthPixels);
-        //获取绑定的用户列表
-//        HttpAction.getHttpAction().getBindUsers(IMEI, new IDataListener<List<User>>() {
-//            @Override
-//            public void onSuccess(List<User> users) {
-//                if (users != null && users.size() > 0) {
-//                    DoorBellControlCenter.getInstance().saveBindUsers(users);
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(int errorCode) {
-//
-//            }
-//        });
+        int heightPixels = displayMetrics.heightPixels;
+        int widthPixels = displayMetrics.widthPixels;
+        L.e("---->h:" + heightPixels + "---w:" + widthPixels);
 //        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 //        if(bluetoothAdapter != null){
 //            bluetoothAdapter.enable();
