@@ -101,6 +101,12 @@ public abstract class BaseActivity extends AppCompatActivity {
 //        startActivity(intent);
 //    }
 
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+    }
+
     public void startNewActivity(Class<? extends AppCompatActivity> cls) {
         Intent intent = new Intent(this, cls);
         startActivity(intent);
@@ -109,18 +115,21 @@ public abstract class BaseActivity extends AppCompatActivity {
     public void startNewActivityForResult(Class<? extends AppCompatActivity> cls, int result) {
         Intent intent = new Intent(this, cls);
         startActivityForResult(intent, result);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     public void startNewActivityForResult(Class<? extends AppCompatActivity> cls, int result, String name, String value) {
         Intent intent = new Intent(this, cls);
         intent.putExtra(name, value);
         startActivityForResult(intent, result);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     public void startNewActivityForResult(Class<? extends AppCompatActivity> cls, int result, String name, int value) {
         Intent intent = new Intent(this, cls);
         intent.putExtra(name, value);
         startActivityForResult(intent, result);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     /**
@@ -209,6 +218,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         Intent intent = new Intent(this, cls);
         intent.putExtras(bundle);
         startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     @Override
@@ -218,5 +228,11 @@ public abstract class BaseActivity extends AppCompatActivity {
         ActivityCollector.removeActivity(this);
 //        Util.watch(this);
         mBind.unbind();
+    }
+
+    @Override
+    public void startActivity(Intent intent) {
+        super.startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 }

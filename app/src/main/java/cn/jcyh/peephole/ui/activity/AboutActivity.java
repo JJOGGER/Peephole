@@ -67,12 +67,17 @@ public class AboutActivity extends BaseActivity {
             @Override
             public void onSuccess(final Version version) {
                 cancelProgressDialog();
-                if (Integer.valueOf(version.getNumber()) > SystemUtil.getVersionCode()) {
+                try {
+                    if (Integer.valueOf(version.getNumber()) > SystemUtil.getVersionCode()) {
 //                        ControlCenter.setNewVersion(version);
-                    update(version);
-                } else {
+                        update(version);
+                    } else {
+                        T.show(R.string.no_new_version);
+                    }
+                } catch (Exception e) {
                     T.show(R.string.no_new_version);
                 }
+
 //                    else {
 //                        ControlCenter.setNewVersion(null);
 //                    }
@@ -110,30 +115,6 @@ public class AboutActivity extends BaseActivity {
         mUpdateDialog.commit();
 
     }
-    //    @Override
-//    protected void init() {
-//        //得到版本号|系统版本信息
-//        getsystem();
-//        // 初始化数据
-//        initData();
-//
-//        String[] from = {"title", "get_data"};
-//
-//        int[] to = {R.id.about_title, R.id.about_get};
-//
-//        adapter = new SimpleAdapter(AboutActivity.this, dataList,
-//                R.layout.aboutlist_item, from, to);
-//        listview.setAdapter(adapter);
-//        listview.setOnItemClickListener(new OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
-//                                    long arg3) {
-//                if (arg2 == 2) {//升级
-//                    Toast.makeText(AboutActivity.this, "升级", Toast.LENGTH_SHORT).show();
-//                }
-//            }
-//        });
-//    }
 //
 //    private void getsystem() {
 //        mAndroid = android.os.Build.VERSION.RELEASE;

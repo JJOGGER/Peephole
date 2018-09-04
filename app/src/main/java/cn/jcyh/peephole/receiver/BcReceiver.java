@@ -1,5 +1,6 @@
 package cn.jcyh.peephole.receiver;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -7,8 +8,8 @@ import android.media.AudioService;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.constant.ExtendFunction;
@@ -17,7 +18,6 @@ import cn.jcyh.peephole.control.DoorbellAudioManager;
 import cn.jcyh.peephole.entity.DoorbellConfig;
 import cn.jcyh.peephole.event.DoorbellSystemAction;
 import cn.jcyh.peephole.service.AudioValiService;
-import cn.jcyh.peephole.service.MediaPlayService;
 import cn.jcyh.peephole.ui.activity.CameraActivity;
 import cn.jcyh.peephole.ui.activity.ObjectDetectingActivity;
 import cn.jcyh.peephole.utils.L;
@@ -37,10 +37,13 @@ public class BcReceiver extends BroadcastReceiver {
     private static final String RELEASED = "released";
     private static final String CLOSE = "close";
     private static final String OPEN = "open";
-    private Timer mTimer;
-    private MyTimeTask mTimerTask;
+    //    private Timer mTimer;
+//    private MyTimeTask mTimerTask;
     private int mSensorTime;
     private boolean mIsPlaying;
+    private ExecutorService mExecutorService;
+    @SuppressLint("StaticFieldLeak")
+    private static PIRRunnable sPirRunnable;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -142,13 +145,19 @@ public class BcReceiver extends BroadcastReceiver {
         if (AVChatProfile.getInstance().isAVChatting()) return;
         if (extAct.equals(PEOPLE_IN)) {
             L.e("---------PIR中断:有人来了");
-            if (mTimerTask != null && mTimer == null) {
+            if (DoorbellAudioManager.getDoorbellAudioManager().isPlaying()) return;
+            if (mExecutorService == null) {
+                mExecutorService = Executors.newSingleThreadExecutor();
+            }
+            if (sPirRunnable == null) {
+                sPirRunnable = new PIRRunnable(context);
+            } else {
                 return;
             }
-            if (ServiceUtil.isServiceRunning(MediaPlayService.class)) return;
-            mTimer = new Timer();
-            mTimerTask = new MyTimeTask(context);
-            mTimer.schedule(mTimerTask, 0, 1000);
+            mExecutorService.execute(sPirRunnable);
+//            mTimer = new Timer();
+//            mTimerTask = new MyTimeTask(context);
+//            mTimer.schedule(mTimerTask, 0, 1000);
         } else if (extAct.equals(PEOPLE_OUT)) {
             L.e("----- PIR中断:人走了");
         }
@@ -183,53 +192,99 @@ public class BcReceiver extends BroadcastReceiver {
         }
     }
 
-    private class MyTimeTask extends TimerTask {
-        private Context mContext;
-        private int mCount;
+//    private class MyTimeTask extends TimerTask {
+//        private Context mContext;
+//        private int mCount;
+//
+//        MyTimeTask(Context context) {
+//            mContext = context;
+//            mCount = 0;
+//        }
+//
+//        @Override
+//        public synchronized void run() {
+//            boolean pirSensorOn = ControlCenter.getBCManager().getPIRSensorOn();//人体监控是否打开
+//            L.e("---------->mCount:" + mCount);
+//            if (!pirSensorOn) {
+//                mCount = 0;
+//                cancelTimer();
+//                return;
+//            }
+//            mCount++;
+//            if (mCount >= mSensorTime) {//达到感应时间
+//                mCount = 0;
+//                cancelTimer();
+//                boolean pirStatus = ControlCenter.getBCManager().getPIRStatus();
+//                if (pirStatus) {
+//                    //表示有人
+//                    L.e("---------->仍然有人:");
+//                    DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
+//                    if (doorbellConfig.getSensorRingAlarm() == 1) {
+//                        //开启了停留报警
+//                        play(ControlCenter.DOORBELL_TYPE_ALARM);
+//                    }
+//                    if (ControlCenter.sIsVideo || mIsPlaying) return;
+//                    ControlCenter.sIsVideo = true;
+//                    Intent intent = new Intent(mContext, CameraActivity.class);
+//                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                    intent.putExtra(Constant.TYPE, DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_ALARM);
+//                    mContext.startActivity(intent);
+//                }
+//            }
+//        }
+//    }
 
-        MyTimeTask(Context context) {
-            mContext = context;
-            mCount = 0;
+    private class PIRRunnable implements Runnable {
+        private Context mContext;
+
+        PIRRunnable(Context context) {
+            mContext = context.getApplicationContext();
         }
 
         @Override
-        public synchronized void run() {
+        public void run() {
             boolean pirSensorOn = ControlCenter.getBCManager().getPIRSensorOn();//人体监控是否打开
-            L.e("---------->mCount:" + mCount);
             if (!pirSensorOn) {
-                mCount = 0;
-                cancelTimer();
+                if (!mExecutorService.isShutdown()) {
+                    mExecutorService.shutdown();
+                }
+                sPirRunnable = null;
                 return;
             }
-            mCount++;
-            if (mCount >= mSensorTime) {//达到感应时间
-                mCount = 0;
-                cancelTimer();
-                boolean pirStatus = ControlCenter.getBCManager().getPIRStatus();
-                if (pirStatus) {
-                    //表示有人
-                    L.e("---------->仍然有人:");
-                    DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
-                    if (doorbellConfig.getSensorRingAlarm() == 1) {
-                        //开启了停留报警
-                        play(ControlCenter.DOORBELL_TYPE_ALARM);
-                    }
-                    if (ControlCenter.sIsVideo || mIsPlaying) return;
-                    ControlCenter.sIsVideo = true;
-                    Intent intent = new Intent(mContext, CameraActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.putExtra(Constant.TYPE, DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_ALARM);
-                    mContext.startActivity(intent);
-                }
+            try {
+                Thread.sleep(mSensorTime * 1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+            //达到感应时间
+            if (sPirRunnable == null) return;
+            if (!mExecutorService.isShutdown()) {
+                mExecutorService.shutdown();
+            }
+            boolean pirStatus = ControlCenter.getBCManager().getPIRStatus();
+            if (pirStatus) {
+                //表示有人
+                DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
+                if (doorbellConfig.getSensorRingAlarm() == 1) {
+                    //开启了停留报警
+                    play(ControlCenter.DOORBELL_TYPE_ALARM);
+                }
+                if (ControlCenter.sIsVideo || mIsPlaying) return;
+                ControlCenter.sIsVideo = true;
+                Intent intent = new Intent(mContext, CameraActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra(Constant.TYPE, DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_ALARM);
+                mContext.startActivity(intent);
+            }
+            sPirRunnable = null;
         }
     }
 
-    private void cancelTimer() {
-        mTimer.cancel();
-        mTimer.purge();
-        mTimer = null;
-        mTimerTask.cancel();
-        mTimerTask = null;
-    }
+//    private void cancelTimer() {
+//        mTimer.cancel();
+//        mTimer.purge();
+//        mTimer = null;
+//        mTimerTask.cancel();
+//        mTimerTask = null;
+//    }
 }

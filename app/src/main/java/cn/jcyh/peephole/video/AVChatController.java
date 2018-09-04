@@ -113,10 +113,8 @@ public class AVChatController {
                 e.printStackTrace();
             }
         }
-//        mVideoCapturer.setZoom(10);
-        L.e("-------------getNetworkType->>" + NetworkUtil.getNetworkType());
         if (NetworkUtil.NetworkType.NETWORK_WIFI.equals(NetworkUtil.getNetworkType())){
-            AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_QUALITY, AVChatVideoQuality.QUALITY_720P);
+            AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_QUALITY, AVChatVideoQuality.QUALITY_480P);
         }else {
             AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_QUALITY, AVChatVideoQuality.QUALITY_MEDIUM);
         }

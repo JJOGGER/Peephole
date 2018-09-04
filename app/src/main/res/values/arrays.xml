@@ -98,8 +98,10 @@
 
     <string-array name="SETTING_SYSTEM">
         <item>@string/date_time</item>
+        <item>@string/system_update</item>
     </string-array>
     <string-array name="SETTING_SYSTEM_RES">
         <item>@mipmap/ic_date</item>
+        <item>@mipmap/ic_update</item>
     </string-array>
 </resources>

@@ -137,6 +137,8 @@ public class SystemSettingAdapter extends BaseQuickAdapter<String, BaseViewHolde
             mListener.onLanguageClick();
         }  else if (name.equals(mContext.getString(R.string.date_time))) {
             mListener.onDateTimeClick();
+        }else if (name.equals(mContext.getString(R.string.system_update))){
+            mListener.onSystemUpdateClick();
         }
     }
 }

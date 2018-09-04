@@ -77,22 +77,9 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
             // 获取camera支持的相关参数，判断是否可以设置
             List<Size> previewSizes = mCamera.getParameters().getSupportedPreviewSizes();
             Collections.sort(previewSizes, new CameraSizeComparator());
-            // 获取当前设置的分辩率参数
-            int index = bestVideoSize(mVideoSizeList, mPrviewSizeList.get(0).width);
-            boolean bSetPreviewSize = false;
-//            if (previewSizes.size() == 1) {
-//                bSetPreviewSize = true;
-//                parameters.setPreviewSize(previewSizes.get(0).width, previewSizes.get(0).height);
-//            } else {
-//                parameters.setPreviewSize(mVideoSizeList.get(index).width, mVideoSizeList.get(index).height);
-//                for (int i = 0; i < mVideoSizeList.size(); i++) {
-//                    L.e("---------------param:"+mVideoSizeList.get(i).width);
-//                }
-//            }
             int maxWidth = 0;
             int maxHeight = 0;
             if (previewSizes.size() >= 1) {
-                bSetPreviewSize = true;
                 for (int i = 0; i < previewSizes.size(); i++) {
                     int width = previewSizes.get(i).width;
                     if (maxWidth < width) {
@@ -104,13 +91,6 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
                 }
                 parameters.setPreviewSize(maxWidth, maxHeight);
             }
-            // 指定的分辩率不支持时，如果当前手机支持320x240分辨率，优选设置320x240分辨率否则使用手机支持分辨率中最低的分辨率进行设置
-//            if (!bSetPreviewSize) {
-//                if (previewSizes.size() > 0) {
-//                    Size s = previewSizes.get(0);
-//                    parameters.setPreviewSize(s.width, s.height);
-//                }
-//            }
 
             // 设置视频采集帧率
             List<int[]> fpsRange = parameters.getSupportedPreviewFpsRange();
@@ -124,6 +104,7 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
 
             // 设置视频数据格式
             parameters.setPreviewFormat(ImageFormat.NV21);
+            parameters.setSceneMode(Camera.Parameters.SCENE_MODE_NIGHT);
             // 参数设置生效
             try {
                 mCamera.setParameters(parameters);

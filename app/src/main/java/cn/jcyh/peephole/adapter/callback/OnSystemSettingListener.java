@@ -25,4 +25,6 @@ public interface OnSystemSettingListener {
 //    void onMarkResetClick();
 
     void onDateTimeClick();
+
+    void onSystemUpdateClick();
 }

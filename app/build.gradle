@@ -49,7 +49,7 @@ android {
             //Zipalign优化
             zipAlignEnabled true
             // 移除无用的resource文件
-//            shrinkResources true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 
         }
@@ -116,6 +116,7 @@ dependencies {
     implementation rootProject.ext.dependencies.umeng_analytics
     implementation rootProject.ext.dependencies.rxbinding
     implementation rootProject.ext.dependencies.adapter_helper
+    implementation rootProject.ext.dependencies.progressbar
     //    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.4'
     //    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
     compileOnly files('libs/classes-full-debug.jar')

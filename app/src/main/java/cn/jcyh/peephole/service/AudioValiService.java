@@ -3,6 +3,7 @@ package cn.jcyh.peephole.service;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
@@ -23,8 +24,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Timer;
-import java.util.TimerTask;
 
+import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.utils.L;
 
 /**
@@ -34,20 +35,12 @@ public class AudioValiService extends Service {
     // 密码类型
     // 默认为数字密码
     private int mPwdType = 3;
-    // 会话类型
-    private int mSST = 0;
-    // 注册
-    private static final int SST_ENROLL = 0;
-    // 验证
-    private static final int SST_VERIFY = 1;
     // 身份验证对象
     private IdentityVerifier mIdVerifier;
     // 数字声纹密码
-    private String mNumPwd = "";
+    private String mNumPwd = "好的";
     // 用于验证的数字密码
-    private String mVerifyNumPwd = "好的";
-    // 是否可以录音
-    private boolean mCanStartRecord = false;
+    private String mVerifyNumPwd = "86295347";
     // 是否可以录音
     private boolean isStartWork = false;
     // 录音采样率
@@ -61,7 +54,6 @@ public class AudioValiService extends Service {
     // 引擎类型
     private String mEngineType = SpeechConstant.TYPE_CLOUD;
     private Timer mValiTimer;
-    private TimerTask mValiTask;
     private boolean mIsSatrt = true;
     private boolean mIsFinish = false;
 
@@ -87,7 +79,6 @@ public class AudioValiService extends Service {
                 if (ErrorCode.SUCCESS == errorCode) {
                     L.i("----引擎初始化成功");
                     // 设置会话类型为验证
-                    mSST = SST_VERIFY;
 //                    mVerifyNumPwd = VerifierUtil.generateNumberPassword(8);
                     initSynthesizer();
                 } else {
@@ -109,35 +100,35 @@ public class AudioValiService extends Service {
             // 根据业务类型调用服务
             vocalVerify();
             isStartWork = true;
-            mCanStartRecord = true;
         }
         try {
             mPcmRecorder = new PcmRecorder(SAMPLE_RATE, 40);
             mPcmRecorder.startRecording(mPcmRecordListener);
+            final Handler handler = new Handler();
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        Thread.sleep(20000);
+                        Thread.sleep(5000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
 //                    if (isFinishing() && getSupportFragmentManager() == null) return;
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            if (mIdVerifier != null)
-//                                mIdVerifier.stopWrite("ivp");
-//                            if (null != mPcmRecorder) {
-//                                mPcmRecorder.stopRecord(true);
-//                            }
-//                            finish();
-//                        }
-//                    });
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (mIdVerifier != null)
+                                mIdVerifier.stopWrite("ivp");
+                            if (null != mPcmRecorder) {
+                                mPcmRecorder.stopRecord(true);
+                            }
+                        }
+                    });
                 }
             }).start();
         } catch (SpeechError e) {
             e.printStackTrace();
+            L.e("---------------:" + e.getMessage());
         }
     }
 
@@ -148,7 +139,6 @@ public class AudioValiService extends Service {
 
         @Override
         public void onResult(IdentityResult result, boolean islast) {
-            L.e("----------IdentityListenerresult" + result.getResultString());
             try {
                 JSONObject object = new JSONObject(result.getResultString());
                 String decision = object.getString("decision");
@@ -164,22 +154,21 @@ public class AudioValiService extends Service {
                 e.printStackTrace();
             }
             isStartWork = false;
+            stopSelf();
         }
 
         @Override
         public void onEvent(int eventType, int arg1, int arg2, Bundle obj) {
             if (SpeechEvent.EVENT_VOLUME == eventType) {
-                L.i("----音量：" + arg1);
+                L.i("-----音量：" + arg1);
             } else if (SpeechEvent.EVENT_VAD_EOS == eventType) {
-                L.i("----录音结束");
+                L.i("-----录音结束");
             }
         }
 
         @Override
         public void onError(SpeechError error) {
             isStartWork = false;
-            mCanStartRecord = false;
-
             StringBuffer errorResult = new StringBuffer();
             errorResult.append("验证失败！\n");
             errorResult.append("错误信息：" + error.getPlainDescription(true) + "\n");
@@ -276,7 +265,7 @@ public class AudioValiService extends Service {
             //设置合成音调
             mSpeechSynthesizer.setParameter(SpeechConstant.PITCH, "50");
             //设置合成音量
-            mSpeechSynthesizer.setParameter(SpeechConstant.VOLUME, "50");
+            mSpeechSynthesizer.setParameter(SpeechConstant.VOLUME, "10");
         } else {
             mSpeechSynthesizer.setParameter(SpeechConstant.ENGINE_TYPE, SpeechConstant.TYPE_LOCAL);
             // 设置本地合成发音人 voicer为空，默认通过语记界面指定发音人。
@@ -293,22 +282,22 @@ public class AudioValiService extends Service {
             stopSelf();
             return;
         }
-        mValiTimer = new Timer();
-        mValiTask = new TimerTask() {
-            @Override
-            public void run() {
-                stopSelf();
-                //验证结束
-                L.e("------------timer");
-                if (mIdVerifier != null)
-                    mIdVerifier.stopWrite("ivp");
-                if (null != mPcmRecorder) {
-                    mPcmRecorder.stopRecord(true);
-                }
-                cancelTimer();
-            }
-        };
-        mValiTimer.schedule(mValiTask, 5000, 1000);
+//        mValiTimer = new Timer();
+//        mValiTask = new TimerTask() {
+//            @Override
+//            public void run() {
+//                stopSelf();
+//                //验证结束
+//                L.e("------------timer");
+//                if (mIdVerifier != null)
+//                    mIdVerifier.stopWrite("ivp");
+//                if (null != mPcmRecorder) {
+//                    mPcmRecorder.stopRecord(true);
+//                }
+//                cancelTimer();
+//            }
+//        };
+//        mValiTimer.schedule(mValiTask, 5000, 1000);
     }
 
     @Override
@@ -337,28 +326,13 @@ public class AudioValiService extends Service {
 
         @Override
         public void onRecordReleased() {
-            L.e("------onRecordReleased" + mIdVerifier);
         }
 
         @Override
         public void onRecordBuffer(byte[] data, int offset, int length) {
-            StringBuffer params = new StringBuffer();
-            L.e("------onRecordBuffer" + mSST);
-            switch (mSST) {
-                case SST_ENROLL:
-                    params.append("rgn=5,");
-                    params.append("ptxt=" + mNumPwd + ",");
-                    params.append("pwdt=" + mPwdType + ",");
-                    mIdVerifier.writeData("ivp", params.toString(), data, 0, length);
-                    break;
-                case SST_VERIFY:
-                    params.append("ptxt=" + mVerifyNumPwd + ",");
-                    params.append("pwdt=" + mPwdType + ",");
-                    mIdVerifier.writeData("ivp", params.toString(), data, 0, length);
-                    break;
-                default:
-                    break;
-            }
+            String params = "ptxt=" + mVerifyNumPwd + "," +
+                    "pwdt=" + mPwdType + ",";
+            mIdVerifier.writeData("ivp", params, data, 0, length);
         }
 
         @Override
@@ -379,8 +353,13 @@ public class AudioValiService extends Service {
         // 验证模式，单一验证模式：sin
         mIdVerifier.setParameter(SpeechConstant.MFV_VCM, "sin");
         // 用户的唯一标识，在声纹业务获取注册、验证、查询和删除模型时都要填写，不能为空
-//        mIdVerifier.setParameter(SpeechConstant.AUTH_ID, IMEI);
+        mIdVerifier.setParameter(SpeechConstant.AUTH_ID, ControlCenter.getIMEI());
         // 设置监听器，开始会话
+//        try {
+//            Thread.sleep(1000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
         mIdVerifier.startWorking(mVerifyListener);
     }
 

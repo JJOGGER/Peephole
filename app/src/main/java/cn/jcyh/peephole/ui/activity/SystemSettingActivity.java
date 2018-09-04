@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.provider.Settings;
 import android.support.v7.widget.RecyclerView;
-import android.view.WindowManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,15 +30,15 @@ public class SystemSettingActivity extends BaseActivity implements OnSystemSetti
 
     @Override
     protected void init() {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-        this.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
+//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+//        this.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         rvContent.setLayoutManager(new MyLinearLayoutManager(this));
         initTitle();
         rvContent.setAdapter(new SystemSettingAdapter(mTitles, this));
     }
 
-//    @Override
+    //    @Override
 //    public boolean isImmersive() {
 //        return false;
 //    }
@@ -123,7 +122,12 @@ public class SystemSettingActivity extends BaseActivity implements OnSystemSetti
     @Override
     public void onDateTimeClick() {
         Intent intent = new Intent(Settings.ACTION_DATE_SETTINGS);
-//        Intent intent = new Intent(Settings.ACTION_SOUND_SETTINGS );
         startActivity(intent);
     }
+
+    @Override
+    public void onSystemUpdateClick() {
+        startNewActivity(SystemUpdateActivity.class);
+    }
+
 }

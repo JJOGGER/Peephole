@@ -215,6 +215,8 @@
     <string name="video_resolution_set_msg">设置视频通话的分辨率</string>
     <string name="download_file_des_failure">文件解析失败</string>
     <string name="start_download">开始下载</string>
+    <string name="system_update">系统升级</string>
+    <string name="check_update_msg">升级版本检测中...</string>
 
     <!--                   系统设置end             -->
     <!--<string name="date_week_format">%d年%d月%d日&#160;%s</string>-->

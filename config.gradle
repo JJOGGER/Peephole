@@ -47,6 +47,6 @@ ext {
             rxbinding_v7:'com.jakewharton.rxbinding2:rxbinding-appcompat-v7:2.1.1',
 
 
-//            progressbar: 'com.github.HotBitmapGG:RingProgressBar:V1.2.3'
+            progressbar: 'com.github.HotBitmapGG:RingProgressBar:V1.2.3'
     ]
 }

@@ -78,14 +78,22 @@ public abstract class BaseFragment extends Fragment{
     public void loadData() {
     }
 
+    @Override
+    public void startActivity(Intent intent) {
+        super.startActivity(intent);
+        mActivity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+    }
+
     public void startNewActivity(Class cls) {
         Intent intent = new Intent(mActivity, cls);
         startActivity(intent);
+        mActivity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
     public void startNewActivity(Class cls, Bundle bundle) {
         Intent intent = new Intent(mActivity, cls);
         intent.putExtras(bundle);
         startActivity(intent);
+        mActivity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
     public void startNewActivity(Class cls, String key, Object value) {
         Intent intent = new Intent(mActivity, cls);
@@ -123,6 +131,7 @@ public abstract class BaseFragment extends Fragment{
             intent.putExtra(key, (Float[]) value);
         }
         startActivity(intent);
+        mActivity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     @Override

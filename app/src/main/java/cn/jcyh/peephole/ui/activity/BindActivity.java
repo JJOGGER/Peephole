@@ -24,6 +24,7 @@ import cn.jcyh.peephole.entity.CommandJson;
 import cn.jcyh.peephole.event.NIMMessageAction;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.HintDialogFragmemt;
+import cn.jcyh.peephole.utils.L;
 
 import static cn.jcyh.peephole.control.ControlCenter.sIsBinding;
 
@@ -48,6 +49,7 @@ public class BindActivity extends BaseActivity {
     protected void init() {
         sIsBinding = true;
         tvImei.setText(String.format(getString(R.string.device_no_), IMEI));
+        L.e("-----------imei:"+IMEI);
         decordQR();
         if (!EventBus.getDefault().isRegistered(this))
             EventBus.getDefault().register(this);

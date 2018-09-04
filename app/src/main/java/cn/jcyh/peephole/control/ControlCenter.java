@@ -80,57 +80,66 @@ public class ControlCenter {
 //            e.printStackTrace();
 //            return "";
 //        }
-        if ("0123456789ABCDEF".equals(Build.SERIAL))
-            return "";
+        if (Build.SERIAL.isEmpty())
+            return "0123456789ABCDEF";
         return Build.SERIAL;
     }
 
     /**
      * 连接网易
      */
-    @SuppressWarnings("unchecked")
     public static void connectNIM() {
         if (!NetworkUtil.isConnected()) return;
         final DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
         L.e("-------------connectNIM:" + doorbellConfig);
-        if (TextUtils.isEmpty(ControlCenter.getIMEI())) return;
+        if (TextUtils.isEmpty(ControlCenter.getIMEI())||"0123456789ABCDEF".equals(ControlCenter.getIMEI())) return;
         HttpAction.getHttpAction().initNIM(ControlCenter.getIMEI(), new IDataListener<Doorbell>() {
             @Override
             public void onSuccess(Doorbell doorbell) {
                 doorbellConfig.setDoorbell(doorbell);
                 ControlCenter.getDoorbellManager().setDoorbellConfig(doorbellConfig);
                 LoginInfo info = new LoginInfo(doorbellConfig.getDoorbell().getDeviceUserId(), doorbellConfig.getDoorbell().getToken()); // config...
-                final AbortableFuture<LoginInfo> login = NIMClient.getService(AuthService.class).login(info);
-                RequestCallback<LoginInfo> callback =
-                        new RequestCallback<LoginInfo>() {
-                            @Override
-                            public void onSuccess(LoginInfo loginInfo) {
-                                L.e("------------onSuccess");
-                            }
-
-                            @Override
-                            public void onFailed(int i) {
-                                L.e("-----------onFailed" + i);
-                                if (i != 416) {
-                                    login.abort();
-                                    connectNIM();//重新连接
-                                }
-                            }
-
-                            @Override
-                            public void onException(Throwable throwable) {
-                                L.e("-----------登录失败：" + throwable.getMessage());
-                            }
-                        };
-                login.setCallback(callback);
+                loginNIM(info);
             }
 
             @Override
             public void onFailure(int errorCode, String desc) {
                 L.e("--------errorCode:" + errorCode);
+                if (doorbellConfig.getDoorbell() != null) {
+                    LoginInfo info =
+                            new LoginInfo(doorbellConfig.getDoorbell().getDeviceUserId(), doorbellConfig.getDoorbell().getToken());
+                    loginNIM(info);
+                }
             }
         });
 
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void loginNIM(LoginInfo info) {
+        final AbortableFuture<LoginInfo> login = NIMClient.getService(AuthService.class).login(info);
+        RequestCallback<LoginInfo> callback =
+                new RequestCallback<LoginInfo>() {
+                    @Override
+                    public void onSuccess(LoginInfo loginInfo) {
+                        L.e("------------onSuccess");
+                    }
+
+                    @Override
+                    public void onFailed(int i) {
+                        L.e("-----------onFailed" + i);
+                        if (i != 416) {
+                            login.abort();
+                            connectNIM();//重新连接
+                        }
+                    }
+
+                    @Override
+                    public void onException(Throwable throwable) {
+                        L.e("-----------登录失败：" + throwable.getMessage());
+                    }
+                };
+        login.setCallback(callback);
     }
 
     public static void setNewVersion(Version version) {
