@@ -22,7 +22,7 @@ public interface IHttpRequest {
 
     void setDoorbellName(String deviceID, String name, IDataListener listener);
 
-    void getVersion(IDataListener listener);
+    void getVersion(int versionCode,IDataListener listener);
 
     void updateVersion(String url, String savePath, ProgressHttpListener progressHttpListener, IDataListener listener);
 

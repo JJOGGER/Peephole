@@ -14,6 +14,7 @@ public class APKUtil {
 //    public static final String APK_PATH = FileUtil.getAPKPath() + File.separator + ".peephole.apk";
     public static final String APK_PATH = FileUtil.getAPKPath() + File.separator + ".peephole.apk";//合成差分包后新包存储路径
     public static final String APK_PATCH_PATH = FileUtil.getAPKPath() + File.separator + "peephole.patch";//差分包存储路径
+    public static final String SYSTEM_PATCH_PATH = FileUtil.getSDCardPath() + File.separator + "update.patch";//差分包存储路径
 
     /**
      * 获取本机apk存储路径

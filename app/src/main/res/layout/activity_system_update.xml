@@ -6,50 +6,59 @@
     android:id="@+id/immersive"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/gray_37393d"
     tools:context=".ui.activity.SystemUpdateActivity">
 
     <FrameLayout
-        android:id="@+id/frameLayout"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:background="@color/green_029789">
+        android:id="@+id/fl_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="34dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <io.netopen.hotbitmapgg.library.view.RingProgressBar
-            android:id="@+id/rpb_update"
+        <ImageView
+            android:id="@+id/iv_update"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            app:ringColor="@color/white"
-            app:textColor="@color/white"
-            app:textIsShow="true"
-            app:textSize="22sp"/>
+            android:src="@mipmap/loading_icon"/>
+
+        <TextView
+            android:id="@+id/tv_pro"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="60%"
+            android:textColor="@color/white"
+            android:textSize="21sp"
+            android:visibility="gone"/>
     </FrameLayout>
 
     <TextView
-        android:id="@+id/tv_title"
+        android:id="@+id/tv_state"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="更新说明"
-        android:textColor="@color/black_333333"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/frameLayout"/>
+        android:layout_marginTop="4dp"
+        android:text="当前状态"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="@+id/fl_icon"
+        app:layout_constraintStart_toStartOf="@+id/fl_icon"
+        app:layout_constraintTop_toBottomOf="@+id/fl_icon"/>
 
     <FrameLayout
         android:id="@+id/fl_bottom"
         android:layout_width="match_parent"
         android:layout_height="42dp"
+        android:background="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
         <LinearLayout
             android:id="@+id/ll_bottom"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="42dp"
             android:orientation="horizontal"
             android:visibility="gone">
@@ -65,8 +74,6 @@
             <View
                 android:layout_width="0.5dp"
                 android:layout_height="match_parent"
-                android:layout_marginBottom="2dp"
-                android:layout_marginTop="2dp"
                 android:background="@color/gray_777777"/>
 
             <TextView

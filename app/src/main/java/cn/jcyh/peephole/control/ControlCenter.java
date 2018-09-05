@@ -13,7 +13,7 @@ import com.netease.nimlib.sdk.auth.LoginInfo;
 import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.entity.Doorbell;
 import cn.jcyh.peephole.entity.DoorbellConfig;
-import cn.jcyh.peephole.entity.Version;
+import cn.jcyh.peephole.entity.DownloadInfo;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.manager.IBCManager;
@@ -92,7 +92,8 @@ public class ControlCenter {
         if (!NetworkUtil.isConnected()) return;
         final DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
         L.e("-------------connectNIM:" + doorbellConfig);
-        if (TextUtils.isEmpty(ControlCenter.getIMEI())||"0123456789ABCDEF".equals(ControlCenter.getIMEI())) return;
+        if (TextUtils.isEmpty(ControlCenter.getIMEI()) || "0123456789ABCDEF".equals(ControlCenter.getIMEI()))
+            return;
         HttpAction.getHttpAction().initNIM(ControlCenter.getIMEI(), new IDataListener<Doorbell>() {
             @Override
             public void onSuccess(Doorbell doorbell) {
@@ -142,13 +143,21 @@ public class ControlCenter {
         login.setCallback(callback);
     }
 
-    public static void setNewVersion(Version version) {
-        SPUtil.getInstance().put(Constant.VERSION, version == null ? "" : GsonUtil.toJson(version));
+    private static DownloadInfo sDownloadInfo;
+
+    public static void setDownloadInfo(DownloadInfo downloadInfo) {
+        sDownloadInfo = downloadInfo;
+        SPUtil.getInstance().put(Constant.DOWNLOAD_INFO, downloadInfo == null ? "" : GsonUtil.toJson(downloadInfo));
     }
 
-    public static Version getNewVersion() {
-        String json = SPUtil.getInstance().getString(Constant.VERSION, "");
-        return TextUtils.isEmpty(json) ? null : GsonUtil.fromJson(json, Version.class);
+
+    public static DownloadInfo getDownloadInfo() {
+        if (sDownloadInfo == null) {
+            String json = SPUtil.getInstance().getString(Constant.DOWNLOAD_INFO, "");
+            if (!TextUtils.isEmpty(json))
+                sDownloadInfo = GsonUtil.fromJson(json, DownloadInfo.class);
+        }
+        return sDownloadInfo;
     }
 
     /**

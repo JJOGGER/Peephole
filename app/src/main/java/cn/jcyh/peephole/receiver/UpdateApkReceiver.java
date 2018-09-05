@@ -10,11 +10,12 @@ import android.net.Uri;
 import java.io.File;
 
 import cn.jcyh.peephole.R;
-import cn.jcyh.peephole.constant.Constant;
+import cn.jcyh.peephole.entity.DownloadInfo;
 import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.service.UpdateService;
 import cn.jcyh.peephole.utils.APKUtil;
 import cn.jcyh.peephole.utils.DESUtil;
+import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.PatchUtil;
 import cn.jcyh.peephole.utils.SPUtil;
 import cn.jcyh.peephole.utils.ServiceUtil;
@@ -26,9 +27,10 @@ import cn.jcyh.peephole.utils.T;
 public class UpdateApkReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
+        L.e("-----------------action:" + intent.getAction());
         if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())) {
             long downloadAPKID = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1l);
-            long id = SPUtil.getInstance().getLong(Constant.DOWNLOAD_ID, -1L);
+            long id = SPUtil.getInstance().getLong(DownloadInfo.TYPE_DOWNLOAD_APK_ID, -1L);
             if (downloadAPKID == id) {
                 if (ServiceUtil.isServiceRunning(UpdateService.class))
                     ServiceUtil.stopService(UpdateService.class);

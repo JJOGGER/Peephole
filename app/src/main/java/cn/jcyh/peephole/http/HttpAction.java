@@ -84,8 +84,8 @@ public class HttpAction extends BaseHttpAction {
      * 获取版本信息
      */
     @Deprecated
-    public void getVersion(IDataListener<Version> listener) {
-        mHttpRequest.getVersion(listener);
+    public void getVersion(int versionCode, IDataListener<Version> listener) {
+        mHttpRequest.getVersion(versionCode,listener);
     }
 
     /**

@@ -10,12 +10,14 @@ import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.entity.DownloadInfo;
 import cn.jcyh.peephole.entity.Version;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.service.UpdateService;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.HintDialogFragmemt;
+import cn.jcyh.peephole.utils.APKUtil;
 import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.SystemUtil;
 import cn.jcyh.peephole.utils.T;
@@ -103,8 +105,14 @@ public class AboutActivity extends BaseActivity {
                 @Override
                 public void onConfirm(boolean isConfirm) {
                     if (isConfirm) {
+                        DownloadInfo downloadInfo = new DownloadInfo();
+                        downloadInfo.setTitle(getString(R.string.video_service));
+                        downloadInfo.setDesc(getString(R.string.updating));
+                        downloadInfo.setSaveFilePath(APKUtil.APK_PATCH_PATH);
+                        downloadInfo.setUrl(version.getAddress());
+                        downloadInfo.setType(DownloadInfo.TYPE_DOWNLOAD_APK_ID);
                         Intent intent = new Intent(AboutActivity.this, UpdateService.class);
-                        intent.putExtra(Constant.VERSION, version);
+                        intent.putExtra(Constant.DOWNLOAD_INFO, downloadInfo);
                         startService(intent);
                     }
                     mUpdateDialog.dismiss();

@@ -77,8 +77,10 @@ public class HttpRequest implements IHttpRequest {
     }
 
     @Override
-    public void getVersion(IDataListener listener) {
-        HttpTask getVersion = new HttpTask(HttpUrlIble.DOORBELL_GET_VERSION_URL, null, Version.class, listener);
+    public void getVersion(int versionCode,IDataListener listener) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("Number", versionCode);
+        HttpTask getVersion = new HttpTask(HttpUrlIble.DOORBELL_GET_VERSION_URL, params, Version.class, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(getVersion, listener));
     }
 
