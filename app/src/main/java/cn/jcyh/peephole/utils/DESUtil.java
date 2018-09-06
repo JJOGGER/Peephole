@@ -2,6 +2,8 @@ package cn.jcyh.peephole.utils;
 
 import android.os.Handler;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -50,29 +52,31 @@ public class DESUtil {
     public static void decrypt(final String enfilePath, final String deFilePath, final String key, final IDataListener<Boolean> listener) {
         final Handler handler = new Handler();
         L.e("-----------解密文件数据");
+        final File file = new File(enfilePath);
+        if (!file.exists()) {
+            listener.onFailure(-1, "");
+            return;
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     L.e("------------>file:" + enfilePath);
-                    File file = new File(enfilePath);
-                    if (!file.exists())
-                        return;
                     InputStream is = new FileInputStream(enfilePath);
-//                    BufferedInputStream bis = new BufferedInputStream(is);
+                    BufferedInputStream bis = new BufferedInputStream(is);
                     OutputStream os = new FileOutputStream(deFilePath);
-//                    BufferedOutputStream bos = new BufferedOutputStream(os);
-                    Cipher cipher = Cipher.getInstance("DES/CBC/PKCS5Padding");
+                    BufferedOutputStream bos = new BufferedOutputStream(os);
+                    Cipher cipher = Cipher.getInstance("DES/CBC/NoPadding");
                     DESKeySpec desKeySpec;
                     desKeySpec = new DESKeySpec(key.getBytes("UTF-8"));
                     SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
                     SecretKey secretKey = keyFactory.generateSecret(desKeySpec);
                     IvParameterSpec iv = new IvParameterSpec(key.getBytes("UTF-8"));
                     cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
-                    CipherOutputStream cos = new CipherOutputStream(os, cipher);
+                    CipherOutputStream cos = new CipherOutputStream(bos, cipher);
                     byte[] buffer = new byte[1024];
                     int r;
-                    while ((r = is.read(buffer)) >= 0) {
+                    while ((r = bis.read(buffer)) >= 0) {
                         cos.write(buffer, 0, r);
                     }
                     L.e("-----------解密");
@@ -95,6 +99,9 @@ public class DESUtil {
                 } catch (Exception e) {
                     e.printStackTrace();
                     L.e("-----------e:" + e.getMessage());
+                    File file = new File(deFilePath);
+                    if (file.exists())
+                        file.delete();
                     handler.post(new Runnable() {
                         @Override
                         public void run() {

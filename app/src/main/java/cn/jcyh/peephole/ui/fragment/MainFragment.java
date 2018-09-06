@@ -163,7 +163,7 @@ public class MainFragment extends BaseFragment {
                 ControlCenter.getDoorbellManager().setDoorbellLeaveMsgCount(0);
                 mActivity.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + FileUtil.getDoorbellImgPath())));
                 Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.putExtra(Constant.TYPE, 1);
+                intent.putExtra(Constant.TYPE, 2);
                 intent.setType(VIDEO_DIR);
                 startActivity(intent);
                 break;

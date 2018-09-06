@@ -30,7 +30,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="60%"
+            android:text=""
             android:textColor="@color/white"
             android:textSize="21sp"
             android:visibility="gone"/>
@@ -64,12 +64,12 @@
             android:visibility="gone">
 
             <TextView
-                android:id="@+id/tv_left"
+                android:id="@+id/tv_immediately_setup"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="左边"/>
+                android:text="@string/immediately_setup"/>
 
             <View
                 android:layout_width="0.5dp"
@@ -77,12 +77,12 @@
                 android:background="@color/gray_777777"/>
 
             <TextView
-                android:id="@+id/tv_right"
+                android:id="@+id/tv_setup_wait"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="右边"/>
+                android:text="@string/setup_wait"/>
         </LinearLayout>
 
         <TextView

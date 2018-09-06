@@ -13,6 +13,7 @@ public class DownloadInfo implements Parcelable {
     public static final int STATE_DOWNLOAD_PAUSE = 3;
     public static final String TYPE_DOWNLOAD_APK_ID = "TYPE_DOWNLOAD_APK_ID";
     public static final String TYPE_DOWNLOAD_SYSTEM_ID = "TYPE_DOWNLOAD_SYSTEM_ID";
+    private long downloadID;
     private String title;
     private String desc;
     private String url;//下载地址
@@ -21,6 +22,14 @@ public class DownloadInfo implements Parcelable {
     private String type;
 
     public DownloadInfo() {
+    }
+
+    public long getDownloadID() {
+        return downloadID;
+    }
+
+    public void setDownloadID(long downloadID) {
+        this.downloadID = downloadID;
     }
 
     public String getTitle() {
@@ -78,6 +87,7 @@ public class DownloadInfo implements Parcelable {
         saveFilePath = in.readString();
         currentState = in.readInt();
         type = in.readString();
+        downloadID = in.readLong();
     }
 
     @Override
@@ -88,6 +98,7 @@ public class DownloadInfo implements Parcelable {
         dest.writeString(saveFilePath);
         dest.writeInt(currentState);
         dest.writeString(type);
+        dest.writeLong(downloadID);
     }
 
     @Override

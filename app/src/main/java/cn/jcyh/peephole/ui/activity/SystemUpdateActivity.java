@@ -3,7 +3,6 @@ package cn.jcyh.peephole.ui.activity;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
-import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.view.View;
@@ -17,20 +16,20 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
-import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.entity.DownloadInfo;
 import cn.jcyh.peephole.entity.Version;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
-import cn.jcyh.peephole.service.UpdateService;
+import cn.jcyh.peephole.service.UpdateSystemService;
 import cn.jcyh.peephole.utils.APKUtil;
 import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.NetworkUtil;
 import cn.jcyh.peephole.utils.ServiceUtil;
 import cn.jcyh.peephole.utils.SystemUtil;
 import cn.jcyh.peephole.utils.T;
 
-public class SystemUpdateActivity extends BaseActivity implements UpdateService.OnUpdateListener {
+public class SystemUpdateActivity extends BaseActivity implements UpdateSystemService.OnUpdateListener {
     @BindView(R.id.tv_check)
     TextView tvCheck;
     @BindView(R.id.ll_bottom)
@@ -41,14 +40,13 @@ public class SystemUpdateActivity extends BaseActivity implements UpdateService.
     TextView tvPro;
     @BindView(R.id.iv_update)
     ImageView ivUpdate;
-    @BindView(R.id.tv_left)
-    TextView tvLeft;
-    @BindView(R.id.tv_right)
-    TextView tvRight;
+    @BindView(R.id.tv_immediately_setup)
+    TextView tvImmediatelySetup;
+    @BindView(R.id.tv_setup_wait)
+    TextView tvSetupWait;
     private Version mVersion;
     private ServiceConnection mServiceConnection;
-    private UpdateService.UpdateBinder mUpdateBinder;
-    private int mCurrentState;
+    private UpdateSystemService.UpdateBinder mUpdateBinder;
     private DownloadInfo mDownloadInfo;
     private ObjectAnimator mAnimator;
 
@@ -63,9 +61,16 @@ public class SystemUpdateActivity extends BaseActivity implements UpdateService.
             mServiceConnection = new ServiceConnection() {
                 @Override
                 public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-                    L.e("-------------onServiceConnected:");
-                    mUpdateBinder = (UpdateService.UpdateBinder) iBinder;
+                    mUpdateBinder = (UpdateSystemService.UpdateBinder) iBinder;
                     mUpdateBinder.setUpdateListener(SystemUpdateActivity.this);
+                    mDownloadInfo = mUpdateBinder.getLocalDownloadInfo();
+                    //初始化视图
+                    showCurrentView();
+                    if (mDownloadInfo == null) {
+                        checkVersion();
+                    } else {
+                        //继续上次的下载
+                    }
                 }
 
                 @Override
@@ -75,84 +80,87 @@ public class SystemUpdateActivity extends BaseActivity implements UpdateService.
                 }
             };
         }
-        ServiceUtil.bindService(UpdateService.class, mServiceConnection, BIND_AUTO_CREATE);
-        //获取本地存储的下载状态
-        mDownloadInfo = ControlCenter.getDownloadInfo();
-        showCurrentView();
-        if (mDownloadInfo == null) {
-            checkVersion();
-        }
+        ServiceUtil.bindService(UpdateSystemService.class, mServiceConnection, BIND_AUTO_CREATE);
+//        ServiceUtil.startService(UpdateSystemService.class);
     }
 
 
-    @OnClick({R.id.tv_check, R.id.tv_left, R.id.tv_right})
+    @OnClick({R.id.tv_check, R.id.tv_immediately_setup, R.id.tv_setup_wait})
     public void onClick(View v) {
+        if (mUpdateBinder == null) return;
         switch (v.getId()) {
             case R.id.tv_check:
+                L.e("----mDownloadInfo:" + mDownloadInfo + "\n" +
+                        mUpdateBinder.getCurrentState());
                 if (mDownloadInfo == null) {
                     checkVersion();
                     return;
                 }
-                if (mDownloadInfo.getCurrentState() == DownloadInfo.STATE_NO_DOWNLOAD) {
-                    mDownloadInfo.setCurrentState(DownloadInfo.STATE_DOWNLOADING);
-                    Intent intent = new Intent(this, UpdateService.class);
-                    intent.putExtra(Constant.DOWNLOAD_INFO, mDownloadInfo);
-                    startService(intent);
-                } else if (mDownloadInfo.getCurrentState() == DownloadInfo.STATE_DOWNLOADING) {
+                if (mUpdateBinder.getCurrentState() == DownloadInfo.STATE_NO_DOWNLOAD) {
+                    //开始下载
+                    mUpdateBinder.startDownload(mDownloadInfo);
+                } else if (mUpdateBinder.getCurrentState() == DownloadInfo.STATE_DOWNLOADING ||
+                        mUpdateBinder.getCurrentState() == DownloadInfo.STATE_DOWNLOAD_PAUSE) {
                     //取消下载
-                    L.e("------------->取消下载:" + mUpdateBinder);
-                    mDownloadInfo.setCurrentState(DownloadInfo.STATE_NO_DOWNLOAD);
-                    if (mUpdateBinder != null) {
-                        mUpdateBinder.cancelDownload();
-                    }
+                    mUpdateBinder.cancelDownload();
                 }
                 showCurrentView();
                 break;
-            case R.id.tv_left:
-                if (mDownloadInfo == null) return;
-                if (mDownloadInfo.getCurrentState() == DownloadInfo.STATE_DOWNLOADING) {
-                    //暂停
-                } else if (mDownloadInfo.getCurrentState() == DownloadInfo.STATE_DOWNLOADED) {
-                    //立即安装
-                }
+            case R.id.tv_immediately_setup:
+                setup();
                 break;
-            case R.id.tv_right:
-                if (mDownloadInfo == null) return;
-                if (mDownloadInfo.getCurrentState() == DownloadInfo.STATE_DOWNLOADING) {
-                    //取消下载
-                    if (mUpdateBinder == null) return;
-                } else if (mDownloadInfo.getCurrentState() == DownloadInfo.STATE_DOWNLOADED) {
+            case R.id.tv_setup_wait:
+                if (mUpdateBinder.getLocalDownloadInfo() == null) return;
+                if (mUpdateBinder.getLocalDownloadInfo().getCurrentState() == DownloadInfo.STATE_DOWNLOADED) {
                     //稍后安装
+                    finish();
                 }
                 break;
         }
+    }
+
+    /**
+     * 安装
+     */
+    private void setup() {
+        // TODO: 2018/9/6 安装要求机子电量超过30%
+
+        showProgressDialog();
+        mUpdateBinder.installSystem();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mUpdateBinder != null)
+        if (mUpdateBinder != null) {
+            int currentState = mUpdateBinder.getCurrentState();
             ServiceUtil.unbindService(mServiceConnection);
-        L.e("----------------onDestroy:"+mDownloadInfo);
+            if (currentState == DownloadInfo.STATE_DOWNLOADED) {
+                ServiceUtil.stopService(UpdateSystemService.class);
+            }
+        }
         ControlCenter.setDownloadInfo(mDownloadInfo);
     }
 
     private void checkVersion() {
+        if (!NetworkUtil.isConnected()) {
+            T.show(R.string.network_is_not_available);
+            return;
+        }
         showProgressDialog(getString(R.string.check_update_msg));
         //检查版本
         HttpAction.getHttpAction().getVersion(SystemUtil.getVersionCode(), new IDataListener<Version>() {
             @Override
             public void onSuccess(Version version) {
-                L.e("--------------:version:" + version);
                 cancelProgressDialog();
                 if (Integer.valueOf(version.getNumber()) > SystemUtil.getVersionCode()) {
                     tvState.setText("可下载更新");
                     tvCheck.setText("下载更新");
                     mVersion = version;
                     mDownloadInfo = new DownloadInfo();
-                    mDownloadInfo.setTitle(getString(R.string.video_service));
+                    mDownloadInfo.setTitle(getString(R.string.system_updating));
                     mDownloadInfo.setDesc(getString(R.string.updating));
-                    mDownloadInfo.setSaveFilePath(APKUtil.SYSTEM_PATCH_PATH);
+                    mDownloadInfo.setSaveFilePath(APKUtil.SYSTEM_PATCH_PATH_ENCRYPT);
                     mDownloadInfo.setUrl(mVersion.getAddress());
                     mDownloadInfo.setType(DownloadInfo.TYPE_DOWNLOAD_SYSTEM_ID);
                     mDownloadInfo.setCurrentState(DownloadInfo.STATE_NO_DOWNLOAD);
@@ -172,8 +180,7 @@ public class SystemUpdateActivity extends BaseActivity implements UpdateService.
 
     @Override
     public void onDownloadPause() {
-        T.show("下载已暂停");
-        mDownloadInfo.setCurrentState(DownloadInfo.STATE_DOWNLOAD_PAUSE);
+        if (isDestroyed() || isFinishing() || getSupportFragmentManager() == null) return;
         showCurrentView();
     }
 
@@ -183,47 +190,74 @@ public class SystemUpdateActivity extends BaseActivity implements UpdateService.
         if (isDestroyed() || isFinishing() || getSupportFragmentManager() == null) return;
         tvPro.setVisibility(View.VISIBLE);
         tvPro.setText(pro + "%");
+        L.e("----------设置进度条");
     }
 
     @Override
     public void onDownloadCompleted() {
-        mDownloadInfo.setCurrentState(DownloadInfo.STATE_DOWNLOADED);
+        if (isDestroyed() || isFinishing() || getSupportFragmentManager() == null) return;
         showCurrentView();
     }
 
     @Override
     public void onDownloadFail() {
-        T.show("下载失败");
-        mDownloadInfo.setCurrentState(DownloadInfo.STATE_NO_DOWNLOAD);
+        if (isDestroyed() || isFinishing() || getSupportFragmentManager() == null) return;
+        showCurrentView();
+    }
+
+    @Override
+    public void onDownloadRunning() {
+        if (isDestroyed() || isFinishing() || getSupportFragmentManager() == null) return;
+        showCurrentView();
+    }
+
+    @Override
+    public void onEncryptFail() {
+        if (isDestroyed() || isFinishing() || getSupportFragmentManager() == null) return;
+        cancelProgressDialog();
+        showCurrentView();
+    }
+
+    @Override
+    public void onEncryptSuccess() {
+        if (isDestroyed() || isFinishing() || getSupportFragmentManager() == null) return;
+        cancelProgressDialog();
+    }
+
+    @Override
+    public void onStartDownload() {
+        if (isDestroyed() || isFinishing() || getSupportFragmentManager() == null) return;
         showCurrentView();
     }
 
 
     @SuppressLint("SetTextI18n")
     public void showCurrentView() {
-        L.e("------------------mDownloadInfo>>"+mDownloadInfo);
-        if (mDownloadInfo == null) {
+        if (mUpdateBinder == null || mUpdateBinder.getLocalDownloadInfo() == null) {
             tvPro.setVisibility(View.GONE);
             tvState.setText("当前已是最新版本");
             tvState.setText("检查更新");
             return;
         }
-        L.e("-----------::" + mDownloadInfo.getCurrentState());
-        mCurrentState = mDownloadInfo.getCurrentState();
-        switch (mCurrentState) {
+        int currentState = mUpdateBinder.getLocalDownloadInfo().getCurrentState();
+        switch (currentState) {
             case DownloadInfo.STATE_NO_DOWNLOAD:
                 tvPro.setVisibility(View.GONE);
+                tvCheck.setVisibility(View.VISIBLE);
                 tvCheck.setText("下载更新");
                 tvState.setText("可下载更新");
+                llBottom.setVisibility(View.GONE);
                 endProAnim();
                 break;
             case DownloadInfo.STATE_DOWNLOADING:
                 startProAnim();
+                tvPro.setVisibility(View.VISIBLE);
                 tvState.setText("正在下载");
                 tvCheck.setText("取消");
                 break;
             case DownloadInfo.STATE_DOWNLOAD_PAUSE:
                 tvState.setText("下载已暂停");
+                tvCheck.setText("取消");
                 endProAnim();
                 break;
             case DownloadInfo.STATE_DOWNLOADED:
@@ -234,7 +268,7 @@ public class SystemUpdateActivity extends BaseActivity implements UpdateService.
                 llBottom.setVisibility(View.VISIBLE);
                 endProAnim();
                 //判断文件是否存在
-                File file = new File(APKUtil.SYSTEM_PATCH_PATH);
+                File file = new File(APKUtil.SYSTEM_PATCH_PATH_ENCRYPT);
                 if (!file.exists()) {
                     mDownloadInfo.setCurrentState(DownloadInfo.STATE_NO_DOWNLOAD);
                     showCurrentView();

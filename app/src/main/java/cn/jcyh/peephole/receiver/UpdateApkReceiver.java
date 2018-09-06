@@ -12,7 +12,7 @@ import java.io.File;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.entity.DownloadInfo;
 import cn.jcyh.peephole.http.IDataListener;
-import cn.jcyh.peephole.service.UpdateService;
+import cn.jcyh.peephole.service.UpdateSystemService;
 import cn.jcyh.peephole.utils.APKUtil;
 import cn.jcyh.peephole.utils.DESUtil;
 import cn.jcyh.peephole.utils.L;
@@ -32,8 +32,8 @@ public class UpdateApkReceiver extends BroadcastReceiver {
             long downloadAPKID = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1l);
             long id = SPUtil.getInstance().getLong(DownloadInfo.TYPE_DOWNLOAD_APK_ID, -1L);
             if (downloadAPKID == id) {
-                if (ServiceUtil.isServiceRunning(UpdateService.class))
-                    ServiceUtil.stopService(UpdateService.class);
+                if (ServiceUtil.isServiceRunning(UpdateSystemService.class))
+                    ServiceUtil.stopService(UpdateSystemService.class);
                 checkDownloadStatus(context, downloadAPKID);
             }
         }
@@ -72,6 +72,10 @@ public class UpdateApkReceiver extends BroadcastReceiver {
                     String oldVersionPath = APKUtil.getOldVersionPath();
                     //合成差分包
                     PatchUtil.patch(oldVersionPath, APKUtil.APK_PATH, APKUtil.APK_PATCH_PATH);
+                    //签名校验
+                    String currentSignature = APKUtil.getCurrentSignature();
+                    String signature = APKUtil.getSignature(APKUtil.APK_PATH);
+                    L.e("---------->>currentSignature:"+currentSignature+"\n"+signature);
                     //启动安装
                     Intent intent = new Intent();
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

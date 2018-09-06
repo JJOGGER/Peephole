@@ -112,8 +112,9 @@
             android:process=":remote"/>
         <service android:name=".service.AVChatService"/>
         <service android:name=".service.MediaPlayService"/>
-        <service android:name=".service.UpdateService"/>
+        <service android:name=".service.UpdateSystemService"/>
         <service android:name=".service.AudioValiService"/>
+        <service android:name=".service.UpdateSoftService"/>
 
         <receiver android:name=".receiver.BcReceiver">
             <intent-filter>

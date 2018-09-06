@@ -14,7 +14,7 @@ import cn.jcyh.peephole.entity.DownloadInfo;
 import cn.jcyh.peephole.entity.Version;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
-import cn.jcyh.peephole.service.UpdateService;
+import cn.jcyh.peephole.service.UpdateSoftService;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.HintDialogFragmemt;
 import cn.jcyh.peephole.utils.APKUtil;
@@ -111,7 +111,7 @@ public class AboutActivity extends BaseActivity {
                         downloadInfo.setSaveFilePath(APKUtil.APK_PATCH_PATH);
                         downloadInfo.setUrl(version.getAddress());
                         downloadInfo.setType(DownloadInfo.TYPE_DOWNLOAD_APK_ID);
-                        Intent intent = new Intent(AboutActivity.this, UpdateService.class);
+                        Intent intent = new Intent(AboutActivity.this, UpdateSoftService.class);
                         intent.putExtra(Constant.DOWNLOAD_INFO, downloadInfo);
                         startService(intent);
                     }
