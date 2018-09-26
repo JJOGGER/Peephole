@@ -55,13 +55,12 @@ public class ObjectDetectingView extends BaseCameraView {
         // 子线程（非UI线程）
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
-
         for (ObjectDetector detector : mObjectDetects) {
             // 检测目标
             Rect[] object = detector.detectObject(mGray, mObject);
             for (Rect rect : object) {
                 Imgproc.rectangle(mRgba, rect.tl(), rect.br(), detector.getRectColor(), 3);
-                Log.e(TAG, "--------------检测到人脸,");
+                Log.e(TAG, "--------------检测到人脸");
                 //拍照
                 if (mListener != null) {
                     mListener.onDetect(rect);
@@ -69,13 +68,16 @@ public class ObjectDetectingView extends BaseCameraView {
                 break;
             }
         }
-
         return mRgba;
     }
 
     public void takePicture(Camera.ShutterCallback shutter, Camera.PictureCallback raw,
                             Camera.PictureCallback jpeg) {
-        mCamera.takePicture(shutter, raw, jpeg);
+        try {
+            mCamera.takePicture(shutter, raw, jpeg);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -84,7 +86,7 @@ public class ObjectDetectingView extends BaseCameraView {
      * @param detector 检测器
      */
     public synchronized void addDetector(ObjectDetector detector) {
-        if (!mObjectDetects.contains(detector)) {
+        if (mObjectDetects != null && !mObjectDetects.contains(detector)) {
             mObjectDetects.add(detector);
         }
     }

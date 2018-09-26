@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.support.multidex.MultiDex;
 
+import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.util.NIMUtil;
 
 import cn.jcyh.peephole.event.online.OnlineStateEventManager;
@@ -14,10 +15,13 @@ public class MyApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        Util.init(this);
-        if (NIMUtil.isMainProcess(this))
+        //网易云信
+        NIMClient.init(this, null, null);
+        if (NIMUtil.isMainProcess(this)) {
+            Util.init(this);
             // 初始化在线状态事件
             OnlineStateEventManager.init();
+        }
     }
 
     @Override

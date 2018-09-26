@@ -177,7 +177,7 @@ public class DoorbellSetActivity extends BaseActivity {
      */
     private void setParam() {
         //保存到服务器
-        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(IMEI, mDoorbellConfig, new IDataListener<Boolean>() {
+        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(SN, mDoorbellConfig, new IDataListener<Boolean>() {
             @Override
             public void onSuccess(Boolean aBoolean) {
                 L.e("----------设置成功"+mDoorbellConfig);

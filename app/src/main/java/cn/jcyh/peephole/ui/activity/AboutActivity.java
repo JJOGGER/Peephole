@@ -1,6 +1,8 @@
 package cn.jcyh.peephole.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.TextView;
 
@@ -9,7 +11,6 @@ import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.constant.Constant;
-import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.entity.DownloadInfo;
 import cn.jcyh.peephole.entity.Version;
 import cn.jcyh.peephole.http.HttpAction;
@@ -36,12 +37,17 @@ public class AboutActivity extends BaseActivity {
         return R.layout.activity_about;
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void init() {
         super.init();
         String androidVersion = android.os.Build.VERSION.RELEASE;
         tvVersion.setText(androidVersion);
-        tvVersionCode.setText(SystemUtil.getVersionName());
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int heightPixels = displayMetrics.heightPixels;
+        int widthPixels = displayMetrics.widthPixels;
+        tvVersionCode.setText(SystemUtil.getVersionName()+widthPixels+"x"+heightPixels);
     }
 
 
@@ -49,10 +55,10 @@ public class AboutActivity extends BaseActivity {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tv_wifi_update:
-                if (ControlCenter.sIsDownloadUpdate) {
-                    T.show(R.string.updating);
-                    return;
-                }
+//                if (ControlCenter.sIsDownloadUpdate) {
+//                    T.show(R.string.updating);
+//                    return;
+//                }
                 checkUpdate();
                 break;
         }
@@ -62,7 +68,6 @@ public class AboutActivity extends BaseActivity {
      * 检查更新
      */
     private void checkUpdate() {
-        // TODO: 2018/8/7 先从猫眼文件中获取是否存在可更新的apk 
 //        if (ControlCenter.getNewVersion() == null) {
         showProgressDialog();
         HttpAction.getHttpAction().updatePatch(new IDataListener<Version>() {
@@ -89,6 +94,7 @@ public class AboutActivity extends BaseActivity {
             @Override
             public void onFailure(int errorCode, String desc) {
                 cancelProgressDialog();
+                T.show(desc);
                 L.e("--------------error:" + errorCode);
             }
         });
@@ -108,7 +114,7 @@ public class AboutActivity extends BaseActivity {
                         DownloadInfo downloadInfo = new DownloadInfo();
                         downloadInfo.setTitle(getString(R.string.video_service));
                         downloadInfo.setDesc(getString(R.string.updating));
-                        downloadInfo.setSaveFilePath(APKUtil.APK_PATCH_PATH);
+                        downloadInfo.setSaveFilePath(APKUtil.APK_PATCH_PATH_ENCRYPT);
                         downloadInfo.setUrl(version.getAddress());
                         downloadInfo.setType(DownloadInfo.TYPE_DOWNLOAD_APK_ID);
                         Intent intent = new Intent(AboutActivity.this, UpdateSoftService.class);

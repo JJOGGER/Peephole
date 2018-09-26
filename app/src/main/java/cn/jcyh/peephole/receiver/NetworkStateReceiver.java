@@ -67,7 +67,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
                 ControlCenter.connectNIM();
                 boolean existOfflineData = doorbellConfig.isExistOfflineData();
                 if (existOfflineData) {
-                    ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getIMEI(), doorbellConfig, new IDataListener<Boolean>() {
+                    ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(), doorbellConfig, new IDataListener<Boolean>() {
                         @Override
                         public void onSuccess(Boolean aBoolean) {
                             //离线数据同步完成

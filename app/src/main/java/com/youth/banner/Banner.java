@@ -235,7 +235,7 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
 
     public Banner setImages(List<?> imageUrls) {
         this.imageUrls = imageUrls;
-        this.count = imageUrls.size();
+        this.count = imageUrls == null ? 0 : imageUrls.size();
         return this;
     }
 
@@ -296,7 +296,7 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
     }
 
     private void setBannerStyleUI() {
-        int visibility =count > 1 ? View.VISIBLE :View.GONE;
+        int visibility = count > 1 ? View.VISIBLE : View.GONE;
         switch (bannerStyle) {
             case BannerConfig.CIRCLE_INDICATOR:
                 indicator.setVisibility(visibility);
@@ -577,7 +577,7 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
 
     @Override
     public void onPageSelected(int position) {
-        currentItem=position;
+        currentItem = position;
         if (mOnPageChangeListener != null) {
             mOnPageChangeListener.onPageSelected(toRealPosition(position));
         }

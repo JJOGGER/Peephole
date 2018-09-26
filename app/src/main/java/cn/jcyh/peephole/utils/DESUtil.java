@@ -55,6 +55,7 @@ public class DESUtil {
         final File file = new File(enfilePath);
         if (!file.exists()) {
             listener.onFailure(-1, "");
+            L.e("--------文件解密失败");
             return;
         }
         new Thread(new Runnable() {

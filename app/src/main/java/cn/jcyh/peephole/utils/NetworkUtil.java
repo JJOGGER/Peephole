@@ -53,6 +53,7 @@ public class NetworkUtil {
     public static int getNetworkTypeForLink(Context context) {
         try {
             ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            assert cm != null;
             NetworkInfo ni = cm.getActiveNetworkInfo();
             if (ni != null) {
                 if (ni.getType() == ConnectivityManager.TYPE_WIFI) {

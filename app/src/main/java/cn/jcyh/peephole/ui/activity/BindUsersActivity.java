@@ -122,7 +122,7 @@ public class BindUsersActivity extends BaseActivity implements BindUsersAdapter.
      */
     private void unbindUser(User user, String code) {
         showProgressDialog();
-        ControlCenter.getUserManager().unbindUser(user.getUserId(), IMEI, code, new IDataListener<Boolean>() {
+        ControlCenter.getUserManager().unbindUser(user.getUserId(), SN, code, new IDataListener<Boolean>() {
             @Override
             public void onSuccess(Boolean b) {
                 cancelProgressDialog();

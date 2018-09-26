@@ -15,7 +15,7 @@ public class MainPageAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        return position == 0 ? MainFragment.getInstance(null) : MenuFragment.getInstance(null);
+        return position == 0 ? new MainFragment() : new MenuFragment();
     }
 
     @Override

@@ -27,7 +27,7 @@ import cn.jcyh.peephole.utils.StatusUtil;
 
 public abstract class BaseActivity extends AppCompatActivity {
     private static final int STATUS_COLOR = Color.parseColor("#3f000000");
-    public String IMEI;
+    public String SN;
     private Unbinder mBind;
     private ProgressDialog mProgressDialog;
 
@@ -48,7 +48,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         if (isFullScreen()) {
             statusUtil.setActivityFullScreen(this);
         }
-        IMEI = ControlCenter.getIMEI();
+        SN = ControlCenter.getSN();
         init();
         loadData();
     }

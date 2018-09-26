@@ -31,9 +31,9 @@ public class DownloadService implements IHttpService {
 
     public DownloadService(String filePath, final ProgressHttpListener listener) {
         mOkHttpClient = new OkHttpClient().newBuilder()
-                .connectTimeout(1000, TimeUnit.SECONDS)//设置超时时间
-                .readTimeout(1000, TimeUnit.SECONDS)//设置读取超时时间
-                .writeTimeout(1000, TimeUnit.SECONDS)//设置写入超时时间
+                .connectTimeout(60, TimeUnit.SECONDS)//设置超时时间
+                .readTimeout(60, TimeUnit.SECONDS)//设置读取超时时间
+                .writeTimeout(60, TimeUnit.SECONDS)//设置写入超时时间
                 //增加拦截器
                 .addNetworkInterceptor(new Interceptor() {
                     @Override

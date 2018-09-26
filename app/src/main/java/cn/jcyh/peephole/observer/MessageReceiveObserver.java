@@ -67,6 +67,7 @@ public class MessageReceiveObserver implements Observer<List<IMMessage>> {
                     case CommandJson.CommandType.UNLOCK_DOORBELL_REQUEST:
                         T.show("执行解锁操作");
                         ControlCenter.getBCManager().setLock(true);
+                        CommandControl.sendUnlockResponse(imMessage.getFromAccount());
                         break;
                     case CommandJson.CommandType.DOORBELL_CALL_IMG_REQUEST:
                         //视频呼叫图片请求
@@ -132,6 +133,6 @@ public class MessageReceiveObserver implements Observer<List<IMMessage>> {
             ControlCenter.getBCManager().setPIRSensorOn(doorbellConfig.getMonitorSwitch() == 1);
             CommandControl.sendDoorbellSensorParamsResponse(account, 1);
         }
-        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getIMEI(), doorbellConfig, null);
+        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(), doorbellConfig, null);
     }
 }

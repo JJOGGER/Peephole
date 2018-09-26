@@ -45,4 +45,5 @@ public class Constant {
     public static final String IS_FACE_VALI_REGISTED = "is_face_vail_registed";//是否注册了人脸识别
     public static final String IS_AUDIO_VALI_REGISTED = "is_audio_vali_registed";
     public static final String DOWNLOAD_INFO = "download_info";
+    public static final String COMMAND_PATH = "command_path";
 }

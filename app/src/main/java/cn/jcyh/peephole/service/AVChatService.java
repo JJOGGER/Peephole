@@ -43,7 +43,7 @@ import cn.jcyh.peephole.video.AVChatProfile;
  */
 
 public class AVChatService extends Service {
-    public static final int CURRENT_AUDIO_VOLUME = 2;
+    public static final int CURRENT_AUDIO_VOLUME = 1;
     private AVChatController mAVChatController;
     private AVChatData mAvChatData;
     private static final byte IS_DUAL_CAMERA = AVChatControlCommand.NOTIFY_CUSTOM_BASE + 1;
@@ -53,13 +53,19 @@ public class AVChatService extends Service {
     private TimerTask mTimerTask = new TimerTask() {
         @Override
         public void run() {
+
             AudioManager audioManager = (AudioManager) Util.getApp().getSystemService(Context.AUDIO_SERVICE);
             assert audioManager != null;
             int streamVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
+            L.e("-----------streamVolume:" + streamVolume);
             if (streamVolume != CURRENT_AUDIO_VOLUME) {
                 audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, CURRENT_AUDIO_VOLUME, 0);
-                cancel();
+            } else {
+                cancelTimer();
             }
+            streamVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
+            L.e("-----------streamVolume:" + streamVolume);
+
         }
     };
     private Timer mTimer = new Timer();
@@ -159,6 +165,10 @@ public class AVChatService extends Service {
         AVChatProfile.getInstance().setAVChatting(false);
         ControlCenter.getDoorbellManager().setLastVideoTime(System.currentTimeMillis());
         L.e("----------------onDestroy");
+        cancelTimer();
+    }
+
+    private void cancelTimer() {
         if (mTimer != null) {
             mTimer.cancel();
             mTimer = null;

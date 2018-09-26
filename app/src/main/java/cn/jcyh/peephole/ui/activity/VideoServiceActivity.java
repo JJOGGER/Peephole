@@ -48,7 +48,7 @@ public class VideoServiceActivity extends BaseActivity {
 
     @Override
     protected void init() {
-        tvDeviceNumber.setText(String.format(getString(R.string.device_no_), IMEI));
+        tvDeviceNumber.setText(String.format(getString(R.string.device_no_), SN));
         mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
         if (mDoorbellConfig.getDoorbell() != null && TextUtils.isEmpty(mDoorbellConfig.getDoorbell().getName())) {
             tvDeviceName.setText(R.string.click_update_name);
@@ -97,6 +97,17 @@ public class VideoServiceActivity extends BaseActivity {
                 break;
             case R.id.btn_exit:
                 finish();
+                //启动播放服务后且服务未结束、抓拍界面未关闭时，不再重复抓拍
+//                if (!ControlCenter.sIsVideo) {
+//                    ControlCenter.sIsVideo = true;
+//                    Intent intent = new Intent(this, CameraActivity.class);
+//                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                    intent.putExtra(Constant.TYPE, DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_RING);
+//                    startActivity(intent);
+//                }
+//                //发送
+//                DoorbellSystemAction systemAction = new DoorbellSystemAction(DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_RING);
+//                EventBus.getDefault().post(systemAction);
                 break;
             case R.id.tv_device_name:
                 updateNickname();
@@ -116,7 +127,7 @@ public class VideoServiceActivity extends BaseActivity {
             commonEditDialog.setOnDialogListener(new OnDialogListener() {
                 @Override
                 public void onConfirm(final Object content) {
-                    ControlCenter.getDoorbellManager().updateNickname(IMEI, content.toString(), new IDataListener<Boolean>() {
+                    ControlCenter.getDoorbellManager().updateNickname(SN, content.toString(), new IDataListener<Boolean>() {
                         @Override
                         public void onSuccess(Boolean o) {
                             L.e("-------------onSuccess:" + content);
@@ -167,7 +178,7 @@ public class VideoServiceActivity extends BaseActivity {
     private Observer<StatusCode> mUserStatusObserver = new Observer<StatusCode>() {
         @Override
         public void onEvent(StatusCode statusCode) {
-            if (isDestroyed()||isFinishing()||getSupportFragmentManager()==null)return;
+            if (isDestroyed() || isFinishing() || getSupportFragmentManager() == null) return;
             showState(statusCode);
         }
     };

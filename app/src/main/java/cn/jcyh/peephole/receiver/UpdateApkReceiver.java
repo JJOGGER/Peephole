@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.text.TextUtils;
 
 import java.io.File;
 
@@ -27,7 +28,6 @@ import cn.jcyh.peephole.utils.T;
 public class UpdateApkReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        L.e("-----------------action:" + intent.getAction());
         if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())) {
             long downloadAPKID = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1l);
             long id = SPUtil.getInstance().getLong(DownloadInfo.TYPE_DOWNLOAD_APK_ID, -1L);
@@ -70,19 +70,25 @@ public class UpdateApkReceiver extends BroadcastReceiver {
                 if (decrypt) {
                     //解密成功
                     String oldVersionPath = APKUtil.getOldVersionPath();
+                    File file = new File(oldVersionPath);
+                    L.e("-------------file..." + file.length());
                     //合成差分包
                     PatchUtil.patch(oldVersionPath, APKUtil.APK_PATH, APKUtil.APK_PATCH_PATH);
                     //签名校验
                     String currentSignature = APKUtil.getCurrentSignature();
                     String signature = APKUtil.getSignature(APKUtil.APK_PATH);
-                    L.e("---------->>currentSignature:"+currentSignature+"\n"+signature);
-                    //启动安装
-                    Intent intent = new Intent();
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.setAction(android.content.Intent.ACTION_VIEW);
-                    intent.setDataAndType(Uri.fromFile(new File(APKUtil.APK_PATH)),
-                            "application/vnd.android.package-archive");
-                    context.startActivity(intent);
+                    if (TextUtils.isEmpty(signature) || signature.equals(currentSignature)) {
+                        //启动安装
+                        Intent intent = new Intent();
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.setAction(android.content.Intent.ACTION_VIEW);
+                        intent.setDataAndType(Uri.fromFile(new File(APKUtil.APK_PATH)),
+                                "application/vnd.android.package-archive");
+                        context.startActivity(intent);
+                    } else {
+                        L.e("-----------签名校验失败");
+                        T.show(R.string.download_file_des_failure);
+                    }
                 } else {
                     T.show(R.string.download_file_des_failure);
                 }

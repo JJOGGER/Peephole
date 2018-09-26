@@ -10,7 +10,6 @@ import android.hardware.Camera.Size;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Handler;
-import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.WindowManager;
@@ -27,6 +26,7 @@ import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.entity.DoorbellConfig;
 import cn.jcyh.peephole.event.DoorbellSystemAction;
 import cn.jcyh.peephole.utils.FileUtil;
+import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.Util;
 
 
@@ -53,9 +53,9 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
     }
 
     // 初始化摄像机，在surfaceCreated中调用
-    private void initCamera() {
+    private boolean initCamera() {
         if (null == mCamera)
-            return;
+            return false;
         try {
             if (bIfPreview) {
                 mCamera.stopPreview();// stopCamera();
@@ -66,8 +66,6 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
             mCameraOrientation = cameraInfo.orientation;
             mCameraFacing = cameraInfo.facing;
             mDeviceOrientation = getDeviceOrientation();
-            Log.i(TAG, "allocate: device orientation=" + mDeviceOrientation + ", camera orientation=" + mCameraOrientation + ", facing=" + mCameraFacing);
-
             setCameraDisplayOrientation();
 
             /* Camera Service settings */
@@ -75,20 +73,26 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
             mPrviewSizeList = parameters.getSupportedPreviewSizes();
             mVideoSizeList = parameters.getSupportedVideoSizes();
             // 获取camera支持的相关参数，判断是否可以设置
-            List<Size> previewSizes = mCamera.getParameters().getSupportedPreviewSizes();
-            Collections.sort(previewSizes, new CameraSizeComparator());
+//            for (int i = 0; i < mVideoSizeList.size(); i++) {
+//                L.e("---------支持a：" + mVideoSizeList.get(i).width + ":" + mVideoSizeList.get(i).height);
+//            }
+//            for (int i = 0; i < mPrviewSizeList.size(); i++) {
+//                L.e("---------支持b：" + mPrviewSizeList.get(i).width + ":" + mPrviewSizeList.get(i).height);
+//            }
+            Collections.sort(mPrviewSizeList, new CameraSizeComparator());
             int maxWidth = 0;
             int maxHeight = 0;
-            if (previewSizes.size() >= 1) {
-                for (int i = 0; i < previewSizes.size(); i++) {
-                    int width = previewSizes.get(i).width;
+            if (mPrviewSizeList.size() >= 1) {
+                for (int i = 0; i < mPrviewSizeList.size(); i++) {
+                    int width = mPrviewSizeList.get(i).width;
                     if (maxWidth < width) {
                         maxWidth = width;
                     }
-                    int height = previewSizes.get(i).height;
+                    int height = mPrviewSizeList.get(i).height;
                     if (maxHeight < height)
                         maxHeight = height;
                 }
+//                L.e("----------------maxWidth:" + maxWidth + ",maxHeight:" + maxHeight);
                 parameters.setPreviewSize(maxWidth, maxHeight);
             }
 
@@ -110,6 +114,7 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
                 mCamera.setParameters(parameters);
             } catch (Exception e) {
                 e.printStackTrace();
+                L.e("--------------设置参数错误");
             }
             Size captureSize = mCamera.getParameters().getPreviewSize();
             int bufSize = captureSize.width * captureSize.height * ImageFormat.getBitsPerPixel(ImageFormat.NV21) / 8;
@@ -129,16 +134,19 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
             int iCurPreviewRange[] = new int[2];
             parameters.getPreviewFpsRange(iCurPreviewRange);
         } catch (Exception e) {
+            L.e("--------------初始化相机错误" + e.getMessage());
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     class CameraSizeComparator implements Comparator<Size> {
         @TargetApi(Build.VERSION_CODES.KITKAT)
         public int compare(Size lhs, Size rhs) {
             if (lhs.width == rhs.width) {
-                return Integer.compare(lhs.height, rhs.height);
-            } else if (lhs.width > rhs.width) {
+                return Integer.compare(rhs.height, lhs.height);
+            } else if (lhs.width < rhs.width) {
                 return 1;
             } else {
                 return -1;
@@ -261,11 +269,17 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
             mCamera = Camera.open(iCurrentCameraId);
             currentHolder = holder;
             mCamera.setPreviewDisplay(holder);//set the surface to be used for live preview
-            initCamera();
+            boolean b = initCamera();
+            if (!b) {
+                mCamera.release();
+                mCamera = null;
+            }
             if (mSurfaceViewCallback != null) {
                 mSurfaceViewCallback.onSurfaceCreated();
             }
+            L.e("--------------打开相机");
         } catch (Exception ex) {
+            L.e("--------------打开相机失败");
             if (null != mCamera) {
                 mCamera.release();
                 mCamera = null;
@@ -273,16 +287,19 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
         }
     }
 
-    public void takePicture(Camera.PictureCallback callback) {
+    public boolean takePicture(Camera.PictureCallback callback) {
         try {
             mCamera.takePicture(null, null, callback);
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        L.e("--------------surfaceDestroyed");
         if (null != mCamera) {
             try {
                 mCamera.stopPreview();
@@ -364,6 +381,8 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
     private List<Size> mVideoSizeList;
 
     public interface OnRecordListener {
+        void onRecordStart();
+
         void onRecordCompleted();
     }
 
@@ -385,7 +404,8 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
         return mIsRecording;
     }
 
-    public void startRecord(DoorbellConfig config, String type, final OnRecordListener listener) {
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public boolean startRecord(DoorbellConfig config, String type, final OnRecordListener listener) {
         File saveFile;
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss", Util.getApp().getResources().getConfiguration().locale);
         Date date = new Date(System.currentTimeMillis());
@@ -400,32 +420,32 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
             } else {
                 //留言
                 recordTime = config.getVideoLeaveMsgTime();
-                int count = ControlCenter.getDoorbellManager().getDoorbellLeaveMsgCount() + 1;
-                ControlCenter.getDoorbellManager().setDoorbellLeaveMsgCount(count);
             }
+            int count = ControlCenter.getDoorbellManager().getDoorbellLeaveMsgCount() + 1;
+            ControlCenter.getDoorbellManager().setDoorbellLeaveMsgCount(count);
         } else {
             recordTime = config.getVideotapTime();
         }
         mRecorder = new MediaRecorder();
+        L.e("-----------准备录像，初始相机");
         initCamera();
         if (mCamera == null) {
-            if (listener != null) {
-                listener.onRecordCompleted();
-            }
-            return;
+            return false;
         }
         mCamera.unlock();
         mRecorder.setCamera(mCamera);
         mRecorder.reset();
         int index = bestVideoSize(mVideoSizeList, mPrviewSizeList.get(0).width);
+        L.e("-------------.>>" + mPrviewSizeList.get(0).width);
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);//设置采集声音
-        mRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);//设置采集图像
+        mRecorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);//设置采集图像
         //2.设置视频，音频的输出格式
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         //3.设置音频的编码格式
         mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
         //设置图像的编码格式
         mRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+        L.e("------------支持宽度：" + mVideoSizeList.get(index).width + ":" + mVideoSizeList.get(index).height);
         mRecorder.setVideoSize(mVideoSizeList.get(index).width, mVideoSizeList.get(index).height);
         mRecorder.setOutputFile(saveFile.getAbsolutePath());
         mRecorder.setPreviewDisplay(currentHolder.getSurface());
@@ -433,6 +453,8 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
             mRecorder.prepare();
         } catch (IOException e) {
             e.printStackTrace();
+            L.e("-------------录像准备失败" + e.getMessage());
+            return false;
         }
         final Handler handler = new Handler();
         //开始录制
@@ -441,7 +463,11 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
             mIsRecording = true;
         } catch (RuntimeException e) {
             e.printStackTrace();
-            return;
+            L.e("-------------录像开始失败" + e.getMessage());
+            return false;
+        }
+        if (listener != null) {
+            listener.onRecordStart();
         }
         new Thread(new Runnable() {
             @Override
@@ -469,7 +495,7 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
                 }
             }
         }).start();
-
+        return true;
     }
 
     //查找出最接近的视频录制分辨率
@@ -488,7 +514,7 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
             }
         });
         for (int i = 0; i < videoSizeList.size(); i++) {
-            if (videoSizeList.get(i).width < _w) {
+            if (videoSizeList.get(i).width <= _w) {
                 return i;
             }
         }

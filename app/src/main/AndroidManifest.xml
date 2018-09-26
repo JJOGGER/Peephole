@@ -129,6 +129,9 @@
             <intent-filter>
                 <action android:name="kphone.intent.action.HOME_PRESS"/>
             </intent-filter>
+            <intent-filter>
+                <action android:name="kphone.intent.action.MAGEINT"/>
+            </intent-filter>
         </receiver>
 
         <activity android:name=".ui.activity.VideoServiceActivity">
@@ -154,7 +157,8 @@
         </activity>
         <activity android:name=".ui.activity.FaceActivity">
         </activity>
-        <activity android:name=".ui.activity.ObjectDetectingActivity">
+        <activity android:name=".ui.activity.ObjectDetectingActivity"
+            android:launchMode="singleTask">
         </activity>
         <activity android:name=".ui.activity.AudioValiActivity">
         </activity>

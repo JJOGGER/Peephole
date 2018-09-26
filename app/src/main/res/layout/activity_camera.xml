@@ -12,4 +12,14 @@
         android:id="@+id/surface_camera"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+    <Chronometer
+        android:id="@+id/c_record"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:drawableLeft="@drawable/red_circle_shape"
+        android:drawablePadding="10dp"
+        android:format="%s"
+        android:paddingTop="25dp"
+        android:textColor="@color/white"/>
 </FrameLayout>

@@ -48,8 +48,8 @@ public class BindActivity extends BaseActivity {
     @Override
     protected void init() {
         sIsBinding = true;
-        tvImei.setText(String.format(getString(R.string.device_no_), IMEI));
-        L.e("-----------imei:"+IMEI);
+        tvImei.setText(String.format(getString(R.string.device_no_), SN));
+        L.e("-----------imei:"+ SN);
         decordQR();
         if (!EventBus.getDefault().isRegistered(this))
             EventBus.getDefault().register(this);
@@ -97,7 +97,7 @@ public class BindActivity extends BaseActivity {
     private void decordQR() {
         Bitmap bitmap = null;
         try {
-            bitmap = EncodingHandler.createQRCode(IMEI, 500);
+            bitmap = EncodingHandler.createQRCode(SN, 500);
         } catch (WriterException e) {
             e.printStackTrace();
         }

@@ -190,7 +190,7 @@ public class DoorbellSetFragment extends BaseFragment {
         //保存到本地
         ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
         //保存到服务器
-        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getIMEI(), mDoorbellConfig, null);
+        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(), mDoorbellConfig, null);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

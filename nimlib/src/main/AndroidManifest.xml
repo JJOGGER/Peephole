@@ -31,10 +31,10 @@
     <!-- SDK 权限申明, 第三方 APP 接入时，请将 com.netease.nim.demo 替换为自己的包名 -->
     <!-- 和下面的 uses-permission 一起加入到你的 AndroidManifest 文件中。 -->
     <permission
-        android:name="com.netease.nim.demo.permission.RECEIVE_MSG"
+        android:name="cn.jcyh.peephole.permission.RECEIVE_MSG"
         android:protectionLevel="signature"/>
     <!-- 接收 SDK 消息广播权限， 第三方 APP 接入时，请将 com.netease.nim.demo 替换为自己的包名 -->
-    <uses-permission android:name="com.netease.nim.demo.permission.RECEIVE_MSG"/>
+    <uses-permission android:name="cn.jcyh.peephole.permission.RECEIVE_MSG"/>
     <application
         android:allowBackup="true"
         android:supportsRtl="true">
@@ -42,7 +42,7 @@
             如果 SDKOptions 中提供了，取 SDKOptions 中的值。 -->
         <meta-data
             android:name="com.netease.nim.appKey"
-            android:value="24de62a6c6afb5be5b104a5cba942092"/>
+            android:value="0370bf3d4cd784bd700f909e3b9b4400"/>
 
         <!-- 云信后台服务，请使用独立进程。 -->
         <service

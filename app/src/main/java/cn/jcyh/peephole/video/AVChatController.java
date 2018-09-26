@@ -2,7 +2,6 @@ package cn.jcyh.peephole.video;
 
 import android.app.Service;
 import android.content.Context;
-import android.os.Build;
 import android.widget.Toast;
 
 import com.netease.nimlib.sdk.avchat.AVChatCallback;
@@ -100,11 +99,11 @@ public class AVChatController {
     public void receive(final AVChatControllerCallback<Void> callback) {
         AVChatManager.getInstance().enableRtc();
         if (mVideoCapturer == null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                mVideoCapturer = AVChatVideoCapturerFactory.createCamera2Capturer();
-            } else {
-                mVideoCapturer = AVChatVideoCapturerFactory.createCameraCapturer();
-            }
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                mVideoCapturer = AVChatVideoCapturerFactory.createCamera2Capturer();
+//            } else {
+            mVideoCapturer = AVChatVideoCapturerFactory.createCameraCapturer();
+//            }
 //            mVideoCapturer.setZoom(10);
             AVChatManager.getInstance().setupVideoCapturer(mVideoCapturer);
             try {
@@ -113,9 +112,9 @@ public class AVChatController {
                 e.printStackTrace();
             }
         }
-        if (NetworkUtil.NetworkType.NETWORK_WIFI.equals(NetworkUtil.getNetworkType())){
+        if (NetworkUtil.NetworkType.NETWORK_WIFI.equals(NetworkUtil.getNetworkType())) {
             AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_QUALITY, AVChatVideoQuality.QUALITY_480P);
-        }else {
+        } else {
             AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_QUALITY, AVChatVideoQuality.QUALITY_MEDIUM);
         }
         //设置流畅优先

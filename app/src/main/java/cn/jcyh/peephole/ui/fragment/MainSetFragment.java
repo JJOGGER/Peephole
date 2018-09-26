@@ -322,7 +322,7 @@ public class MainSetFragment extends BaseFragment {
         tvSensorSetTitle.setEnabled(cbMonitor.isChecked());
         tvSensorSet.setEnabled(cbMonitor.isChecked());
         ControlCenter.getBCManager().setPIRSensorOn(mDoorbellConfig.getMonitorSwitch() == 1);
-        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getIMEI(), mDoorbellConfig, null);
+        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(), mDoorbellConfig, null);
     }
 
     /**

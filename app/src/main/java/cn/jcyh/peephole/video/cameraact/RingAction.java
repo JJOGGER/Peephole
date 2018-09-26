@@ -1,9 +1,10 @@
 package cn.jcyh.peephole.video.cameraact;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.SystemClock;
 import android.text.TextUtils;
+import android.view.View;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -17,7 +18,7 @@ import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.control.DoorbellAudioManager;
 import cn.jcyh.peephole.entity.DoorbellConfig;
 import cn.jcyh.peephole.event.DoorbellSystemAction;
-import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.ui.activity.CameraActivity;
 import cn.jcyh.peephole.utils.PhoneUtil;
 import cn.jcyh.peephole.video.VideoCameraHelper;
 
@@ -27,10 +28,10 @@ import cn.jcyh.peephole.video.VideoCameraHelper;
 public class RingAction {
     private DoorbellConfig mDoorbellConfig;
     private VideoCameraHelper mCameraHelper;
-    private Activity mActivity;
+    private CameraActivity mActivity;
     private int mRingCount = 0;//标记收到的门铃声
 
-    public RingAction(Activity activity, DoorbellConfig doorbellConfig, VideoCameraHelper cameraHelper) {
+    public RingAction(CameraActivity activity, DoorbellConfig doorbellConfig, VideoCameraHelper cameraHelper) {
         mActivity = activity;
         mDoorbellConfig = doorbellConfig;
         mCameraHelper = cameraHelper;
@@ -38,7 +39,7 @@ public class RingAction {
 
     public void onPictureTaken(byte[] data) {
         Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-        ControlCenter.getDoorbellManager().sendDoorbellImg(ControlCenter.getIMEI(), bitmap, DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_RING, null);
+        ControlCenter.getDoorbellManager().sendDoorbellImg(ControlCenter.getSN(), bitmap, DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_RING, null);
         //判断是否开启拨打电话
         int doorbellDial = mDoorbellConfig.getDoorbellDial();
         String masterNumber = mDoorbellConfig.getMasterNumber();
@@ -50,8 +51,8 @@ public class RingAction {
         int doorbellSendMsg = mDoorbellConfig.getDoorbellSendMsg();
         if (doorbellSendMsg == 1 && !TextUtils.isEmpty(masterNumber)) {
             PhoneUtil.sendMsg(masterNumber, String.format(mActivity.getString(R.string.send_msg_content_format), mActivity.getString(R.string.app_name),
-                    mActivity.getString(R.string.someone_doorbell), TextUtils.isEmpty(mDoorbellConfig.getNickName()) ? ControlCenter.getIMEI() :
-                            mDoorbellConfig.getNickName() + "(" + ControlCenter.getIMEI() + ")"));
+                    mActivity.getString(R.string.someone_doorbell), TextUtils.isEmpty(mDoorbellConfig.getNickName()) ? ControlCenter.getSN() :
+                            mDoorbellConfig.getNickName() + "(" + ControlCenter.getSN() + ")"));
         }
         if (mDoorbellConfig.getDoorbellVideotap() == 1) {
             //开启了录像
@@ -70,7 +71,14 @@ public class RingAction {
      * 录像(停留报警，按门铃/留言)
      */
     private void startRecord() {
-        mCameraHelper.startRecord(mDoorbellConfig, DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_RING, new VideoCameraHelper.OnRecordListener() {
+        mActivity.cRecord.setVisibility(View.VISIBLE);
+        mActivity.cRecord.setBase(SystemClock.elapsedRealtime());
+        boolean result = mCameraHelper.startRecord(mDoorbellConfig, DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_RING, new VideoCameraHelper.OnRecordListener() {
+            @Override
+            public void onRecordStart() {
+                mActivity.cRecord.start();
+            }
+
             @Override
             public void onRecordCompleted() {
                 if (mDoorbellConfig.getDoorbellLeaveMessage() == 1) {
@@ -80,6 +88,9 @@ public class RingAction {
                 }
             }
         });
+        if (!result){
+            mActivity.finish();
+        }
     }
 
 
@@ -124,8 +135,6 @@ public class RingAction {
      * 留言结束
      */
     private void leavemsgEnd() {
-        L.e("------------留言结束:" + ControlCenter.sIsLeaveMsgRecording + ":" +
-                DoorbellAudioManager.getDoorbellAudioManager().isPlaying());
         if (ControlCenter.sIsLeaveMsgRecording) {
             DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager.RingerTypeEnum.LEAVE_MSG_END, new DoorbellAudioManager.OnCompletionListener() {
                 @Override
@@ -156,7 +165,6 @@ public class RingAction {
         if (!DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_RING.equals(systemAction.getType())) return;
         if (mDoorbellConfig.getDoorbellLeaveMessage() != 1) return;
         mRingCount++;
-        L.e("--------------------------收到门铃事件：" + mCameraHelper.isRecording());
         if (mCameraHelper.isRecording()) {
             //收到第二个门铃，结束留言
             if (DoorbellAudioManager.getDoorbellAudioManager().isPlaying(DoorbellAudioManager.RingerTypeEnum.LEAVE_MSG_END)) {

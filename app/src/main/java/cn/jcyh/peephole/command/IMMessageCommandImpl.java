@@ -66,6 +66,12 @@ public class IMMessageCommandImpl {
         sendTextCommand(fromAccount, commandJson);
     }
 
+    public static void sendUnlockResponse(String fromAccount) {
+        CommandJson commandJson = new CommandJson();
+        commandJson.setCommandType(CommandJson.CommandType.UNLOCK_DOORBELL_RESPONSE);
+        sendTextCommand(fromAccount, commandJson);
+    }
+
     /**
      * 图片请求响应
      */
@@ -128,9 +134,7 @@ public class IMMessageCommandImpl {
             for (int i = 0; i < names.size(); i++) {
                 File file = new File(FileUtil.getDoorbellImgPath() + File.separator + names.get
                         (i));
-                L.e("----------->filePath:" + file.getAbsolutePath());
                 if (file.exists()) {
-                    L.e("--------已发送文件");
                     sendImageCommand(account, command, file);
                 }
             }
@@ -190,6 +194,7 @@ public class IMMessageCommandImpl {
     private static void sendTextCommand(String account, CommandJson command) {
         SessionTypeEnum sessionType = SessionTypeEnum.P2P;
         IMMessage messageTxt = MessageBuilder.createTextMessage(account, sessionType, GsonUtil.toJson(command));
+        configMessage(messageTxt);
         NIMClient.getService(MsgService.class).sendMessage(messageTxt, true);
     }
 
@@ -206,6 +211,8 @@ public class IMMessageCommandImpl {
 
     private static void configMessage(IMMessage message) {
         CustomMessageConfig config = message.getConfig();
+        if (config == null)
+            config = new CustomMessageConfig();
         config.enableRoaming = false;//是否漫游
         config.enableUnreadCount = false;//是否记录未读
         config.enablePersist = false;//是否存离线

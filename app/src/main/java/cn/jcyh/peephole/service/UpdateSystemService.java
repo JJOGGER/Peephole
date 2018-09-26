@@ -17,6 +17,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import cn.jcyh.peephole.R;
+import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.entity.DownloadInfo;
 import cn.jcyh.peephole.http.IDataListener;
@@ -205,6 +206,9 @@ public class UpdateSystemService extends Service {
                         if (decrypt) {
                             //解密成功
                             L.e("----------------解密成功。。。。。。。。");
+                            Intent intent = new Intent("android.intent.action.ACTION_OTA_UPGRADE");
+                            intent.putExtra(Constant.COMMAND_PATH, APKUtil.SYSTEM_PATCH_PATH);
+                            sendBroadcast(intent);
 //                    String oldVersionPath = APKUtil.getOldVersionPath();
 //                    //合成差分包
 //                    PatchUtil.patch(oldVersionPath, APKUtil.APK_PATH, APKUtil.SYSTEM_PATCH_PATH);

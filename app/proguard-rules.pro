@@ -39,8 +39,14 @@
 #-keep class cn.jcyh.peephole.event.** { *;}
 #-dontwarn cn.jcyh.peephole.utils.**
 #-keep class cn.jcyh.peephole.utils.** { *;}
--dontwarn cn.jcyh.peephole.**
--keep class cn.jcyh.peephole.** { *;}
+#-dontwarn cn.jcyh.peephole.**
+#-keep class cn.jcyh.peephole.** { *;}
+
+-keep class cn.jcyh.peephole.entity.** { *;}
+-keep class cn.jcyh.peephole.utils.** { *;}
+-keep class cn.jcyh.peephole.http.** { *;}
+-keep class cn.jcyh.peephole.widget.** { *;}
+
 -dontwarn cn.jcyh.eaglelock.**
 -keep class cn.jcyh.eaglelock.** { *;}
 -dontwarn cn.jcyh.locklib.**
@@ -143,6 +149,13 @@
     native <methods>;
 }
 
+
+# banner 的混淆代码
+-keep class com.youth.banner.** {
+    *;
+ }
+
+
 #---------------------------讯飞start------------------------------#
 -dontwarn com.iflytek.**
 -keep class com.iflytek.**{*;}
@@ -170,7 +183,6 @@
 -keep public class com.nineoldandroids.** {*;}
 
 # support-v4
-#https://stackoverflow.com/questions/18978706/obfuscate-android-support-v7-widget-gridlayout-issue
 -dontwarn android.support.v4.**
 -keep class android.support.v4.app.** { *; }
 -keep interface android.support.v4.app.** { *; }
@@ -185,7 +197,6 @@
 -keep class com.squareup.picasso.** {*; }
 -dontwarn com.squareup.picasso.**
 # support design
-#@link http://stackoverflow.com/a/31028536
 -dontwarn android.support.design.**
 -keep class android.support.design.** { *; }
 -keep interface android.support.design.** { *; }
@@ -230,6 +241,19 @@ public static java.lang.String TABLENAME;
 }
 -keep class **$Properties
 -dontwarn org.greenrobot.greendao.**
+
+#eventbus
+-keepattributes *Annotation*
+-keepclassmembers class ** {
+    @org.greenrobot.eventbus.Subscribe <methods>;
+}
+-keep enum org.greenrobot.eventbus.ThreadMode { *; }
+
+# Only required if you use AsyncExecutor
+-keepclassmembers class * extends org.greenrobot.eventbus.util.ThrowableFailureEvent {
+    <init>(java.lang.Throwable);
+}
+
 
 -ignorewarning
 -keepattributes *Annotation*

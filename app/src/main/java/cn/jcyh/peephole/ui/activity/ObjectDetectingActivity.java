@@ -2,6 +2,7 @@ package cn.jcyh.peephole.ui.activity;
 
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.View;
 
@@ -22,10 +23,18 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import butterknife.BindView;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
+import cn.jcyh.peephole.constant.ExtendFunction;
+import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.service.AudioValiService;
 import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.ServiceUtil;
+import cn.jcyh.peephole.utils.SystemUtil;
 import cn.jcyh.peephole.utils.T;
 
 public class ObjectDetectingActivity extends BaseActivity {
@@ -33,9 +42,11 @@ public class ObjectDetectingActivity extends BaseActivity {
     @BindView(R.id.photograph_view)
     ObjectDetectingView photographView;
     private ObjectDetector mFaceDetector;
-
     //采用身份识别接口进行在线人脸识别
     private IdentityVerifier mIdVerifier;
+    private Timer mTimer;
+    private TimerTask mTimerTask;
+    private boolean mVering;
 
     @Override
     public int getLayoutId() {
@@ -44,18 +55,19 @@ public class ObjectDetectingActivity extends BaseActivity {
 
     @Override
     protected void init() {
+        //点亮屏幕
+        ControlCenter.sIsFaceValing = true;
+        SystemUtil.wakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP);
         mIdVerifier = IdentityVerifier.createVerifier(ObjectDetectingActivity.this, new InitListener() {
             @Override
             public void onInit(int errorCode) {
-                Log.e("初始化", errorCode + "");
                 if (ErrorCode.SUCCESS == errorCode) {
-                    T.show( "引擎初始化成功");
+                    T.show("引擎初始化成功");
                 } else {
-                    T.show( "引擎初始化失败，错误码：" + errorCode);
+                    T.show("引擎初始化失败，错误码：" + errorCode);
                 }
             }
         });
-
         photographView.setOnOpenCVLoadListener(new OnOpenCVLoadListener() {
             @Override
             public void onOpenCVLoadSuccess() {
@@ -71,6 +83,7 @@ public class ObjectDetectingActivity extends BaseActivity {
 
             @Override
             public void onNotInstallOpenCVManager() {
+                L.e("-------------onNotInstallOpenCVManager:");
             }
         });
 
@@ -78,6 +91,8 @@ public class ObjectDetectingActivity extends BaseActivity {
         photographView.setOnCameraFrameListener(new ObjectDetectingView.OnCameraFrameListener() {
             @Override
             public void onDetect(Rect rect) {
+                //检测到人脸
+                mVering = true;
                 photographView.takePicture(null, null, new Camera.PictureCallback() {
                     @Override
                     public void onPictureTaken(byte[] data, Camera camera) {
@@ -86,8 +101,29 @@ public class ObjectDetectingActivity extends BaseActivity {
                 });
             }
         });
-        photographView.setCameraIndex(CameraBridgeViewBase.CAMERA_ID_FRONT);
-//        photographView.addDetector(mFaceDetector);
+        photographView.setCameraIndex(CameraBridgeViewBase.CAMERA_ID_ANY);
+        mTimer = new Timer();
+        mTimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                if (isDestroyed() || isFinishing() || getSupportFragmentManager() == null) {
+                    return;
+                }
+                cancelTimer();
+                if (mVering) {
+                    return;
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (isFinishing()||isDestroyed()||getSupportFragmentManager()==null)return;
+                        T.show("验证结束");
+                        finish();
+                    }
+                });
+            }
+        };
+        mTimer.schedule(mTimerTask, 6000, 1000);
     }
 
     private void onTakePhoto(byte[] data) {
@@ -106,7 +142,7 @@ public class ObjectDetectingActivity extends BaseActivity {
             // 设置验证模式，单一验证模式：sin
             mIdVerifier.setParameter(SpeechConstant.MFV_VCM, "sin");
             // 用户id
-            mIdVerifier.setParameter(SpeechConstant.AUTH_ID, IMEI);
+            mIdVerifier.setParameter(SpeechConstant.AUTH_ID, SystemUtil.getANDROID_ID());
             // 设置监听器，开始会话
             mIdVerifier.startWorking(mVerifyListener);
 
@@ -117,7 +153,7 @@ public class ObjectDetectingActivity extends BaseActivity {
             // 停止写入
             mIdVerifier.stopWrite("ifr");
         } else {
-            T.show( "请选择图片后再验证");
+            T.show("请选择图片后再验证");
         }
     }
 
@@ -146,10 +182,10 @@ public class ObjectDetectingActivity extends BaseActivity {
                 String decision = object.getString("decision");
 
                 if ("accepted".equalsIgnoreCase(decision)) {
-                    T.show( "通过验证");
-
+                    T.show("通过验证");
+                    audioCheck();
                 } else {
-                    T.show( "验证失败");
+                    T.show("验证失败");
                 }
                 finish();
             } catch (JSONException e) {
@@ -163,13 +199,45 @@ public class ObjectDetectingActivity extends BaseActivity {
 
         @Override
         public void onError(SpeechError error) {
-            T.show( error.getPlainDescription(true));
+            T.show("error:"+error.getPlainDescription(true));
+            finish();
         }
 
     };
 
+    /**
+     * 声纹识别检测
+     */
+    private void audioCheck() {
+        //检测声纹识别
+        boolean audioVali = ControlCenter.isFunctionUse(ExtendFunction.FUNCTION_AUDIO_VALI);
+        if (audioVali) {
+//            if (ServiceUtil.isServiceRunning(AudioValiService.class))
+//                ServiceUtil.stopService(AudioValiService.class);
+            ServiceUtil.startService(AudioValiService.class);
+        } else {
+            ControlCenter.sIsFaceValing = false;
+            //没有声纹，直接开锁
+            ControlCenter.getBCManager().setLock(true);
+        }
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        cancelTimer();
+        if (!ServiceUtil.isServiceRunning(AudioValiService.class)) {
+            ControlCenter.sIsFaceValing = false;
+        }
+    }
+
+    private void cancelTimer() {
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer.purge();
+            mTimer = null;
+            mTimerTask.cancel();
+            mTimerTask = null;
+        }
     }
 }

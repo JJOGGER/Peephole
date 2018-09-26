@@ -3,9 +3,12 @@ package cn.jcyh.peephole.ui.fragment;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.telephony.PhoneNumberUtils;
@@ -23,6 +26,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -43,7 +47,6 @@ import cn.jcyh.peephole.utils.FileUtil;
 import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.PhoneUtil;
 import cn.jcyh.peephole.utils.T;
-import cn.jcyh.peephole.video.AVChatProfile;
 import cn.jcyh.peephole.widget.MsgCircleView;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -106,6 +109,7 @@ public class MainFragment extends BaseFragment {
             EventBus.getDefault().register(this);
         mActivity.registerReceiver(mReceiver, intentFilter);
         mBanner.setImageLoader(new GlideImageLoader());
+        mBanner.setImages(null);
 //        banner.start();
 //        banner.setVisibility(View.GONE);
 //        ivHome.setVisibility(View.VISIBLE);
@@ -128,7 +132,9 @@ public class MainFragment extends BaseFragment {
             public void onSuccess(AdvertData advertData) {
                 L.e("-------------advertData:" + advertData);
                 List<AdvertData.Advert> adverts = advertData.getAdverts();
+                mBanner.releaseBanner();
                 mBanner.setImages(adverts);
+                mBanner.isAutoPlay(advertData.getAdvertConfig().isAutoPlay());
                 mBanner.setDelayTime(advertData.getAdvertConfig().getDisplayTime() * 1000);
                 mBanner.start();
             }
@@ -138,6 +144,20 @@ public class MainFragment extends BaseFragment {
                 L.e("-------------onFailure");
             }
         });
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        //开始轮播
+        mBanner.start();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        //结束轮播
+        mBanner.stopAutoPlay();
     }
 
     @Override
@@ -184,8 +204,31 @@ public class MainFragment extends BaseFragment {
                 }
                 break;
             case R.id.tv_doorbell_look:
-                if (!AVChatProfile.getInstance().isAVChatting())
-                    startNewActivity(DoorbellLookActivity.class);
+//                try{
+//                    //获取相机包名
+//                    Intent infoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//                    ResolveInfo res = mActivity.getPackageManager().
+//                            resolveActivity(infoIntent, 0);
+//                    if (res != null)
+//                    {
+//                        String packageName=res.activityInfo.packageName;
+//                        if(packageName.equals("android"))
+//                        {
+//                            infoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE_SECURE);
+//                            res = mActivity.getPackageManager().
+//                                    resolveActivity(infoIntent, 0);
+//                            if (res != null)
+//                                packageName=res.activityInfo.packageName;
+//                        }
+//                        //启动相机
+//                        startApplicationByPackageName(packageName);
+//                    }
+//                }
+//                catch(Exception e)
+//                {
+//                    e.printStackTrace();
+//                }
+                startNewActivity(DoorbellLookActivity.class);
                 break;
         }
     }
@@ -201,7 +244,7 @@ public class MainFragment extends BaseFragment {
         ControlCenter.getDoorbellManager().setDoorbellConfig(doorbellConfig);
         ControlCenter.getBCManager().setPIRSensorOn(doorbellConfig.getMonitorSwitch()
                 == 1);
-        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getIMEI(),
+        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(),
                 doorbellConfig, null);
     }
 
@@ -234,17 +277,41 @@ public class MainFragment extends BaseFragment {
             initBanners();
         }
     }
-//    @Subscribe(threadMode = ThreadMode.MAIN)
-//    public void onTimeUpdateAction(TimerUpdateAction updateAction) {
-//        try {
-//            CharSequence spannableString = updateAction.getCharSequenceExtra(Constant.TIME_AM_PM);
-//            tvTime.setText(spannableString, TextView.BufferType.SPANNABLE);
-//            tvDate.setText(updateAction.getStringExtra(Constant.DATE));
-//            tvDate2.setText(updateAction.getStringExtra(Constant.LUNAR_DATE));
-//        } catch (IndexOutOfBoundsException e) {
-//            e.printStackTrace();
-//        }
-//    }
+
+    //通过包名启动应用
+    private void startApplicationByPackageName(String packName) {
+        PackageInfo packageInfo = null;
+        try {
+            packageInfo = mActivity.getPackageManager().getPackageInfo(packName, 0);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (null == packageInfo) {
+            return;
+        }
+        Intent resolveIntent = new Intent();
+        resolveIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        resolveIntent.setPackage(packageInfo.packageName);
+        List<ResolveInfo> resolveInfoList = mActivity.getPackageManager().queryIntentActivities(resolveIntent, 0);
+        if (null == resolveInfoList) {
+            return;
+        }
+        Iterator<ResolveInfo> iter = resolveInfoList.iterator();
+        while (iter.hasNext()) {
+            ResolveInfo resolveInfo = (ResolveInfo) iter.next();
+            if (null == resolveInfo) {
+                return;
+            }
+            String packageName = resolveInfo.activityInfo.packageName;
+            String className = resolveInfo.activityInfo.name;
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_LAUNCHER);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            ComponentName cn = new ComponentName(packageName, className);
+            intent.setComponent(cn);
+            startActivity(intent);
+        }//while
+    }//method
 
     private class MyReceiver extends BroadcastReceiver {
         @Override

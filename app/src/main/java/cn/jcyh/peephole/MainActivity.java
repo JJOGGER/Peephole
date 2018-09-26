@@ -2,7 +2,6 @@ package cn.jcyh.peephole;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.PersistableBundle;
 import android.support.v4.view.ViewPager;
 import android.util.DisplayMetrics;
@@ -18,7 +17,6 @@ import butterknife.BindView;
 import cn.jcyh.peephole.adapter.MainPageAdapter;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.service.MainService;
-import cn.jcyh.peephole.utils.APKUtil;
 import cn.jcyh.peephole.utils.L;
 
 //按门铃，发消息--》app收到消息--》发起视频通话
@@ -52,7 +50,6 @@ public class MainActivity extends BaseActivity implements ViewPager.OnPageChange
 
     @Override
     protected void init() {
-        L.e("----------------APK_PATH-" + APKUtil.APK_PATH + ":" + Environment.getDataDirectory().exists());
         startService(new Intent(this, MainService.class));
         vpMain.setAdapter(new MainPageAdapter(getSupportFragmentManager()));
         vpMain.setOffscreenPageLimit(2);
@@ -109,8 +106,7 @@ public class MainActivity extends BaseActivity implements ViewPager.OnPageChange
     public void onPageScrollStateChanged(int state) {
 
     }
-
-//    @Override
+    //    @Override
 //    protected void onActivityResult(final int requestCode, int resultCode, Intent data) {
 //        super.onActivityResult(requestCode, resultCode, data);
 //        L.e("-------------onActivityResult" + resultCode + "---" + requestCode);
@@ -122,4 +118,6 @@ public class MainActivity extends BaseActivity implements ViewPager.OnPageChange
 //            }
 //        }
 //    }
+
+
 }

@@ -85,11 +85,11 @@
         android:textColor="@color/white"
         android:textSize="16sp"/>
 
-    <TextView
+    <!--<TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:paddingTop="4dp"
         android:text="增量更新测试"
-        android:textColor="@color/black_333333"/>
+        android:textColor="@color/black_333333"/>-->
 </LinearLayout>

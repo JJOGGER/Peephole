@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import cn.jcyh.peephole.constant.Config;
+import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.utils.L;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -66,6 +67,7 @@ public class UploadService implements IHttpService {
         Request request = new Request.Builder()
                 .url(mUrl)
                 .header("Content-Type", "image/jpeg; charset=utf-8;")
+                .addHeader("DeviceId", ControlCenter.getSN())
                 .addHeader("AppKey", headerConfig.getAppkey())
                 .addHeader("Nonce", headerConfig.getNonce())
                 .addHeader("Timestamp", headerConfig.getTimestamp())

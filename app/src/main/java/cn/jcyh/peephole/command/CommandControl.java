@@ -46,7 +46,14 @@ public class CommandControl {
      * @param flag        是否接收 1接受 0拒绝 2 已绑定 3网络错误
      */
     public static void sendBindResponse(String fromAccount, String flag) {
-        IMMessageCommandImpl.sendBindResponse(fromAccount, ControlCenter.getIMEI(), flag);
+        IMMessageCommandImpl.sendBindResponse(fromAccount, ControlCenter.getSN(), flag);
+    }
+
+    /**
+     * 解锁响应指令
+     */
+    public static void sendUnlockResponse(String fromAccount) {
+        IMMessageCommandImpl.sendUnlockResponse(fromAccount);
     }
 
     /**

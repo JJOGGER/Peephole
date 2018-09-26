@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.PowerManager;
+import android.provider.Settings;
 import android.text.TextUtils;
 
 /**
@@ -74,6 +75,11 @@ public class SystemUtil {
         return packageName;
     }
 
+    public static String getANDROID_ID() {
+        return Settings.System.getString(Util.getApp().getContentResolver(), Settings.System.ANDROID_ID);
+
+    }
+
     public static void wakeLock(int levelAndFlags) {
         //唤醒
         //获取电源管理器对象
@@ -82,7 +88,7 @@ public class SystemUtil {
         assert pm != null;
         PowerManager.WakeLock wl = pm.newWakeLock(levelAndFlags, "bright");
         //点亮屏幕
-        wl.acquire(20000);
+        wl.acquire(10000);
         wl.release();
     }
 }

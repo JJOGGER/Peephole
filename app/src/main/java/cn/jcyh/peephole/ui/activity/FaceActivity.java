@@ -36,6 +36,7 @@ import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.utils.FaceUtil;
+import cn.jcyh.peephole.utils.SystemUtil;
 import cn.jcyh.peephole.utils.T;
 
 public class FaceActivity extends BaseActivity {
@@ -261,7 +262,7 @@ public class FaceActivity extends BaseActivity {
         // 设置会话场景
         mIdVerifier.setParameter(SpeechConstant.MFV_SCENES, "ifr");
         // 用户id
-        mIdVerifier.setParameter(SpeechConstant.AUTH_ID, IMEI);
+        mIdVerifier.setParameter(SpeechConstant.AUTH_ID, SystemUtil.getANDROID_ID());
 
         // 设置模型参数，若无可以传空字符传
         StringBuffer params = new StringBuffer();
@@ -298,7 +299,7 @@ public class FaceActivity extends BaseActivity {
                     // 设置会话类型
                     mIdVerifier.setParameter(SpeechConstant.MFV_SST, "enroll");
                     // 设置用户id
-                    mIdVerifier.setParameter(SpeechConstant.AUTH_ID, IMEI);
+                    mIdVerifier.setParameter(SpeechConstant.AUTH_ID, SystemUtil.getANDROID_ID());
                     // 设置监听器，开始会话
                     mIdVerifier.startWorking(mEnrollListener);
 

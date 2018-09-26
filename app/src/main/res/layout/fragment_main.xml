@@ -12,20 +12,11 @@
         android:id="@+id/banner"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@mipmap/no_banner"
+        app:banner_default_image="@mipmap/no_banner"
         app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
-
-    <!-- <ImageView
-         android:id="@+id/iv_home"
-         android:layout_width="@dimen/x607"
-         android:layout_height="@dimen/y449"
-         android:layout_marginEnd="@dimen/x12"
-         android:layout_marginStart="@dimen/x14"
-         android:scaleType="fitXY"
-         android:src="@mipmap/photo"/>-->
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/constraintLayout"

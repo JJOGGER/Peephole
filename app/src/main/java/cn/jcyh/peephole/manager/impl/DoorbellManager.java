@@ -51,7 +51,7 @@ public class DoorbellManager implements IDoorbellManager {
             if (!NetworkUtil.isConnected()) {
                 return config;
             }
-            HttpAction.getHttpAction().setDoorbellConfig(ControlCenter.getIMEI(), config, null);
+            HttpAction.getHttpAction().setDoorbellConfig(ControlCenter.getSN(), config, null);
         } else {
             config = GsonUtil.fromJson(configJson, DoorbellConfig.class);
         }
@@ -162,7 +162,7 @@ public class DoorbellManager implements IDoorbellManager {
         }
         String command = GsonUtil.toJson(commandJson);
         L.e("--------------------------按门铃图片上传" + thumbPath);
-        HttpAction.getHttpAction().sendDoorbellImg(ControlCenter.getIMEI(), command, t,
+        HttpAction.getHttpAction().sendDoorbellImg(ControlCenter.getSN(), command, t,
                 thumbPath, listener);
     }
 

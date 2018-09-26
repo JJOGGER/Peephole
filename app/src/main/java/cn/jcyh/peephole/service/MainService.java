@@ -3,19 +3,16 @@ package cn.jcyh.peephole.service;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.BitmapFactory;
-import android.os.BatteryManager;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
-import android.text.TextUtils;
 
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
@@ -39,7 +36,6 @@ import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.entity.ConfigData;
 import cn.jcyh.peephole.entity.DoorbellConfig;
-import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.observer.AVChatObserver;
 import cn.jcyh.peephole.observer.FriendServiceObserver;
@@ -47,9 +43,9 @@ import cn.jcyh.peephole.observer.MessageReceiveObserver;
 import cn.jcyh.peephole.observer.NIMSystemMessageObserver;
 import cn.jcyh.peephole.observer.UserStatusObserver;
 import cn.jcyh.peephole.receiver.AlarmReceiver;
-import cn.jcyh.peephole.utils.CacheUtil;
+import cn.jcyh.peephole.receiver.BatteryReceiver;
+import cn.jcyh.peephole.receiver.ScreenReceiver;
 import cn.jcyh.peephole.utils.L;
-import cn.jcyh.peephole.utils.SPUtil;
 
 
 /**
@@ -59,12 +55,13 @@ import cn.jcyh.peephole.utils.SPUtil;
 public class MainService extends Service {
     private MyBinder mBinder;
     private MyServiceConnection mConnection;
-    private MyReceiver mReceiver;
+    private ScreenReceiver mScreenReceiver;
     private Observer<StatusCode> mUserStatusObserver;
     private Observer<SystemMessage> mSystemMessageObserver;
     private Observer<List<IMMessage>> mMessageReceiveObserver;
     private Observer<AVChatData> mAVChatObserver;
     private Observer<FriendChangedNotify> mFriendChangedNotifyObserver;
+    private BatteryReceiver mBatteryReceiver;
 
     @Nullable
     @Override
@@ -82,18 +79,11 @@ public class MainService extends Service {
         startService(intent);
         bindService(intent, mConnection, Context.BIND_IMPORTANT);
         //注册屏幕状态广播
-        mReceiver = new MyReceiver();
         mUserStatusObserver = new UserStatusObserver();
         mSystemMessageObserver = new NIMSystemMessageObserver();
         mMessageReceiveObserver = new MessageReceiveObserver();
         mAVChatObserver = new AVChatObserver();
         mFriendChangedNotifyObserver = new FriendServiceObserver();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
-        intentFilter.addAction(Intent.ACTION_SCREEN_ON);
-        intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
-        intentFilter.addAction(Intent.ACTION_BATTERY_LOW);
-        registerReceiver(mReceiver, intentFilter);
         registerObservers(true);
     }
 
@@ -104,13 +94,13 @@ public class MainService extends Service {
             ControlCenter.getBCManager().setPIRSensorOn(doorbellConfig.getMonitorSwitch() == 1);
         }
         //配置猫眼视频
-        ControlCenter.getDoorbellManager().getDoorbellConfigFromServer(ControlCenter.getIMEI(), new IDataListener<ConfigData>() {
+        ControlCenter.getDoorbellManager().getDoorbellConfigFromServer(ControlCenter.getSN(), new IDataListener<ConfigData>() {
             @Override
             public void onSuccess(ConfigData configData) {
-                L.e("---------配置猫眼"+configData.getCatEyeConfig());
+                L.e("---------配置猫眼" + configData.getCatEyeConfig());
                 doorbellConfig.setVideoConfig(configData.getCatEyeConfig());
                 ControlCenter.getDoorbellManager().setDoorbellConfig(doorbellConfig);
-                ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getIMEI(), doorbellConfig, null);
+                ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(), doorbellConfig, null);
             }
 
             @Override
@@ -155,6 +145,21 @@ public class MainService extends Service {
         NIMClient.getService(FriendServiceObserve.class).observeFriendChangedNotify(mFriendChangedNotifyObserver, register);
         //好友在线监听
 //        OnlineStateEventManager.getOnlineStateChangeObservable().registerOnlineStateChangeListeners(mOnlineStateChangeObserver, register);
+        if (register) {
+            mBatteryReceiver = new BatteryReceiver();
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
+            intentFilter.addAction(Intent.ACTION_BATTERY_LOW);
+            registerReceiver(mBatteryReceiver, intentFilter);
+            mScreenReceiver=new ScreenReceiver();
+            intentFilter = new IntentFilter();
+            intentFilter.addAction(Intent.ACTION_SCREEN_ON);
+            intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
+            registerReceiver(mScreenReceiver, intentFilter);
+        } else {
+            unregisterReceiver(mBatteryReceiver);
+
+        }
     }
 
     private void registAlarm() {
@@ -188,65 +193,13 @@ public class MainService extends Service {
         }
     }
 
-
-    private class MyReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (TextUtils.isEmpty(action)) return;
-            if (Intent.ACTION_SCREEN_ON.equals(action)) {
-                CacheUtil.clearCache();
-            } else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
-                L.e("---------ACTION_SCREEN_OFF");
-            }
-            switch (action) {
-                case Intent.ACTION_BATTERY_CHANGED:
-                    // 是否在充电
-                    int battery = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 100);
-                    int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-                    boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
-                            status == BatteryManager.BATTERY_STATUS_FULL;
-                    //如果不在充电，且电量低于5或者电量低于10，发送推送
-                    if (!isCharging) {
-                        if (battery > 10) {
-                            SPUtil.getInstance().put(Constant.BATTERY, false);
-                        }
-                        if (battery > 5 & battery <= 10) {
-                            boolean isBattery = SPUtil.getInstance().getBoolean(Constant.BATTERY);
-                            if (isBattery) {
-                                //不发推送
-                            } else {
-                                //发推送
-                                SPUtil.getInstance().put(Constant.BATTERY, true);//置反
-                                HttpAction.getHttpAction().uploadBattery(ControlCenter.getIMEI(), battery, null);
-                            }
-                        } else if (battery <= 5) {
-                            boolean isBattery = SPUtil.getInstance().getBoolean(Constant.BATTERY);
-                            if (isBattery) {
-                                //发推送
-                                HttpAction.getHttpAction().uploadBattery(ControlCenter.getIMEI(), battery, null);
-                                SPUtil.getInstance().put(Constant.BATTERY, false);//置反
-                            } else {
-                                //不发推送
-                            }
-                        }
-                    }
-                    break;
-                case Intent.ACTION_BATTERY_LOW:
-                    L.e("----------------ACTION_BATTERY_LOW");
-                    break;
-            }
-        }
-    }
-
     @Override
     public void onDestroy() {
         super.onDestroy();
         L.e("-------------onDestroy");
         stopForeground(true);
         registerObservers(false);
-        unregisterReceiver(mReceiver);
+        unregisterReceiver(mScreenReceiver);
     }
 //    OnlineStateChangeObserver mOnlineStateChangeObserver = new OnlineStateChangeObserver() {
 //        @Override

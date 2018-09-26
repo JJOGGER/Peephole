@@ -76,7 +76,7 @@ public class UserManager implements IUserManager {
 
     @Override
     public void getUserSync(final IDataListener<List<User>> listener) {
-        HttpAction.getHttpAction().getBindUsers(ControlCenter.getIMEI(), listener);
+        HttpAction.getHttpAction().getBindUsers(ControlCenter.getSN(), listener);
 //        NIMClient.getService(UserService.class).fetchUserInfo(ControlCenter.getUserManager().getBindUserIDs())
 //                .setCallback(new RequestCallbackWrapper<List<NimUserInfo>>() {
 //                    @Override

@@ -60,6 +60,14 @@ android {
             signingConfig signingConfigs.config
 
         }
+        // 第一个马甲包
+        hotel.initWith(buildTypes.release) // 以release的配置来初始化马甲包配置
+        hotel {
+            applicationIdSuffix ".hotel"
+            // 修改马甲包的applicationId，马甲包的application将为com.liunian.majiabaotest.majiabaoOne，即在原来的applicationId后加上配置内容
+            manifestPlaceholders = [APP_NAME: 'peephole_hotel'] // 配置马甲包的应用名称
+            matchingFallbacks = ['release', 'debug']
+        }
 
     }
     dexOptions {
@@ -78,19 +86,19 @@ android {
     }
 
     //马甲包配置
-    flavorDimensions "default"
-    productFlavors {
-        mysmartx {
-            applicationId "${APP_ID}"
-            dimension "default"
-        }
-        hotel {
-            applicationId "${PEEPHOLE_APP_ID}"
-            dimension "default"
-//            applicationIdSuffix ".peephole_hotel"//马甲包appid后缀
-//            manifestPlaceholders = [APP_NAME: '康佳安防',AUTHORITIES:'com.szjcyh.konka.fileprovider']
-        }
-    }
+//    flavorDimensions "default"
+//    productFlavors {
+//        mysmartx {
+//            applicationId "${APP_ID}"
+//            dimension "default"
+//        }
+//        hotel {
+//            applicationId "${PEEPHOLE_APP_ID}"
+//            dimension "default"
+////            applicationIdSuffix ".peephole_hotel"//马甲包appid后缀
+////            manifestPlaceholders = [APP_NAME: '康佳安防',AUTHORITIES:'com.szjcyh.konka.fileprovider']
+//        }
+//    }
 }
 
 dependencies {
@@ -116,7 +124,7 @@ dependencies {
     implementation rootProject.ext.dependencies.umeng_analytics
     implementation rootProject.ext.dependencies.rxbinding
     implementation rootProject.ext.dependencies.adapter_helper
-    implementation rootProject.ext.dependencies.progressbar
+//    implementation rootProject.ext.dependencies.progressbar
     //    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.4'
     //    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
     compileOnly files('libs/classes-full-debug.jar')

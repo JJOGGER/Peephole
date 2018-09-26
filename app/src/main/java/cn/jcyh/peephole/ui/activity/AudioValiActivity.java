@@ -29,6 +29,7 @@ import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.SystemUtil;
 import cn.jcyh.peephole.utils.T;
 
 public class AudioValiActivity extends BaseActivity implements View.OnTouchListener {
@@ -286,6 +287,9 @@ public class AudioValiActivity extends BaseActivity implements View.OnTouchListe
 
         @Override
         public void onEvent(int eventType, int arg1, int arg2, Bundle obj) {
+            if (SpeechEvent.EVENT_VOLUME == eventType) {
+                T.show("音量：" + arg1);
+            }
         }
 
         @Override
@@ -497,7 +501,7 @@ public class AudioValiActivity extends BaseActivity implements View.OnTouchListe
                 break;
             case R.id.btn_identity:
 //                Intent init = new Intent(this, GroupManagerActivity.class);
-//                init.putExtra("auth_id", IMEI);
+//                init.putExtra("auth_id", SN);
 //                init.putExtra("mfv_scenes", "ivp");
 //                startActivity(init);
                 break;
@@ -524,7 +528,7 @@ public class AudioValiActivity extends BaseActivity implements View.OnTouchListe
         // 设置会话类型
         mIdVerifier.setParameter(SpeechConstant.MFV_SST, "enroll");
         // 用户id
-        mIdVerifier.setParameter(SpeechConstant.AUTH_ID, IMEI);
+        mIdVerifier.setParameter(SpeechConstant.AUTH_ID, SystemUtil.getANDROID_ID());
 //        mIdVerifier.setParameter(SpeechConstant.AUTH_ID, "1234");
         // 设置监听器，开始会话
         mIdVerifier.startWorking(mEnrollListener);
@@ -546,7 +550,7 @@ public class AudioValiActivity extends BaseActivity implements View.OnTouchListe
         // 验证模式，单一验证模式：sin
         mIdVerifier.setParameter(SpeechConstant.MFV_VCM, "sin");
         // 用户的唯一标识，在声纹业务获取注册、验证、查询和删除模型时都要填写，不能为空
-        mIdVerifier.setParameter(SpeechConstant.AUTH_ID, IMEI);
+        mIdVerifier.setParameter(SpeechConstant.AUTH_ID, SystemUtil.getANDROID_ID());
 //        mIdVerifier.setParameter(SpeechConstant.AUTH_ID, "1234");
         // 设置监听器，开始会话
         mIdVerifier.startWorking(mVerifyListener);
@@ -598,7 +602,7 @@ public class AudioValiActivity extends BaseActivity implements View.OnTouchListe
         // 设置会话场景
         mIdVerifier.setParameter(SpeechConstant.MFV_SCENES, "ivp");
         // 用户id
-        mIdVerifier.setParameter(SpeechConstant.AUTH_ID, IMEI);
+        mIdVerifier.setParameter(SpeechConstant.AUTH_ID, SystemUtil.getANDROID_ID());
 //        mIdVerifier.setParameter(SpeechConstant.AUTH_ID, "1234");
         // 子业务执行参数，若无可以传空字符传
         StringBuffer params3 = new StringBuffer();

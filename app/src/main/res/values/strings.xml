@@ -220,6 +220,7 @@
     <string name="system_updating">系统更新中</string>
     <string name="immediately_setup">立即安装</string>
     <string name="setup_wait">稍后安装</string>
+    <string name="battery_low_update_msg">升级需保证电量30%以上</string>
 
     <!--                   系统设置end             -->
     <!--<string name="date_week_format">%d年%d月%d日&#160;%s</string>-->

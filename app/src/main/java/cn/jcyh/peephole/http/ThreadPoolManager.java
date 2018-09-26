@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
     private LinkedBlockingDeque<Future<?>> mRequestQueue = new LinkedBlockingDeque<>();//请求队列
 
     private ThreadPoolManager() {
-        mThreadPoolExecutor = new ThreadPoolExecutor(4, 10, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(4));
+        mThreadPoolExecutor = new ThreadPoolExecutor(4, 20, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(4));
         Runnable runnable = new Runnable() {
             @Override
             public void run() {

@@ -3,6 +3,8 @@ package cn.jcyh.peephole.ui.activity;
 import android.hardware.Camera;
 import android.os.PowerManager;
 import android.view.SurfaceView;
+import android.view.View;
+import android.widget.Chronometer;
 
 import butterknife.BindView;
 import cn.jcyh.peephole.R;
@@ -21,6 +23,8 @@ import cn.jcyh.peephole.video.cameraact.RingAction;
 public class CameraActivity extends BaseActivity implements VideoCameraHelper.OnSurfaceViewCallback {
     @BindView(R.id.surface_camera)
     SurfaceView surfaceCamera;
+    @BindView(R.id.c_record)
+    public Chronometer cRecord;
     private DoorbellConfig mDoorbellConfig;
     VideoCameraHelper mCameraHelper;
     private boolean mIsDestroyed;
@@ -34,6 +38,7 @@ public class CameraActivity extends BaseActivity implements VideoCameraHelper.On
 
     @Override
     protected void init() {
+        cRecord.setVisibility(View.GONE);
         SystemUtil.wakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP |
                 PowerManager.SCREEN_BRIGHT_WAKE_LOCK);
         ControlCenter.sIsVideo = true;
@@ -116,7 +121,7 @@ public class CameraActivity extends BaseActivity implements VideoCameraHelper.On
     @Override
     public void onSurfaceCreated() {
         //开始拍照
-        mCameraHelper.takePicture(new Camera.PictureCallback() {
+        boolean result = mCameraHelper.takePicture(new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 if (mIsDestroyed) return;
@@ -126,6 +131,10 @@ public class CameraActivity extends BaseActivity implements VideoCameraHelper.On
                     mAlarmAction.onPictureTaken(data);
             }
         });
+        if (!result) {
+            //抓拍失败
+            T.show("抓拍失败");
+            finish();
+        }
     }
-
 }

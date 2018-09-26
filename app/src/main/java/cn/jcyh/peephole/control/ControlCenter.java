@@ -39,9 +39,12 @@ public class ControlCenter {
     public static boolean sIsBinding;//标记是否正在绑定中
     public static boolean sIsLeaveMsgRecording;//标记是否正在留言中
     public static boolean sIsDownloadUpdate;//标记是否正在更新软件版本
+    public static boolean sIsFaceValing;//标记人脸识别中
+    public static int sCurrentBattery;
     private static IUserManager sUserManager;//猫眼用户管理
     private static IDoorbellManager sDoorbellManager;//猫眼信息管理
     private static IBCManager sBCManager;//猫眼硬件管理
+
 
     public static IUserManager getUserManager() {
         if (sUserManager == null) {
@@ -65,10 +68,10 @@ public class ControlCenter {
     }
 
     /**
-     * 获取imei
+     * 获取sn
      */
     @SuppressLint({"MissingPermission", "HardwareIds"})
-    public static String getIMEI() {
+    public static String getSN() {
 //        String simSerialNumber;
 //        try {
 //            //实例化TelephonyManager对象
@@ -92,9 +95,9 @@ public class ControlCenter {
         if (!NetworkUtil.isConnected()) return;
         final DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
         L.e("-------------connectNIM:" + doorbellConfig);
-        if (TextUtils.isEmpty(ControlCenter.getIMEI()) || "0123456789ABCDEF".equals(ControlCenter.getIMEI()))
+        if (TextUtils.isEmpty(ControlCenter.getSN()) || "0123456789ABCDEF".equals(ControlCenter.getSN()))
             return;
-        HttpAction.getHttpAction().initNIM(ControlCenter.getIMEI(), new IDataListener<Doorbell>() {
+        HttpAction.getHttpAction().initNIM(ControlCenter.getSN(), new IDataListener<Doorbell>() {
             @Override
             public void onSuccess(Doorbell doorbell) {
                 doorbellConfig.setDoorbell(doorbell);

@@ -68,8 +68,6 @@ public class SystemUpdateActivity extends BaseActivity implements UpdateSystemSe
                     showCurrentView();
                     if (mDownloadInfo == null) {
                         checkVersion();
-                    } else {
-                        //继续上次的下载
                     }
                 }
 
@@ -123,8 +121,10 @@ public class SystemUpdateActivity extends BaseActivity implements UpdateSystemSe
      * 安装
      */
     private void setup() {
-        // TODO: 2018/9/6 安装要求机子电量超过30%
-
+        if (ControlCenter.sCurrentBattery <= 30) {
+            T.show(R.string.battery_low_update_msg);
+            return;
+        }
         showProgressDialog();
         mUpdateBinder.installSystem();
     }

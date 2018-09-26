@@ -2,6 +2,7 @@ package cn.jcyh.peephole.http;
 
 import java.util.List;
 
+import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.entity.AdvertData;
 import cn.jcyh.peephole.entity.ConfigData;
 import cn.jcyh.peephole.entity.Doorbell;
@@ -10,6 +11,7 @@ import cn.jcyh.peephole.entity.User;
 import cn.jcyh.peephole.entity.Version;
 import cn.jcyh.peephole.http.download.ProgressHttpListener;
 import cn.jcyh.peephole.utils.NetworkUtil;
+import cn.jcyh.peephole.utils.T;
 
 /**
  * Created by jogger on 2018/1/10.
@@ -85,13 +87,21 @@ public class HttpAction extends BaseHttpAction {
      */
     @Deprecated
     public void getVersion(int versionCode, IDataListener<Version> listener) {
-        mHttpRequest.getVersion(versionCode,listener);
+        if (!NetworkUtil.isConnected()) {
+            T.show(R.string.network_is_not_available);
+            return;
+        }
+        mHttpRequest.getVersion(versionCode, listener);
     }
 
     /**
      * 获取版本信息
      */
     public void updatePatch(IDataListener<Version> listener) {
+        if (!NetworkUtil.isConnected()) {
+            T.show(R.string.network_is_not_available);
+            return;
+        }
         mHttpRequest.updatePatch(listener);
     }
 
@@ -121,6 +131,10 @@ public class HttpAction extends BaseHttpAction {
      * 获取绑定猫眼的用户列表
      */
     public void getBindUsers(String imei, IDataListener<List<User>> listener) {
+        if (!NetworkUtil.isConnected()) {
+            T.show(R.string.network_is_not_available);
+            return;
+        }
         mHttpRequest.getBindUsers(imei, listener);
     }
 

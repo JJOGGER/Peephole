@@ -39,7 +39,6 @@ public class AVChatObserver implements Observer<AVChatData> {
         ConfigData.VideoConfig videoConfig = ControlCenter.getDoorbellManager().getDoorbellConfig().getVideoConfig();
         long currentTimeMillis = System.currentTimeMillis();
         long lastVideoTime = ControlCenter.getDoorbellManager().getLastVideoTime();
-        L.e("-----------通话频率:" + (currentTimeMillis - lastVideoTime) + ":" + videoConfig.getVideoFrequencyLimit());
         if (currentTimeMillis - lastVideoTime < videoConfig.getVideoFrequencyLimit() * 1000) {
             //通话频率太快，超出服务器限制
             AVChatController avChatController = new AVChatController(Util.getApp(), avChatData);

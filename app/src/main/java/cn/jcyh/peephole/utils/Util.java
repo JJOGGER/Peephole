@@ -9,7 +9,6 @@ import android.text.TextUtils;
 
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechUtility;
-import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.auth.LoginInfo;
 import com.umeng.commonsdk.UMConfigure;
 
@@ -51,8 +50,6 @@ public class Util {
         SpeechUtility.createUtility(app, SpeechConstant.APPID + "=" + Config.AUDIO_APP_ID);
         //友盟
         UMConfigure.init(app, Config.UMENG_APP_KEY, null, UMConfigure.DEVICE_TYPE_PHONE, null);
-        //网易云信
-        NIMClient.init(app, loginInfo(), null);
         CacheUtil.init();
 //        JPushInterface.init(app);
 //        //初始化数据库

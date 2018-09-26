@@ -14,8 +14,8 @@ import com.google.gson.GsonBuilder;
 
 public class DoorbellConfig {
     //从本地取，如果为空，则去服务器取，如果有，存到本地，如果没有，创建，并保存到服务器
-    private static final String DEFAULT_RING = "ring/doorbell01.wav";
-    private static final String DEFAULT_ALARM = "alarm/alarm01.wav";
+    private static final String DEFAULT_RING = "ring/doorbell01.mp3";
+    private static final String DEFAULT_ALARM = "alarm/alarm01.mp3";
     private String nickName = "";
     private int doorbellNetPush = 1;
     private int doorbellVideoCall = 1;

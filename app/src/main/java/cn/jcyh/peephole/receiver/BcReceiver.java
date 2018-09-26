@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioService;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -37,8 +36,6 @@ public class BcReceiver extends BroadcastReceiver {
     private static final String RELEASED = "released";
     private static final String CLOSE = "close";
     private static final String OPEN = "open";
-    //    private Timer mTimer;
-//    private MyTimeTask mTimerTask;
     private int mSensorTime;
     private boolean mIsPlaying;
     private ExecutorService mExecutorService;
@@ -52,6 +49,7 @@ public class BcReceiver extends BroadcastReceiver {
         String act = intent.getAction();
         if (act == null) return;
         String extAct = intent.getStringExtra(Constant.VALUE);
+        L.e("------------act："+act);
         switch (act) {
             case LOCK_DETECT: { // TAMPER
                 tamperAction(extAct);
@@ -87,6 +85,7 @@ public class BcReceiver extends BroadcastReceiver {
     private void ringAction(Context context, String extAct) {
         if (AVChatProfile.getInstance().isAVChatting()) return;
         if (extAct.equals(PRESSED)) {
+            /*-------------------------------人脸声纹拓展start---------------------------*/
             //检测人脸识别
             Intent intent;
             boolean faceVali = ControlCenter.isFunctionUse(ExtendFunction.FUNCTION_FACE_VALI);
@@ -99,15 +98,13 @@ public class BcReceiver extends BroadcastReceiver {
                 //检测声纹识别
                 boolean audioVali = ControlCenter.isFunctionUse(ExtendFunction.FUNCTION_AUDIO_VALI);
                 if (audioVali) {
-                    if (ServiceUtil.isServiceRunning(AudioService.class))
-                        ServiceUtil.stopService(AudioService.class);
-                    intent = new Intent(context, AudioValiService.class);
-                    context.startService(intent);
+                    if (ServiceUtil.isServiceRunning(AudioValiService.class))
+                        ServiceUtil.stopService(AudioValiService.class);
+                    ServiceUtil.startService(AudioValiService.class);
                     return;
                 }
             }
-
-
+            /*-------------------------------人脸声纹拓展end---------------------------*/
             play(ControlCenter.DOORBELL_TYPE_RING);
             //启动播放服务后且服务未结束、抓拍界面未关闭时，不再重复抓拍
             if (!ControlCenter.sIsVideo) {
@@ -129,6 +126,7 @@ public class BcReceiver extends BroadcastReceiver {
      * 门磁
      */
     private void mageintAction(String extAct) {
+        L.e("------------extAct："+extAct);
         if (CLOSE.equals(extAct)) {
             T.show("门磁关闭");
         } else if (OPEN.equals(extAct)) {
@@ -155,11 +153,15 @@ public class BcReceiver extends BroadcastReceiver {
                 return;
             }
             mExecutorService.execute(sPirRunnable);
-//            mTimer = new Timer();
-//            mTimerTask = new MyTimeTask(context);
-//            mTimer.schedule(mTimerTask, 0, 1000);
         } else if (extAct.equals(PEOPLE_OUT)) {
             L.e("----- PIR中断:人走了");
+            boolean pirSensorOn = ControlCenter.getBCManager().getPIRSensorOn();//人体监控是否打开
+            if (!pirSensorOn) {
+                if (mExecutorService != null && !mExecutorService.isShutdown()) {
+                    mExecutorService.shutdown();
+                }
+                sPirRunnable = null;
+            }
         }
     }
 
@@ -264,6 +266,30 @@ public class BcReceiver extends BroadcastReceiver {
             boolean pirStatus = ControlCenter.getBCManager().getPIRStatus();
             if (pirStatus) {
                 //表示有人
+                /*-------------------------------人脸声纹拓展start---------------------------*/
+                //检测人脸识别
+                if (ControlCenter.sIsFaceValing) return;
+                Intent intent;
+                boolean faceVali = ControlCenter.isFunctionUse(ExtendFunction.FUNCTION_FACE_VALI);
+                if (faceVali) {
+                    intent = new Intent(mContext, ObjectDetectingActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    mContext.startActivity(intent);
+                    sPirRunnable = null;
+                    return;
+                } else {
+                    //检测声纹识别
+                    boolean audioVali = ControlCenter.isFunctionUse(ExtendFunction.FUNCTION_AUDIO_VALI);
+                    if (audioVali) {
+                        if (ServiceUtil.isServiceRunning(AudioValiService.class))
+                            ServiceUtil.stopService(AudioValiService.class);
+                        ServiceUtil.startService(AudioValiService.class);
+                        sPirRunnable = null;
+                        return;
+                    }
+                }
+                /*-------------------------------人脸声纹拓展end---------------------------*/
+
                 DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
                 if (doorbellConfig.getSensorRingAlarm() == 1) {
                     //开启了停留报警
@@ -271,7 +297,7 @@ public class BcReceiver extends BroadcastReceiver {
                 }
                 if (ControlCenter.sIsVideo || mIsPlaying) return;
                 ControlCenter.sIsVideo = true;
-                Intent intent = new Intent(mContext, CameraActivity.class);
+                intent = new Intent(mContext, CameraActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.putExtra(Constant.TYPE, DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_ALARM);
                 mContext.startActivity(intent);
@@ -279,12 +305,4 @@ public class BcReceiver extends BroadcastReceiver {
             sPirRunnable = null;
         }
     }
-
-//    private void cancelTimer() {
-//        mTimer.cancel();
-//        mTimer.purge();
-//        mTimer = null;
-//        mTimerTask.cancel();
-//        mTimerTask = null;
-//    }
 }
