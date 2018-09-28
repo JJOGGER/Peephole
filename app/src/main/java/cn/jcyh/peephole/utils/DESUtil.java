@@ -64,6 +64,12 @@ public class DESUtil {
                 try {
                     L.e("------------>file:" + enfilePath);
                     InputStream is = new FileInputStream(enfilePath);
+                    File parentFile = new File(deFilePath).getParentFile();
+                    L.e("--------parent："+parentFile.exists()+":"+parentFile.canRead()+parentFile.canWrite());
+                    if (!parentFile.exists()){
+                        boolean mkdirs = parentFile.mkdirs();
+                        L.e("------parentFile:"+mkdirs+":"+parentFile.exists());
+                    }
                     BufferedInputStream bis = new BufferedInputStream(is);
                     OutputStream os = new FileOutputStream(deFilePath);
                     BufferedOutputStream bos = new BufferedOutputStream(os);
@@ -80,7 +86,7 @@ public class DESUtil {
                     while ((r = bis.read(buffer)) >= 0) {
                         cos.write(buffer, 0, r);
                     }
-                    L.e("-----------解密");
+                    L.e("-----------解密"+new File(deFilePath).exists());
                     //删除原文件
                     file.delete();
                     cos.close();
@@ -88,14 +94,14 @@ public class DESUtil {
                     is.close();
 //                    bis.close();
 //                    bos.close();
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (listener != null) {
-                                listener.onSuccess(true);
-                            }
-                        }
-                    });
+//                    handler.post(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            if (listener != null) {
+//                                listener.onSuccess(true);
+//                            }
+//                        }
+//                    });
 
                 } catch (Exception e) {
                     e.printStackTrace();

@@ -20,10 +20,7 @@ import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.entity.DownloadInfo;
-import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.utils.APKUtil;
-import cn.jcyh.peephole.utils.DESUtil;
-import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.SPUtil;
 import cn.jcyh.peephole.utils.T;
 
@@ -199,41 +196,34 @@ public class UpdateSystemService extends Service {
 
         public void installSystem() {
             if (getLocalDownloadInfo().getCurrentState() == DownloadInfo.STATE_DOWNLOADED) {
+                Intent intent = new Intent("android.intent.action.ACTION_OTA_UPGRADE");
+                intent.putExtra(Constant.COMMAND_PATH, APKUtil.SYSTEM_PATCH_PATH);
+                sendBroadcast(intent);
                 //进行解密
-                DESUtil.decrypt(APKUtil.SYSTEM_PATCH_PATH_ENCRYPT, APKUtil.SYSTEM_PATCH_PATH, DESUtil.KEY, new IDataListener<Boolean>() {
-                    @Override
-                    public void onSuccess(Boolean decrypt) {
-                        if (decrypt) {
-                            //解密成功
-                            L.e("----------------解密成功。。。。。。。。");
-                            Intent intent = new Intent("android.intent.action.ACTION_OTA_UPGRADE");
-                            intent.putExtra(Constant.COMMAND_PATH, APKUtil.SYSTEM_PATCH_PATH);
-                            sendBroadcast(intent);
-//                    String oldVersionPath = APKUtil.getOldVersionPath();
-//                    //合成差分包
-//                    PatchUtil.patch(oldVersionPath, APKUtil.APK_PATH, APKUtil.SYSTEM_PATCH_PATH);
-//                    //启动安装
-//                    Intent intent = new Intent();
-//                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                    intent.setAction(android.content.Intent.ACTION_VIEW);
-//                    intent.setDataAndType(Uri.fromFile(new File(APKUtil.APK_PATH)),
-//                            "application/vnd.android.package-archive");
-//                    context.startActivity(intent);
-                            mListener.onEncryptSuccess();
-                        } else {
-                            T.show(R.string.download_file_des_failure);
-                            mDownloadInfo.setCurrentState(DownloadInfo.STATE_NO_DOWNLOAD);
-                            mListener.onEncryptFail();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(int errorCode, String desc) {
-                        T.show(R.string.download_file_des_failure);
-                        mDownloadInfo.setCurrentState(DownloadInfo.STATE_NO_DOWNLOAD);
-                        mListener.onEncryptFail();
-                    }
-                });
+//                DESUtil.decrypt(APKUtil.SYSTEM_PATCH_PATH_ENCRYPT, APKUtil.SYSTEM_PATCH_PATH, DESUtil.KEY, new IDataListener<Boolean>() {
+//                    @Override
+//                    public void onSuccess(Boolean decrypt) {
+//                        if (decrypt) {
+//                            //解密成功
+//                            L.e("----------------解密成功。。。。。。。。");
+//                            Intent intent = new Intent("android.intent.action.ACTION_OTA_UPGRADE");
+//                            intent.putExtra(Constant.COMMAND_PATH, APKUtil.SYSTEM_PATCH_PATH);
+//                            sendBroadcast(intent);
+//                            mListener.onEncryptSuccess();
+//                        } else {
+//                            T.show(R.string.download_file_des_failure);
+//                            mDownloadInfo.setCurrentState(DownloadInfo.STATE_NO_DOWNLOAD);
+//                            mListener.onEncryptFail();
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onFailure(int errorCode, String desc) {
+//                        T.show(R.string.download_file_des_failure);
+//                        mDownloadInfo.setCurrentState(DownloadInfo.STATE_NO_DOWNLOAD);
+//                        mListener.onEncryptFail();
+//                    }
+//                });
             }
         }
     }

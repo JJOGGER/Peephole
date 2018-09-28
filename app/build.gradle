@@ -23,7 +23,7 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags ""
-//生成多个版本的so文件
+                //生成多个版本的so文件
                 abiFilters "armeabi-v7a"
             }
         }

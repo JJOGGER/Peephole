@@ -73,7 +73,6 @@ public class SystemUpdateActivity extends BaseActivity implements UpdateSystemSe
 
                 @Override
                 public void onServiceDisconnected(ComponentName componentName) {
-                    L.e("----------onServiceDisconnected;" + mDownloadInfo.getCurrentState());
                     mUpdateBinder = null;
                 }
             };
@@ -88,8 +87,6 @@ public class SystemUpdateActivity extends BaseActivity implements UpdateSystemSe
         if (mUpdateBinder == null) return;
         switch (v.getId()) {
             case R.id.tv_check:
-                L.e("----mDownloadInfo:" + mDownloadInfo + "\n" +
-                        mUpdateBinder.getCurrentState());
                 if (mDownloadInfo == null) {
                     checkVersion();
                     return;
@@ -154,13 +151,13 @@ public class SystemUpdateActivity extends BaseActivity implements UpdateSystemSe
             public void onSuccess(Version version) {
                 cancelProgressDialog();
                 if (Integer.valueOf(version.getNumber()) > SystemUtil.getVersionCode()) {
-                    tvState.setText("可下载更新");
-                    tvCheck.setText("下载更新");
+                    tvState.setText(R.string.downloadable_update);
+                    tvCheck.setText(R.string.download_update);
                     mVersion = version;
                     mDownloadInfo = new DownloadInfo();
                     mDownloadInfo.setTitle(getString(R.string.system_updating));
                     mDownloadInfo.setDesc(getString(R.string.updating));
-                    mDownloadInfo.setSaveFilePath(APKUtil.SYSTEM_PATCH_PATH_ENCRYPT);
+                    mDownloadInfo.setSaveFilePath(APKUtil.SYSTEM_PATCH_PATH);
                     mDownloadInfo.setUrl(mVersion.getAddress());
                     mDownloadInfo.setType(DownloadInfo.TYPE_DOWNLOAD_SYSTEM_ID);
                     mDownloadInfo.setCurrentState(DownloadInfo.STATE_NO_DOWNLOAD);
@@ -235,8 +232,8 @@ public class SystemUpdateActivity extends BaseActivity implements UpdateSystemSe
     public void showCurrentView() {
         if (mUpdateBinder == null || mUpdateBinder.getLocalDownloadInfo() == null) {
             tvPro.setVisibility(View.GONE);
-            tvState.setText("当前已是最新版本");
-            tvState.setText("检查更新");
+            tvState.setText(R.string.current_newst_version);
+            tvState.setText(R.string.check_update);
             return;
         }
         int currentState = mUpdateBinder.getLocalDownloadInfo().getCurrentState();
@@ -244,31 +241,31 @@ public class SystemUpdateActivity extends BaseActivity implements UpdateSystemSe
             case DownloadInfo.STATE_NO_DOWNLOAD:
                 tvPro.setVisibility(View.GONE);
                 tvCheck.setVisibility(View.VISIBLE);
-                tvCheck.setText("下载更新");
-                tvState.setText("可下载更新");
+                tvCheck.setText(R.string.download_update);
+                tvState.setText(R.string.downloadable_update);
                 llBottom.setVisibility(View.GONE);
                 endProAnim();
                 break;
             case DownloadInfo.STATE_DOWNLOADING:
                 startProAnim();
                 tvPro.setVisibility(View.VISIBLE);
-                tvState.setText("正在下载");
-                tvCheck.setText("取消");
+                tvState.setText(R.string.downloading);
+                tvCheck.setText(R.string.cancel);
                 break;
             case DownloadInfo.STATE_DOWNLOAD_PAUSE:
-                tvState.setText("下载已暂停");
-                tvCheck.setText("取消");
+                tvState.setText(R.string.download_pause);
+                tvCheck.setText(R.string.cancel);
                 endProAnim();
                 break;
             case DownloadInfo.STATE_DOWNLOADED:
-                tvState.setText("下载完成");
+                tvState.setText(R.string.download_completed);
                 tvPro.setVisibility(View.VISIBLE);
                 tvPro.setText("100%");
                 tvCheck.setVisibility(View.GONE);
                 llBottom.setVisibility(View.VISIBLE);
                 endProAnim();
                 //判断文件是否存在
-                File file = new File(APKUtil.SYSTEM_PATCH_PATH_ENCRYPT);
+                File file = new File(APKUtil.SYSTEM_PATCH_PATH);
                 if (!file.exists()) {
                     mDownloadInfo.setCurrentState(DownloadInfo.STATE_NO_DOWNLOAD);
                     showCurrentView();

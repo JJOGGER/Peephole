@@ -167,4 +167,30 @@ public class AVChatConfigs {
     public AVChatParameters getAvChatParameters() {
         return avChatParameters;
     }
+
+    @Override
+    public String toString() {
+        return "AVChatConfigs{" +
+                "avChatParameters=" + avChatParameters +
+                ", context=" + context +
+                ", videoCropRatio=" + videoCropRatio +
+                ", videoAutoRotate=" + videoAutoRotate +
+                ", videoQuality=" + videoQuality +
+                ", serverRecordAudio=" + serverRecordAudio +
+                ", serverRecordVideo=" + serverRecordVideo +
+                ", defaultFrontCamera=" + defaultFrontCamera +
+                ", autoCallProximity=" + autoCallProximity +
+                ", videoHwEncoderMode=" + videoHwEncoderMode +
+                ", videoHwDecoderMode=" + videoHwDecoderMode +
+                ", videoFpsReported=" + videoFpsReported +
+                ", audioEffectAecMode=" + audioEffectAecMode +
+                ", audioEffectNsMode=" + audioEffectNsMode +
+                ", videoMaxBitrate=" + videoMaxBitrate +
+                ", deviceDefaultRotation=" + deviceDefaultRotation +
+                ", deviceRotationOffset=" + deviceRotationOffset +
+                ", audioHighQuality=" + audioHighQuality +
+                ", audioDtx=" + audioDtx +
+                ", frameRate=" + frameRate +
+                '}';
+    }
 }

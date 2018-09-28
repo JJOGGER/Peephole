@@ -221,6 +221,11 @@
     <string name="immediately_setup">立即安装</string>
     <string name="setup_wait">稍后安装</string>
     <string name="battery_low_update_msg">升级需保证电量30%以上</string>
+    <string name="downloadable_update">可下载更新</string>
+    <string name="downloading">正在下载</string>
+    <string name="download_pause">下载已暂停</string>
+    <string name="download_completed">下载完成</string>
+    <string name="current_newst_version">当前已是最新版本</string>
 
     <!--                   系统设置end             -->
     <!--<string name="date_week_format">%d年%d月%d日&#160;%s</string>-->

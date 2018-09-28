@@ -129,6 +129,14 @@ public class AVChatController {
                 isCallEstablish.set(true);
 //                AVChatManager.getInstance().muteLocalVideo(false);
                 callback.onSuccess(aVoid);
+
+
+
+                L.e("----currentZoom:"+mVideoCapturer.getCurrentZoom()+
+                        ";maxZoom:"+mVideoCapturer.getMaxZoom()+
+                        ";hasMultipleCameras:"+AVChatCameraCapturer.hasMultipleCameras());
+//                AVChatManager.getInstance().getParameters(AVChatParameters.)
+//                L.e("----"+);
             }
 
             @Override

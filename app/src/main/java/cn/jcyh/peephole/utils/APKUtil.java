@@ -21,8 +21,8 @@ public class APKUtil {
 //    public static final String APK_PATH = FileUtil.getAPKPath() + File.separator + ".peephole.apk";
     public static final String APK_PATH = FileUtil.getAPKPath() + File.separator + ".peephole.apk";//合成差分包后新包存储路径
     public static final String APK_PATCH_PATH = FileUtil.getAPKPath() + File.separator + ".peephole.patch";//差分包存储路径
-    public static final String SYSTEM_PATCH_PATH_ENCRYPT = FileUtil.getAPKPath() + File.separator + ".update.encrypt";//加密差分包存储路径
-    public static final String SYSTEM_PATCH_PATH = "/storage/sdcard1" + File.separator + Util.getApp().getPackageName() + File.separator + ".update.zip";//差分包存储路径
+    public static final String SYSTEM_PATCH_PATH = FileUtil.getAPKPath() + File.separator + "update.zip";//差分包存储路径
+//    public static final String SYSTEM_PATCH_PATH = "/storage/sdcard1/Android/data" + File.separator + Util.getApp().getPackageName() + File.separator + "update.zip";//差分包存储路径
 //    public static final String SYSTEM_PATCH_PATH="/storage/sdcard1/Download/update.zip"
 
     /**

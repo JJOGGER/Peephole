@@ -19,7 +19,6 @@ import cn.jcyh.peephole.service.UpdateSoftService;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.HintDialogFragmemt;
 import cn.jcyh.peephole.utils.APKUtil;
-import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.SystemUtil;
 import cn.jcyh.peephole.utils.T;
 
@@ -47,7 +46,7 @@ public class AboutActivity extends BaseActivity {
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int heightPixels = displayMetrics.heightPixels;
         int widthPixels = displayMetrics.widthPixels;
-        tvVersionCode.setText(SystemUtil.getVersionName()+widthPixels+"x"+heightPixels);
+        tvVersionCode.setText(SystemUtil.getVersionName() + "_" + widthPixels + "x" + heightPixels);
     }
 
 
@@ -55,10 +54,6 @@ public class AboutActivity extends BaseActivity {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tv_wifi_update:
-//                if (ControlCenter.sIsDownloadUpdate) {
-//                    T.show(R.string.updating);
-//                    return;
-//                }
                 checkUpdate();
                 break;
         }
@@ -68,7 +63,6 @@ public class AboutActivity extends BaseActivity {
      * 检查更新
      */
     private void checkUpdate() {
-//        if (ControlCenter.getNewVersion() == null) {
         showProgressDialog();
         HttpAction.getHttpAction().updatePatch(new IDataListener<Version>() {
             @Override
@@ -76,7 +70,6 @@ public class AboutActivity extends BaseActivity {
                 cancelProgressDialog();
                 try {
                     if (Integer.valueOf(version.getNumber()) > SystemUtil.getVersionCode()) {
-//                        ControlCenter.setNewVersion(version);
                         update(version);
                     } else {
                         T.show(R.string.no_new_version);
@@ -84,23 +77,14 @@ public class AboutActivity extends BaseActivity {
                 } catch (Exception e) {
                     T.show(R.string.no_new_version);
                 }
-
-//                    else {
-//                        ControlCenter.setNewVersion(null);
-//                    }
-//                    startNewActivity(AppUpdateActivity.class);
             }
 
             @Override
             public void onFailure(int errorCode, String desc) {
                 cancelProgressDialog();
                 T.show(desc);
-                L.e("--------------error:" + errorCode);
             }
         });
-//        } else {
-//            startNewActivity(AppUpdateActivity.class);
-//        }
     }
 
     private void update(final Version version) {
@@ -129,22 +113,4 @@ public class AboutActivity extends BaseActivity {
         mUpdateDialog.commit();
 
     }
-//
-//    private void getsystem() {
-//        mAndroid = android.os.Build.VERSION.RELEASE;
-//        mBuildNumber = android.os.Build.MODEL;
-//    }
-//
-//    private void initData() {
-//
-//        String title[] = getResources().getStringArray(R.array.aboutlist_item);
-//        String get_data[] = {mAndroid, mBuildNumber, ""};
-//        dataList = new ArrayList<Map<String, Object>>();
-//        for (int i = 0; i < title.length; i++) {
-//            Map<String, Object> map = new HashMap<String, Object>();
-//            map.put("title", title[i]);
-//            map.put("get_data", get_data[i]);
-//            dataList.add(map);
-//        }
-//    }
 }

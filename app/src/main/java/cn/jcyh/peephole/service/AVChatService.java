@@ -243,6 +243,7 @@ public class AVChatService extends Service {
         public void onCallEstablished() {
 //            //移除超时监听
             AVChatTimeoutObserver.getInstance().observeTimeoutNotification(mTimeoutObserver, false, true);
+
         }
 
         @Override

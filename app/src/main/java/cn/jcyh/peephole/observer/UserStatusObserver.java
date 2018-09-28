@@ -3,6 +3,7 @@ package cn.jcyh.peephole.observer;
 import com.netease.nimlib.sdk.Observer;
 import com.netease.nimlib.sdk.StatusCode;
 
+import cn.jcyh.peephole.event.online.OnlineStateEventManager;
 import cn.jcyh.peephole.utils.L;
 
 /**
@@ -28,6 +29,7 @@ public class UserStatusObserver implements Observer<StatusCode> {
             L.e("----------正在同步数据");
         } else if (statusCode == StatusCode.LOGINED) {
             L.e("----------已成功登录");
+            OnlineStateEventManager.publishOnlineStateEvent();
         } else if (statusCode == StatusCode.KICKOUT) {
             L.e("----------被其他端的登录踢掉");
         } else if (statusCode == StatusCode.KICK_BY_OTHER_CLIENT) {

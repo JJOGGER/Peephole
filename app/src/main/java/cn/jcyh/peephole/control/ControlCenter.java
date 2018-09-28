@@ -94,7 +94,6 @@ public class ControlCenter {
     public static void connectNIM() {
         if (!NetworkUtil.isConnected()) return;
         final DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
-        L.e("-------------connectNIM:" + doorbellConfig);
         if (TextUtils.isEmpty(ControlCenter.getSN()) || "0123456789ABCDEF".equals(ControlCenter.getSN()))
             return;
         HttpAction.getHttpAction().initNIM(ControlCenter.getSN(), new IDataListener<Doorbell>() {
@@ -108,7 +107,6 @@ public class ControlCenter {
 
             @Override
             public void onFailure(int errorCode, String desc) {
-                L.e("--------errorCode:" + errorCode);
                 if (doorbellConfig.getDoorbell() != null) {
                     LoginInfo info =
                             new LoginInfo(doorbellConfig.getDoorbell().getDeviceUserId(), doorbellConfig.getDoorbell().getToken());

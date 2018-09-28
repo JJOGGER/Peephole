@@ -431,6 +431,7 @@
             android:layout_marginTop="2dp"
             android:background="@color/gray_dedede"/>
         <RelativeLayout
+            android:visibility="gone"
             android:id="@+id/rl_extend_function"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
