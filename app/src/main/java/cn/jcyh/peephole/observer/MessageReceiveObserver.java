@@ -33,6 +33,7 @@ public class MessageReceiveObserver implements Observer<List<IMMessage>> {
             IMMessage imMessage = imMessages.get(i);
             NIMMessageAction nimMessageAction = new NIMMessageAction();
             if (imMessage.getMsgType() == MsgTypeEnum.text) {
+                // TODO: 2018/9/30 必须是猫眼的绑定用户才可以做操作
                 L.e("----->内容：" + imMessages.get(i).getContent() + "，来自：" + imMessages.get(i).getFromAccount()
                         + ",消息类型：" + imMessages.get(i).getMsgType());
                 //指令消息处理

@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -146,10 +147,16 @@ public class SystemUpdateActivity extends BaseActivity implements UpdateSystemSe
         }
         showProgressDialog(getString(R.string.check_update_msg));
         //检查版本
-        HttpAction.getHttpAction().getVersion(SystemUtil.getVersionCode(), new IDataListener<Version>() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int heightPixels = displayMetrics.heightPixels;
+        int widthPixels = displayMetrics.widthPixels;
+        String solutions = widthPixels + "x" + heightPixels;
+        HttpAction.getHttpAction().updateSystem(SystemUtil.getVersionCode(), SystemUtil.getSystemVersion(), solutions, new IDataListener<Version>() {
             @Override
             public void onSuccess(Version version) {
                 cancelProgressDialog();
+                L.e("-------------------version:"+version);
                 if (Integer.valueOf(version.getNumber()) > SystemUtil.getVersionCode()) {
                     tvState.setText(R.string.downloadable_update);
                     tvCheck.setText(R.string.download_update);
@@ -187,7 +194,6 @@ public class SystemUpdateActivity extends BaseActivity implements UpdateSystemSe
         if (isDestroyed() || isFinishing() || getSupportFragmentManager() == null) return;
         tvPro.setVisibility(View.VISIBLE);
         tvPro.setText(pro + "%");
-        L.e("----------设置进度条");
     }
 
     @Override

@@ -203,82 +203,82 @@
                 android:textSize="12sp"/>
         </RelativeLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="16dp"
-            android:paddingTop="4dp"
-            android:text="@string/number"
-            android:textColor="@color/black_333333"
-            android:textSize="14sp"/>
+        <!--<TextView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:paddingLeft="16dp"-->
+            <!--android:paddingTop="4dp"-->
+            <!--android:text="@string/number"-->
+            <!--android:textColor="@color/black_333333"-->
+            <!--android:textSize="14sp"/>-->
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginTop="2dp"
-            android:background="@color/gray_dedede"/>
+        <!--<View-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="1dp"-->
+            <!--android:layout_marginLeft="16dp"-->
+            <!--android:layout_marginRight="16dp"-->
+            <!--android:layout_marginTop="2dp"-->
+            <!--android:background="@color/gray_dedede"/>-->
 
-        <RelativeLayout
-            android:id="@+id/rl_master_number"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        <!--<RelativeLayout-->
+            <!--android:id="@+id/rl_master_number"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content">-->
 
-            <TextView
-                android:id="@+id/tv_master_number_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="16dp"
-                android:paddingTop="4dp"
-                android:text="@string/master_number"
-                android:textColor="@color/black_333333"
-                android:textSize="16sp"/>
+            <!--<TextView-->
+                <!--android:id="@+id/tv_master_number_title"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:paddingLeft="16dp"-->
+                <!--android:paddingTop="4dp"-->
+                <!--android:text="@string/master_number"-->
+                <!--android:textColor="@color/black_333333"-->
+                <!--android:textSize="16sp"/>-->
 
-            <TextView
-                android:id="@+id/tv_master_number"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/tv_master_number_title"
-                android:paddingLeft="16dp"
-                android:text="111"
-                android:textColor="@color/gray_555555"
-                android:textSize="12sp"/>
-        </RelativeLayout>
+            <!--<TextView-->
+                <!--android:id="@+id/tv_master_number"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_below="@id/tv_master_number_title"-->
+                <!--android:paddingLeft="16dp"-->
+                <!--android:text="111"-->
+                <!--android:textColor="@color/gray_555555"-->
+                <!--android:textSize="12sp"/>-->
+        <!--</RelativeLayout>-->
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0.5dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginTop="2dp"
-            android:background="@color/gray_dedede"/>
+        <!--<View-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="0.5dp"-->
+            <!--android:layout_marginLeft="16dp"-->
+            <!--android:layout_marginRight="16dp"-->
+            <!--android:layout_marginTop="2dp"-->
+            <!--android:background="@color/gray_dedede"/>-->
 
-        <RelativeLayout
-            android:id="@+id/rl_sos_number"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        <!--<RelativeLayout-->
+            <!--android:id="@+id/rl_sos_number"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content">-->
 
-            <TextView
-                android:id="@+id/tv_sos_number_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="16dp"
-                android:paddingTop="4dp"
-                android:text="@string/sos_number"
-                android:textColor="@color/black_333333"
-                android:textSize="16sp"/>
+            <!--<TextView-->
+                <!--android:id="@+id/tv_sos_number_title"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:paddingLeft="16dp"-->
+                <!--android:paddingTop="4dp"-->
+                <!--android:text="@string/sos_number"-->
+                <!--android:textColor="@color/black_333333"-->
+                <!--android:textSize="16sp"/>-->
 
-            <TextView
-                android:id="@+id/tv_sos_number"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/tv_sos_number_title"
-                android:paddingLeft="16dp"
-                android:text="111"
-                android:textColor="@color/gray_555555"
-                android:textSize="12sp"/>
-        </RelativeLayout>
+            <!--<TextView-->
+                <!--android:id="@+id/tv_sos_number"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_below="@id/tv_sos_number_title"-->
+                <!--android:paddingLeft="16dp"-->
+                <!--android:text="111"-->
+                <!--android:textColor="@color/gray_555555"-->
+                <!--android:textSize="12sp"/>-->
+        <!--</RelativeLayout>-->
 
         <TextView
             android:layout_width="wrap_content"

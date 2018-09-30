@@ -85,24 +85,42 @@ public class HttpAction extends BaseHttpAction {
     /**
      * 获取版本信息
      */
-    @Deprecated
-    public void getVersion(int versionCode, IDataListener<Version> listener) {
+    public void getSysVersion(int versionCode, String sysVersion, String screenResolution, IDataListener<Version> listener) {
         if (!NetworkUtil.isConnected()) {
             T.show(R.string.network_is_not_available);
             return;
         }
-        mHttpRequest.getVersion(versionCode, listener);
+        mHttpRequest.getSysVersion(versionCode, sysVersion, screenResolution, listener);
     }
 
     /**
      * 获取版本信息
      */
-    public void updatePatch(IDataListener<Version> listener) {
+    public void updatePatch(String sysVersion, String screenResolution, IDataListener<Version> listener) {
         if (!NetworkUtil.isConnected()) {
             T.show(R.string.network_is_not_available);
             return;
         }
-        mHttpRequest.updatePatch(listener);
+        mHttpRequest.updatePatch(sysVersion, screenResolution, listener);
+    }
+
+    public void updateSystem(int versionCode, String sysVersion, String screenResolution, IDataListener<Version> listener) {
+        if (!NetworkUtil.isConnected()) {
+            T.show(R.string.network_is_not_available);
+            return;
+        }
+        mHttpRequest.updateSystem(versionCode,sysVersion, screenResolution, listener);
+    }
+
+    /**
+     * 获取版本信息
+     */
+    public void updateSoft( String sysVersion, String screenResolution, IDataListener<Version> listener) {
+        if (!NetworkUtil.isConnected()) {
+            T.show(R.string.network_is_not_available);
+            return;
+        }
+        mHttpRequest.updateSoft( sysVersion, screenResolution, listener);
     }
 
     /**

@@ -110,58 +110,58 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
                 L.e("--------------设置参数错误");
             }
             Size captureSize = mCamera.getParameters().getPreviewSize();
-            L.e("-----getPreviewFormat:" + parameters.getPreviewFormat() + ";\n"
-                    + "getExposureCompensation:" + parameters.getExposureCompensation() + ";\n"
-                    + "getWhiteBalance:" + parameters.getWhiteBalance() + ";\n"
-                    + "getPreviewFormat:" + parameters.getPreviewFormat() + ";\n"
-                    + "getAntibanding:" + parameters.getAntibanding() + ";\n"
-                    + "getColorEffect:" + parameters.getColorEffect() + ";\n"
-                    + "getFlashMode:" + parameters.getFlashMode() + ";\n"
-                    + "getFocusMode:" + parameters.getFocusMode() + ";\n"
-                    + "getSceneMode:" + parameters.getSceneMode() + ";\n"
-                    + "getAutoExposureLock:" + parameters.getAutoExposureLock() + ";\n"
-                    + "getAutoWhiteBalanceLock:" + parameters.getAutoWhiteBalanceLock() + ";\n" +
-                    "getExposureCompensationStep:" + parameters.getExposureCompensationStep() + ";\n" +
-                    "getFocalLength:" + parameters.getFocalLength() + ";\n" +
-                    "getFocusAreas:" + parameters.getFocusAreas() + ";\n" +
-                    "getHorizontalViewAngle:" + parameters.getHorizontalViewAngle() + ";\n" +
-                    "getJpegQuality:" + parameters.getJpegQuality() + ";\n" +
-                    "getJpegThumbnailQuality:" + parameters.getJpegThumbnailQuality() + ";\n" +
-                    "getJpegThumbnailSize w:" + parameters.getJpegThumbnailSize().width + ";\n" +
-                    "getJpegThumbnailSize h:" + parameters.getJpegThumbnailSize().height + ";\n" +
-                    "getMaxExposureCompensation:" + parameters.getMaxExposureCompensation() + ";\n" +
-                    "getMaxNumDetectedFaces:" + parameters.getMaxNumDetectedFaces() + ";\n" +
-                    "getMaxNumFocusAreas:" + parameters.getMaxNumFocusAreas() + ";\n" +
-                    "getMaxNumMeteringAreas:" + parameters.getMaxNumMeteringAreas() + ";\n" +
-                    "getMaxZoom:" + parameters.getMaxZoom() + ";\n" +
-                    "getMeteringAreas:" + parameters.getMeteringAreas() + ";\n" +
-                    "getMinExposureCompensation:" + parameters.getMinExposureCompensation() + ";\n" +
-                    "getPictureFormat:" + parameters.getPictureFormat() + ";\n" +
-                    "getPictureSize w:" + parameters.getPictureSize().width + ";\n" +
-                    "getPictureSize h:" + parameters.getPictureSize().height + ";\n" +
-                    "getPreferredPreviewSizeForVideo w:" + parameters.getPreferredPreviewSizeForVideo().width + ";\n" +
-                    "getPreferredPreviewSizeForVideo h:" + parameters.getPreferredPreviewSizeForVideo().height + ";\n" +
-                    "getPreviewSize w:" + parameters.getPreviewSize().width + ";\n" +
-                    "getPreviewSize h:" + parameters.getPreviewSize().height + ";\n" +
-                    "getSupportedAntibanding:" + parameters.getSupportedAntibanding() + ";\n" +
-                    "getSupportedColorEffects:" + parameters.getSupportedColorEffects() + ";\n" +
-                    "getSupportedFlashModes:" + parameters.getSupportedFlashModes() + ";\n" +
-                    "getSupportedFocusModes:" + parameters.getSupportedFocusModes() + ";\n" +
-                    "getSupportedJpegThumbnailSizes:" + parameters.getSupportedJpegThumbnailSizes() + ";\n" +
-                    "getSupportedPictureFormats:" + parameters.getSupportedPictureFormats() + ";\n" +
-                    "getSupportedPictureSizes:" + parameters.getSupportedPictureSizes() + ";\n" +
-                    "getSupportedPreviewFormats:" + parameters.getSupportedPreviewFormats() + ";\n" +
-                    "getSupportedPreviewFpsRange:" + parameters.getSupportedPreviewFpsRange() + ";\n" +
-                    "getSupportedPreviewSizes:" + parameters.getSupportedPreviewSizes() + ";\n" +
-                    "getSupportedSceneModes:" + parameters.getSupportedSceneModes() + ";\n" +
-                    "getSupportedVideoSizes:" + parameters.getSupportedVideoSizes() + ";\n" +
-                    "getSupportedWhiteBalance:" + parameters.getSupportedWhiteBalance() + ";\n" +
-                    "getVerticalViewAngle:" + parameters.getVerticalViewAngle() + ";\n" +
-                    "getVideoStabilization:" + parameters.getVideoStabilization() + ";\n" +
-                    "getZoom:" + parameters.getZoom() + ";\n" +
-                    "getZoomRatios:" + parameters.getZoomRatios() + ";\n" +
-                    "getPreviewFrameRate:" + parameters.getPreviewFrameRate()
-            );
+//            L.e("-----getPreviewFormat:" + parameters.getPreviewFormat() + ";\n"
+//                    + "getExposureCompensation:" + parameters.getExposureCompensation() + ";\n"
+//                    + "getWhiteBalance:" + parameters.getWhiteBalance() + ";\n"
+//                    + "getPreviewFormat:" + parameters.getPreviewFormat() + ";\n"
+//                    + "getAntibanding:" + parameters.getAntibanding() + ";\n"
+//                    + "getColorEffect:" + parameters.getColorEffect() + ";\n"
+//                    + "getFlashMode:" + parameters.getFlashMode() + ";\n"
+//                    + "getFocusMode:" + parameters.getFocusMode() + ";\n"
+//                    + "getSceneMode:" + parameters.getSceneMode() + ";\n"
+//                    + "getAutoExposureLock:" + parameters.getAutoExposureLock() + ";\n"
+//                    + "getAutoWhiteBalanceLock:" + parameters.getAutoWhiteBalanceLock() + ";\n" +
+//                    "getExposureCompensationStep:" + parameters.getExposureCompensationStep() + ";\n" +
+//                    "getFocalLength:" + parameters.getFocalLength() + ";\n" +
+//                    "getFocusAreas:" + parameters.getFocusAreas() + ";\n" +
+//                    "getHorizontalViewAngle:" + parameters.getHorizontalViewAngle() + ";\n" +
+//                    "getJpegQuality:" + parameters.getJpegQuality() + ";\n" +
+//                    "getJpegThumbnailQuality:" + parameters.getJpegThumbnailQuality() + ";\n" +
+//                    "getJpegThumbnailSize w:" + parameters.getJpegThumbnailSize().width + ";\n" +
+//                    "getJpegThumbnailSize h:" + parameters.getJpegThumbnailSize().height + ";\n" +
+//                    "getMaxExposureCompensation:" + parameters.getMaxExposureCompensation() + ";\n" +
+//                    "getMaxNumDetectedFaces:" + parameters.getMaxNumDetectedFaces() + ";\n" +
+//                    "getMaxNumFocusAreas:" + parameters.getMaxNumFocusAreas() + ";\n" +
+//                    "getMaxNumMeteringAreas:" + parameters.getMaxNumMeteringAreas() + ";\n" +
+//                    "getMaxZoom:" + parameters.getMaxZoom() + ";\n" +
+//                    "getMeteringAreas:" + parameters.getMeteringAreas() + ";\n" +
+//                    "getMinExposureCompensation:" + parameters.getMinExposureCompensation() + ";\n" +
+//                    "getPictureFormat:" + parameters.getPictureFormat() + ";\n" +
+//                    "getPictureSize w:" + parameters.getPictureSize().width + ";\n" +
+//                    "getPictureSize h:" + parameters.getPictureSize().height + ";\n" +
+//                    "getPreferredPreviewSizeForVideo w:" + parameters.getPreferredPreviewSizeForVideo().width + ";\n" +
+//                    "getPreferredPreviewSizeForVideo h:" + parameters.getPreferredPreviewSizeForVideo().height + ";\n" +
+//                    "getPreviewSize w:" + parameters.getPreviewSize().width + ";\n" +
+//                    "getPreviewSize h:" + parameters.getPreviewSize().height + ";\n" +
+//                    "getSupportedAntibanding:" + parameters.getSupportedAntibanding() + ";\n" +
+//                    "getSupportedColorEffects:" + parameters.getSupportedColorEffects() + ";\n" +
+//                    "getSupportedFlashModes:" + parameters.getSupportedFlashModes() + ";\n" +
+//                    "getSupportedFocusModes:" + parameters.getSupportedFocusModes() + ";\n" +
+//                    "getSupportedJpegThumbnailSizes:" + parameters.getSupportedJpegThumbnailSizes() + ";\n" +
+//                    "getSupportedPictureFormats:" + parameters.getSupportedPictureFormats() + ";\n" +
+//                    "getSupportedPictureSizes:" + parameters.getSupportedPictureSizes() + ";\n" +
+//                    "getSupportedPreviewFormats:" + parameters.getSupportedPreviewFormats() + ";\n" +
+//                    "getSupportedPreviewFpsRange:" + parameters.getSupportedPreviewFpsRange() + ";\n" +
+//                    "getSupportedPreviewSizes:" + parameters.getSupportedPreviewSizes() + ";\n" +
+//                    "getSupportedSceneModes:" + parameters.getSupportedSceneModes() + ";\n" +
+//                    "getSupportedVideoSizes:" + parameters.getSupportedVideoSizes() + ";\n" +
+//                    "getSupportedWhiteBalance:" + parameters.getSupportedWhiteBalance() + ";\n" +
+//                    "getVerticalViewAngle:" + parameters.getVerticalViewAngle() + ";\n" +
+//                    "getVideoStabilization:" + parameters.getVideoStabilization() + ";\n" +
+//                    "getZoom:" + parameters.getZoom() + ";\n" +
+//                    "getZoomRatios:" + parameters.getZoomRatios() + ";\n" +
+//                    "getPreviewFrameRate:" + parameters.getPreviewFrameRate()
+//            );
             int bufSize = captureSize.width * captureSize.height * ImageFormat.getBitsPerPixel(ImageFormat.NV21) / 8;
             for (int i = 0; i < iCaptureBuffers; i++) {
                 mCamera.addCallbackBuffer(new byte[bufSize]);
@@ -481,7 +481,6 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
         mRecorder.setCamera(mCamera);
         mRecorder.reset();
         int index = bestVideoSize(mVideoSizeList, mPrviewSizeList.get(0).width);
-        L.e("-------------.>>" + mPrviewSizeList.get(0).width);
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);//设置采集声音
         mRecorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);//设置采集图像
         //2.设置视频，音频的输出格式

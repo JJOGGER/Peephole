@@ -57,14 +57,12 @@ public class AVChatService extends Service {
             AudioManager audioManager = (AudioManager) Util.getApp().getSystemService(Context.AUDIO_SERVICE);
             assert audioManager != null;
             int streamVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
-            L.e("-----------streamVolume:" + streamVolume);
+            L.i("streamVolume:" + streamVolume);
             if (streamVolume != CURRENT_AUDIO_VOLUME) {
                 audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, CURRENT_AUDIO_VOLUME, 0);
-            } else {
-                cancelTimer();
             }
             streamVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
-            L.e("-----------streamVolume:" + streamVolume);
+            L.i("streamVolume:" + streamVolume);
 
         }
     };

@@ -48,7 +48,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, intentAlarm, 0);
         assert alarmManager != null;
         alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()
-                + 3000 * 60, pi);
+                + 4000 * 60, pi);
 //        SystemUtil.wakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP |
 //                PowerManager.PARTIAL_WAKE_LOCK);
     }

@@ -75,6 +75,13 @@ public class SystemUtil {
         return packageName;
     }
 
+    /**
+     * 获取当前手机系统版本号     *     * @return  系统版本号
+     */
+    public static String getSystemVersion() {
+        return android.os.SystemProperties.get("ro.build.custswversion", "");
+    }
+
     public static String getANDROID_ID() {
         return Settings.System.getString(Util.getApp().getContentResolver(), Settings.System.ANDROID_ID);
 

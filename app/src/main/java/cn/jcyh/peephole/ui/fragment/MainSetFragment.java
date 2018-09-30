@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.RelativeLayout;
@@ -64,10 +63,10 @@ public class MainSetFragment extends BaseFragment {
     TextView tvSensorSetTitle;
     @BindView(R.id.tv_sensor_set)
     TextView tvSensorSet;
-    @BindView(R.id.tv_master_number)
-    TextView tvMasterNumber;
-    @BindView(R.id.tv_sos_number)
-    TextView tvSOSNumber;
+//    @BindView(R.id.tv_master_number)
+//    TextView tvMasterNumber;
+//    @BindView(R.id.tv_sos_number)
+//    TextView tvSOSNumber;
     @BindView(R.id.tv_doorbell_videotap_time)
     TextView tvDoorbellVideotapTime;
     @BindView(R.id.tv_doorbell_look_time)
@@ -93,7 +92,9 @@ public class MainSetFragment extends BaseFragment {
     }
 
     @OnClick({R.id.rl_doorbell_set, R.id.rl_sensor_set, R.id.rl_monitor, R.id.rl_sensor_time,
-            R.id.rl_ring_volume, R.id.rl_master_number, R.id.rl_sos_number, R.id.rl_doorbell_leavel_time, R.id.rl_doorbell_videotap_time,
+            R.id.rl_ring_volume,
+//            R.id.rl_master_number, R.id.rl_sos_number,
+            R.id.rl_doorbell_leavel_time, R.id.rl_doorbell_videotap_time,
             R.id.rl_doorbell_look_time,
             R.id.rl_extend_function
     })
@@ -128,12 +129,12 @@ public class MainSetFragment extends BaseFragment {
                 transaction.hide(mFragmentManager.findFragmentByTag(MainSetFragment.class.getName()));
                 transaction.commit();
                 break;
-            case R.id.rl_master_number://主人号码
-                showMasterNumberDialog();
-                break;
-            case R.id.rl_sos_number://sos
-                showSOSDialog();
-                break;
+//            case R.id.rl_master_number://主人号码
+//                showMasterNumberDialog();
+//                break;
+//            case R.id.rl_sos_number://sos
+//                showSOSDialog();
+//                break;
             case R.id.rl_doorbell_leavel_time://留言时间
                 showLeavelTimeDialog();
                 break;
@@ -252,60 +253,60 @@ public class MainSetFragment extends BaseFragment {
     /**
      * 主人号码
      */
-    private void showMasterNumberDialog() {
-        if (mMasterNumberDialog == null) {
-            CommonEditDialog commonEditDialog = new CommonEditDialog();
-            commonEditDialog.setTitle(getString(R.string.master_number));
-            if (!TextUtils.isEmpty(mDoorbellConfig.getMasterNumber())) {
-                commonEditDialog.setContent(mDoorbellConfig.getMasterNumber());
-            }
-            commonEditDialog.setOnDialogListener(new OnDialogListener() {
-                @Override
-                public void onConfirm(Object o) {
-                    if (!o.toString().matches(getString(R.string.regex_phone))) {
-                        T.show(getString(R.string.phone_no_regex));
-                        return;
-                    }
-                    mDoorbellConfig.setMasterNumber(o.toString());
-                    tvMasterNumber.setText(o.toString());
-                    ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
-                }
-            });
-            mMasterNumberDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
-        } else {
-            ((CommonEditDialog) mMasterNumberDialog.getDialogFragment()).setContent(mDoorbellConfig.getMasterNumber());
-        }
-        mMasterNumberDialog.commit();
-    }
+//    private void showMasterNumberDialog() {
+//        if (mMasterNumberDialog == null) {
+//            CommonEditDialog commonEditDialog = new CommonEditDialog();
+//            commonEditDialog.setTitle(getString(R.string.master_number));
+//            if (!TextUtils.isEmpty(mDoorbellConfig.getMasterNumber())) {
+//                commonEditDialog.setContent(mDoorbellConfig.getMasterNumber());
+//            }
+//            commonEditDialog.setOnDialogListener(new OnDialogListener() {
+//                @Override
+//                public void onConfirm(Object o) {
+//                    if (!o.toString().matches(getString(R.string.regex_phone))) {
+//                        T.show(getString(R.string.phone_no_regex));
+//                        return;
+//                    }
+//                    mDoorbellConfig.setMasterNumber(o.toString());
+//                    tvMasterNumber.setText(o.toString());
+//                    ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
+//                }
+//            });
+//            mMasterNumberDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
+//        } else {
+//            ((CommonEditDialog) mMasterNumberDialog.getDialogFragment()).setContent(mDoorbellConfig.getMasterNumber());
+//        }
+//        mMasterNumberDialog.commit();
+//    }
 
     /**
      * SOS设置
      */
-    private void showSOSDialog() {
-        if (mSOSNumberDialog == null) {
-            CommonEditDialog commonEditDialog = new CommonEditDialog();
-            commonEditDialog.setTitle(getString(R.string.sos_number));
-            if (!TextUtils.isEmpty(mDoorbellConfig.getSosNumber())) {
-                commonEditDialog.setContent(mDoorbellConfig.getSosNumber());
-            }
-            commonEditDialog.setOnDialogListener(new OnDialogListener() {
-                @Override
-                public void onConfirm(Object o) {
-                    if (!o.toString().matches(getString(R.string.regex_phone))) {
-                        T.show(getString(R.string.phone_no_regex));
-                        return;
-                    }
-                    mDoorbellConfig.setSosNumber(o.toString());
-                    tvSOSNumber.setText(o.toString());
-                    ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
-                }
-            });
-            mSOSNumberDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
-        } else {
-            ((CommonEditDialog) mSOSNumberDialog.getDialogFragment()).setContent(mDoorbellConfig.getSosNumber());
-        }
-        mSOSNumberDialog.commit();
-    }
+//    private void showSOSDialog() {
+//        if (mSOSNumberDialog == null) {
+//            CommonEditDialog commonEditDialog = new CommonEditDialog();
+//            commonEditDialog.setTitle(getString(R.string.sos_number));
+//            if (!TextUtils.isEmpty(mDoorbellConfig.getSosNumber())) {
+//                commonEditDialog.setContent(mDoorbellConfig.getSosNumber());
+//            }
+//            commonEditDialog.setOnDialogListener(new OnDialogListener() {
+//                @Override
+//                public void onConfirm(Object o) {
+//                    if (!o.toString().matches(getString(R.string.regex_phone))) {
+//                        T.show(getString(R.string.phone_no_regex));
+//                        return;
+//                    }
+//                    mDoorbellConfig.setSosNumber(o.toString());
+//                    tvSOSNumber.setText(o.toString());
+//                    ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
+//                }
+//            });
+//            mSOSNumberDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
+//        } else {
+//            ((CommonEditDialog) mSOSNumberDialog.getDialogFragment()).setContent(mDoorbellConfig.getSosNumber());
+//        }
+//        mSOSNumberDialog.commit();
+//    }
 
     /**
      * 监控开关
@@ -376,8 +377,8 @@ public class MainSetFragment extends BaseFragment {
             rlSensorTime.setEnabled(true);
             rlSensorSet.setEnabled(true);
         }
-        tvMasterNumber.setText(mDoorbellConfig.getMasterNumber());
-        tvSOSNumber.setText(mDoorbellConfig.getSosNumber());
+//        tvMasterNumber.setText(mDoorbellConfig.getMasterNumber());
+//        tvSOSNumber.setText(mDoorbellConfig.getSosNumber());
         tvDoorbellLookTime.setText(mDoorbellConfig.getDoorbellLookTime() + getString(R.string.second));
         tvDoorbellVideotapTime.setText(mDoorbellConfig.getVideotapTime() + getString(R.string.second));
     }

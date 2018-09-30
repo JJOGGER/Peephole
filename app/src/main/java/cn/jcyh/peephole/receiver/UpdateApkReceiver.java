@@ -29,12 +29,14 @@ public class UpdateApkReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())) {
-            long downloadAPKID = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1l);
+            long downloadAPKID = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L);
             long id = SPUtil.getInstance().getLong(DownloadInfo.TYPE_DOWNLOAD_APK_ID, -1L);
             if (downloadAPKID == id) {
                 if (ServiceUtil.isServiceRunning(UpdateSystemService.class))
                     ServiceUtil.stopService(UpdateSystemService.class);
                 checkDownloadStatus(context, downloadAPKID);
+            } else {
+                L.e("下载id跟本地存储id不一致");
             }
         }
     }
@@ -47,10 +49,10 @@ public class UpdateApkReceiver extends BroadcastReceiver {
         Cursor cursor = downloadManager.query(query);
         if (cursor.moveToFirst()) {
             int status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
+            L.i("下载状态：" + status);
             switch (status) {
                 case DownloadManager.STATUS_SUCCESSFUL:
                     patchAPK(context);//合并差分包
-//                    installAPK(context, file);
                     break;
                 case DownloadManager.STATUS_FAILED:
                     break;
@@ -59,6 +61,8 @@ public class UpdateApkReceiver extends BroadcastReceiver {
                 default:
                     break;
             }
+        } else {
+            L.e("遍历下载列表moveToFirst为false");
         }
     }
 
@@ -70,8 +74,6 @@ public class UpdateApkReceiver extends BroadcastReceiver {
                 if (decrypt) {
                     //解密成功
                     String oldVersionPath = APKUtil.getOldVersionPath();
-                    File file = new File(oldVersionPath);
-                    L.e("-------------file..." + file.length());
                     //合成差分包
                     PatchUtil.patch(oldVersionPath, APKUtil.APK_PATH, APKUtil.APK_PATCH_PATH);
                     //签名校验
@@ -86,7 +88,7 @@ public class UpdateApkReceiver extends BroadcastReceiver {
                                 "application/vnd.android.package-archive");
                         context.startActivity(intent);
                     } else {
-                        L.e("-----------签名校验失败");
+                        L.e("签名校验失败");
                         T.show(R.string.download_file_des_failure);
                     }
                 } else {

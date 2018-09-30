@@ -39,4 +39,9 @@ public interface HttpUrlIble {
 
     //检查补丁更新
     String DOORBELL_UPDATE_PATCH_URL = EAGLERKING_IP + "Doorbell/UpdatePatch";
+
+    //检查软件更新
+    String DOORBELL_UPDATE_SOFT_URL = EAGLERKING_IP + "Doorbell/UpdateFormalPatch";
+    //检查系统更新
+    String DOORBELL_UPDATE_SYSTEM_URL = EAGLERKING_IP + "Doorbell/GetFormalVersion";
 }

@@ -64,7 +64,12 @@ public class AboutActivity extends BaseActivity {
      */
     private void checkUpdate() {
         showProgressDialog();
-        HttpAction.getHttpAction().updatePatch(new IDataListener<Version>() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int heightPixels = displayMetrics.heightPixels;
+        int widthPixels = displayMetrics.widthPixels;
+        String solutions = widthPixels + "x" + heightPixels;
+        HttpAction.getHttpAction().updateSoft(SystemUtil.getSystemVersion(), solutions, new IDataListener<Version>() {
             @Override
             public void onSuccess(final Version version) {
                 cancelProgressDialog();

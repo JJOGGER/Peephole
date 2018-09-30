@@ -16,7 +16,6 @@ import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.entity.DownloadInfo;
 import cn.jcyh.peephole.receiver.UpdateApkReceiver;
-import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.SPUtil;
 import cn.jcyh.peephole.utils.T;
 
@@ -40,7 +39,6 @@ public class UpdateSoftService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        L.e("---------------intent:" + intent);
         if (intent != null) {
             mDownloadInfo = intent.getParcelableExtra(Constant.DOWNLOAD_INFO);
             if (mDownloadInfo == null) return super.onStartCommand(intent, flags, startId);

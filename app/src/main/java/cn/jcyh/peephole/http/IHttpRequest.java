@@ -22,17 +22,21 @@ public interface IHttpRequest {
 
     void setDoorbellName(String deviceID, String name, IDataListener listener);
 
-    void getVersion(int versionCode,IDataListener listener);
+    void getSysVersion(int versionCode, String sysVersion, String screenResolution, IDataListener listener);
 
     void updateVersion(String url, String savePath, ProgressHttpListener progressHttpListener, IDataListener listener);
 
     void uploadBattery(String imei, int battery, IDataListener listener);
 
-    void getBanners(int terminalSize,IDataListener listener);
+    void getBanners(int terminalSize, IDataListener listener);
 
     void getBindUsers(String imei, IDataListener listener);
 
     void setDoorbellManager(String imei, String userID, String authorizationCode, IDataListener listener);
 
-    void updatePatch(IDataListener listener);
+    void updatePatch(String sysVersion, String screenResolution, IDataListener listener);
+
+    void updateSoft(String sysVersion, String screenResolution, IDataListener listener);
+
+    void updateSystem(int versionCode, String sysVersion, String screenResolution, IDataListener listener);
 }

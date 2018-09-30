@@ -77,7 +77,7 @@ public class HttpRequest implements IHttpRequest {
     }
 
     @Override
-    public void getVersion(int versionCode,IDataListener listener) {
+    public void getSysVersion(int versionCode,String sysVersion, String screenResolution, IDataListener listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("Number", versionCode);
         HttpTask getVersion = new HttpTask(HttpUrlIble.DOORBELL_GET_VERSION_URL, params, Version.class, listener);
@@ -126,10 +126,30 @@ public class HttpRequest implements IHttpRequest {
     }
 
     @Override
-    public void updatePatch(IDataListener listener) {
+    public void updatePatch(String sysVersion, String screenResolution,IDataListener listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("CurrentVersion", SystemUtil.getVersionCode());
         HttpTask updatePatch = new HttpTask(HttpUrlIble.DOORBELL_UPDATE_PATCH_URL, params, Version.class, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(updatePatch, listener));
+    }
+
+    @Override
+    public void updateSoft(String sysVersion, String screenResolution, IDataListener listener) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("CurrentVersion", SystemUtil.getVersionCode());
+        params.put("VersionCode", sysVersion);
+        params.put("ScreenResolution", screenResolution);
+        HttpTask updatePatch = new HttpTask(HttpUrlIble.DOORBELL_UPDATE_SOFT_URL, params, Version.class, listener);
+        mThreadPoolManager.excute(new FutureTask<Object>(updatePatch, listener));
+    }
+
+    @Override
+    public void updateSystem(int versionCode, String sysVersion, String screenResolution, IDataListener listener) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("Number", versionCode);
+        params.put("VersionCode", sysVersion);
+        params.put("ScreenResolution", screenResolution);
+        HttpTask getVersion = new HttpTask(HttpUrlIble.DOORBELL_UPDATE_SYSTEM_URL, params, Version.class, listener);
+        mThreadPoolManager.excute(new FutureTask<Object>(getVersion, listener));
     }
 }

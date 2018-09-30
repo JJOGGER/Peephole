@@ -8,6 +8,7 @@ import java.io.Serializable;
  */
 
 public class AnyChatTask implements Serializable{
+
     private String type;
     private String name;//请求的文件名
     private int tastId;//anychat任务传输id
