@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.text.TextUtils;
 
@@ -13,8 +14,8 @@ import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.entity.DoorbellConfig;
 import cn.jcyh.peephole.event.NetworkAction;
 import cn.jcyh.peephole.http.IDataListener;
+import cn.jcyh.peephole.manager.impl.LocationManager;
 import cn.jcyh.peephole.utils.L;
-import cn.jcyh.peephole.utils.NetworkUtil;
 
 
 /**
@@ -57,36 +58,45 @@ public class NetworkStateReceiver extends BroadcastReceiver {
             }
 
         } else if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action)) {
-            if (NetworkUtil.isConnected()) {
-//                if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
-                L.e("-------当前连接的网络可用");
-                NetworkAction networkAction = new NetworkAction();
-                networkAction.setType(NetworkAction.TYPE_NETWORK_CONNECTED);
-                EventBus.getDefault().post(networkAction);
-                final DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
-                ControlCenter.connectNIM();
-                boolean existOfflineData = doorbellConfig.isExistOfflineData();
-                if (existOfflineData) {
-                    ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(), doorbellConfig, new IDataListener<Boolean>() {
-                        @Override
-                        public void onSuccess(Boolean aBoolean) {
-                            //离线数据同步完成
-                            doorbellConfig.setExistOfflineData(false);
-                            ControlCenter.getDoorbellManager().setDoorbellConfig(doorbellConfig);
-                        }
+            ConnectivityManager manager = (ConnectivityManager) context
+                    .getSystemService(Context.CONNECTIVITY_SERVICE);
+            assert manager != null;
+            NetworkInfo activeNetwork = manager.getActiveNetworkInfo();
+            if (activeNetwork == null || !activeNetwork.isConnected()) {
+                L.e("-------当前连接的网络不可用");
+                LocationManager.stopLocation();
+                return;
+            }
+            if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
+                LocationManager.startLocation();
+            }
+            L.e("-------当前连接的网络可用");
+            NetworkAction networkAction = new NetworkAction();
+            networkAction.setType(NetworkAction.TYPE_NETWORK_CONNECTED);
+            EventBus.getDefault().post(networkAction);
+            final DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
+            ControlCenter.connectNIM();
+            boolean existOfflineData = doorbellConfig.isExistOfflineData();
+            if (existOfflineData) {
+                ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(), doorbellConfig, new IDataListener<Boolean>() {
+                    @Override
+                    public void onSuccess(Boolean aBoolean) {
+                        //离线数据同步完成
+                        doorbellConfig.setExistOfflineData(false);
+                        ControlCenter.getDoorbellManager().setDoorbellConfig(doorbellConfig);
+                    }
 
-                        @Override
-                        public void onFailure(int errorCode, String desc) {
+                    @Override
+                    public void onFailure(int errorCode, String desc) {
 
-                        }
-                    });
-                }
+                    }
+                });
+            }
 //                }
 //                if (NIMClient.getStatus() == StatusCode.LOGINED) {
 //                    L.e("-------------网络更新发布状态");
 //                    OnlineStateEventManager.publishOnlineStateEvent();
 //                }
-            }
         }
 //        else if (WifiManager.NETWORK_STATE_CHANGED_ACTION.equals(action)) {
 //            NetworkInfo networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
@@ -121,6 +131,13 @@ public class NetworkStateReceiver extends BroadcastReceiver {
 //                L.e("---------activeNetwork为null当前没有网络连接，请确保你已经打开网络 ");
 //            }
 //        }
+    }
+
+    /**
+     * 上传地理位置
+     */
+    private void uploadLocation() {
+
     }
 
 }

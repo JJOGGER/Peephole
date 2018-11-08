@@ -260,9 +260,8 @@ public class ImgUtil {
 
     public static boolean createWaterMaskWidthText(String filePath, String thumbPath, Bitmap
             src, Bitmap watermark, String text, int heightPixels, int widthPixels) {
-        L.e("---->h:" + heightPixels + "---w:" + widthPixels);
 //        Bitmap waterMaskBitmap = createWaterMaskBitmap(src, watermark, 30, 24);
-        Bitmap bitmap = drawTextToRightBottom(src, text, ScreenUtil.dip2px(64), Color.WHITE, ScreenUtil.dip2px( 15), ScreenUtil.dip2px( 12));
+        Bitmap bitmap = drawTextToRightBottom(src, text, ScreenUtil.dip2px(64), Color.WHITE, ScreenUtil.dip2px(15), ScreenUtil.dip2px(12));
         File file = new File(filePath);
         BufferedOutputStream bos = null;
         try {
@@ -291,6 +290,57 @@ public class ImgUtil {
         //压缩图片
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 10;
+        Bitmap optionBitmap = BitmapFactory.decodeFile(filePath, options);
+        file = new File(thumbPath);
+        try {
+            bos = new BufferedOutputStream(new FileOutputStream(file));
+            optionBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+            try {
+                bos.flush();
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            if (bos != null) {
+                try {
+                    bos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean saveBitmap2File(String filePath, String thumbPath,Bitmap
+            bitmap) {
+//        Bitmap waterMaskBitmap = createWaterMaskBitmap(src, watermark, 30, 24);
+        File file = new File(filePath);
+        BufferedOutputStream bos = null;
+        try {
+            bos = new BufferedOutputStream(new FileOutputStream(file));
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+            try {
+                bos.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            if (bos != null) {
+                try {
+                    bos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 2;
         Bitmap optionBitmap = BitmapFactory.decodeFile(filePath, options);
         file = new File(thumbPath);
         try {

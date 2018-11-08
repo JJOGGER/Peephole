@@ -136,69 +136,69 @@ public class AudioValiActivity extends BaseActivity implements View.OnTouchListe
     };
 
     /**
-     * 声纹注册监听器
-     */
-    private IdentityListener mEnrollListener = new IdentityListener() {
+         * 声纹注册监听器
+         */
+        private IdentityListener mEnrollListener = new IdentityListener() {
 
-        @Override
-        public void onResult(IdentityResult result, boolean islast) {
+            @Override
+            public void onResult(IdentityResult result, boolean islast) {
 
-            JSONObject jsonResult = null;
-            try {
-                jsonResult = new JSONObject(result.getResultString());
-                int ret = jsonResult.getInt("ret");
+                JSONObject jsonResult = null;
+                try {
+                    jsonResult = new JSONObject(result.getResultString());
+                    int ret = jsonResult.getInt("ret");
 
-                if (ErrorCode.SUCCESS == ret) {
+                    if (ErrorCode.SUCCESS == ret) {
 
-                    final int suc = Integer.parseInt(jsonResult.optString("suc"));
-                    final int rgn = Integer.parseInt(jsonResult.optString("rgn"));
+                        final int suc = Integer.parseInt(jsonResult.optString("suc"));
+                        final int rgn = Integer.parseInt(jsonResult.optString("rgn"));
 
-                    if (suc == rgn) {
-                        tvResult.setText("注册成功");
-                        ControlCenter.registAudioVali(true);
-                        mCanStartRecord = false;
-                        isStartWork = false;
-                        if (mPcmRecorder != null) {
-                            mPcmRecorder.stopRecord(true);
+                        if (suc == rgn) {
+                            tvResult.setText("注册成功");
+                            ControlCenter.registAudioVali(true);
+                            mCanStartRecord = false;
+                            isStartWork = false;
+                            if (mPcmRecorder != null) {
+                                mPcmRecorder.stopRecord(true);
+                            }
+                        } else {
+                            int nowTimes = suc + 1;
+                            int leftTimes = 5 - nowTimes;
+
+                            StringBuffer strBuffer = new StringBuffer();
+                            strBuffer.append("请长按“按住说话”按钮！\n");
+                            strBuffer.append("请读出：" + mNumPwdSegs[nowTimes - 1] + "\n");
+                            strBuffer.append("训练 第" + nowTimes + "遍，剩余" + leftTimes + "遍");
+                            tvResult.setText(strBuffer.toString());
                         }
+
                     } else {
-                        int nowTimes = suc + 1;
-                        int leftTimes = 5 - nowTimes;
-
-                        StringBuffer strBuffer = new StringBuffer();
-                        strBuffer.append("请长按“按住说话”按钮！\n");
-                        strBuffer.append("请读出：" + mNumPwdSegs[nowTimes - 1] + "\n");
-                        strBuffer.append("训练 第" + nowTimes + "遍，剩余" + leftTimes + "遍");
-                        tvResult.setText(strBuffer.toString());
                     }
-
-                } else {
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        public void onEvent(int eventType, int arg1, int arg2, Bundle bundle) {
-            if (SpeechEvent.EVENT_VOLUME == eventType) {
-                L.i("----音量：" + arg1);
-            } else if (SpeechEvent.EVENT_VAD_EOS == eventType) {
-                L.i("----录音结束");
             }
 
-        }
+            @Override
+            public void onEvent(int eventType, int arg1, int arg2, Bundle bundle) {
+                if (SpeechEvent.EVENT_VOLUME == eventType) {
+                    L.i("----音量：" + arg1);
+                } else if (SpeechEvent.EVENT_VAD_EOS == eventType) {
+                    L.i("----录音结束");
+                }
 
-        @Override
-        public void onError(SpeechError error) {
-            isStartWork = false;
+            }
 
-            StringBuffer errorResult = new StringBuffer();
-            errorResult.append("注册失败！\n");
-            errorResult.append("错误信息：" + error.getPlainDescription(true) + "\n");
-            errorResult.append("请长按“按住说话”重新注册!");
-            tvResult.setText(errorResult.toString());
-        }
+            @Override
+            public void onError(SpeechError error) {
+                isStartWork = false;
+
+                StringBuffer errorResult = new StringBuffer();
+                errorResult.append("注册失败！\n");
+                errorResult.append("错误信息：" + error.getPlainDescription(true) + "\n");
+                errorResult.append("请长按“按住说话”重新注册!");
+                tvResult.setText(errorResult.toString());
+            }
 
     };
 
@@ -431,7 +431,7 @@ public class AudioValiActivity extends BaseActivity implements View.OnTouchListe
         }
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if (!isStartWork) {
+                    if (!isStartWork) {
                     // 根据业务类型调用服务
                     if (mSST == SST_ENROLL) {
                         if (null == mNumPwdSegs) {

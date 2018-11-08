@@ -62,4 +62,11 @@ public class CommandControl {
     public static void sendDoorbellParamsGetResponse(String account) {
         IMMessageCommandImpl.sendDoorbellParamsGetResponse(account);
     }
+
+    /**
+     * 人脸识别参数设置
+     */
+    public static void sendDoorbellFaceValiParamsResponse(String account, int isSuccess) {
+        IMMessageCommandImpl.sendDoorbellFaceValiParamsResponse(account, isSuccess);
+    }
 }

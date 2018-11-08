@@ -68,10 +68,10 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
     private LinearLayout indicator, indicatorInside, titleView;
     private ImageView bannerDefaultImage;
     private ImageLoaderInterface imageLoader;
-    private BannerPagerAdapter adapter;
+    private BannerPagerAdapter mBannerAdapter;
     private OnPageChangeListener mOnPageChangeListener;
     private BannerScroller mScroller;
-    private OnBannerClickListener bannerListener;
+    private OnBannerClickListener mBannerListener;
     private OnBannerListener listener;
     private DisplayMetrics dm;
 
@@ -191,7 +191,7 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
     /**
      * Set the number of pages that should be retained to either side of the
      * current page in the view hierarchy in an idle state. Pages beyond this
-     * limit will be recreated from the adapter when needed.
+     * limit will be recreated from the mBannerAdapter when needed.
      *
      * @param limit How many pages will be kept offscreen in an idle state.
      * @return Banner
@@ -245,12 +245,17 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
         update(imageUrls);
     }
 
+    @SuppressWarnings("unchecked")
     public void update(List<?> imageUrls) {
-        this.imageUrls.clear();
+        if (this.imageUrls != null) {
+            this.imageUrls.clear();
+            this.imageUrls.addAll(imageUrls);
+        } else {
+            this.imageUrls = imageUrls;
+        }
         this.imageViews.clear();
         this.indicatorImages.clear();
-        this.imageUrls.addAll(imageUrls);
-        this.count = this.imageUrls.size();
+        this.count = this.imageUrls == null ? 0 : this.imageUrls.size();
         start();
     }
 
@@ -335,9 +340,11 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
     private void setImageList(List<?> imagesUrl) {
         if (imagesUrl == null || imagesUrl.size() <= 0) {
             bannerDefaultImage.setVisibility(VISIBLE);
+            viewPager.setVisibility(GONE);
             Log.e(tag, "The image data set is empty.");
             return;
         }
+        viewPager.setVisibility(VISIBLE);
         bannerDefaultImage.setVisibility(GONE);
         initImages();
         for (int i = 0; i <= count + 1; i++) {
@@ -425,11 +432,14 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
 
     private void setData() {
         currentItem = 1;
-        if (adapter == null) {
-            adapter = new BannerPagerAdapter();
+        if (count <= 1) {
+            return;
+        }
+        if (mBannerAdapter == null) {
+            mBannerAdapter = new BannerPagerAdapter();
             viewPager.addOnPageChangeListener(this);
         }
-        viewPager.setAdapter(adapter);
+        viewPager.setAdapter(mBannerAdapter);
         viewPager.setFocusable(true);
         viewPager.setCurrentItem(1);
         if (gravity != -1)
@@ -514,13 +524,13 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
         public Object instantiateItem(ViewGroup container, final int position) {
             container.addView(imageViews.get(position));
             View view = imageViews.get(position);
-            if (bannerListener != null) {
+            if (mBannerListener != null) {
                 view.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         Log.e(tag, "你正在使用旧版点击事件接口，下标是从1开始，" +
                                 "为了体验请更换为setOnBannerListener，下标从0开始计算");
-                        bannerListener.OnBannerClick(position);
+                        mBannerListener.OnBannerClick(position);
                     }
                 });
             }
@@ -612,7 +622,7 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
 
     @Deprecated
     public Banner setOnBannerClickListener(OnBannerClickListener listener) {
-        this.bannerListener = listener;
+        this.mBannerListener = listener;
         return this;
     }
 

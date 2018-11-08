@@ -4,8 +4,8 @@ ext {
             buildToolsVersion: "27.0.3",
             minSdkVersion    : 18,
             targetSdkVersion : 22,
-            versionCode      : 7,
-            versionName      : "v7_EAGLEKING_20180930"
+            versionCode      : 14,
+            versionName      : "v14_20181102"
     ]
 
     dependVersion = [
@@ -45,7 +45,7 @@ ext {
             adapter_helper      : 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.30',
             rxbinding:'com.jakewharton.rxbinding2:rxbinding:2.1.1',
             rxbinding_v7:'com.jakewharton.rxbinding2:rxbinding-appcompat-v7:2.1.1',
-
+            http_logging: 'com.squareup.okhttp3:logging-interceptor:3.3.1',
 
             progressbar: 'com.github.HotBitmapGG:RingProgressBar:V1.2.3'
     ]

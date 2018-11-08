@@ -7,12 +7,26 @@ import android.content.pm.PackageManager;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 
 /**
  * Created by jogger on 2018/1/16.
  */
 
 public class SystemUtil {
+
+    public static int getTerminalSize() {
+        int size = 10;
+        DisplayMetrics displayMetrics = Util.getApp().getResources().getDisplayMetrics();
+        int heightPixels = displayMetrics.heightPixels;
+        int widthPixels = displayMetrics.widthPixels;
+        if (widthPixels == 854 && heightPixels == 480)
+            size = 5;
+        else if (widthPixels == 1024 && heightPixels == 600)
+            size = 7;
+        L.e("-------" + widthPixels + ":" + heightPixels);
+        return size;
+    }
 
     public static String getProcessName(Context context) {
         String processName = null;
@@ -95,7 +109,7 @@ public class SystemUtil {
         assert pm != null;
         PowerManager.WakeLock wl = pm.newWakeLock(levelAndFlags, "bright");
         //点亮屏幕
-        wl.acquire(10000);
+        wl.acquire(2000);
         wl.release();
     }
 }

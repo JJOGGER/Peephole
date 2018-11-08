@@ -56,35 +56,35 @@
         android:layout_marginRight="16dp"
         android:background="@color/gray_dedede"/>
 
-    <cn.jcyh.peephole.widget.MyDeviceParam
-        android:id="@+id/my_send_msg"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        app:text="@string/send_msg"
-        app:text_color="@color/black_333333"
-        app:text_size="16sp"/>
+    <!--<cn.jcyh.peephole.widget.MyDeviceParam-->
+        <!--android:id="@+id/my_send_msg"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="40dp"-->
+        <!--app:text="@string/send_msg"-->
+        <!--app:text_color="@color/black_333333"-->
+        <!--app:text_size="16sp"/>-->
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:background="@color/gray_dedede"/>
+    <!--<View-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="0.5dp"-->
+        <!--android:layout_marginLeft="16dp"-->
+        <!--android:layout_marginRight="16dp"-->
+        <!--android:background="@color/gray_dedede"/>-->
 
-    <cn.jcyh.peephole.widget.MyDeviceParam
-        android:id="@+id/my_dial"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        app:text="@string/dial"
-        app:text_color="@color/black_333333"
-        app:text_size="16sp"/>
+    <!--<cn.jcyh.peephole.widget.MyDeviceParam-->
+        <!--android:id="@+id/my_dial"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="40dp"-->
+        <!--app:text="@string/dial"-->
+        <!--app:text_color="@color/black_333333"-->
+        <!--app:text_size="16sp"/>-->
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:background="@color/gray_dedede"/>
+    <!--<View-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="0.5dp"-->
+        <!--android:layout_marginLeft="16dp"-->
+        <!--android:layout_marginRight="16dp"-->
+        <!--android:background="@color/gray_dedede"/>-->
 
     <cn.jcyh.peephole.widget.MyDeviceParam
         android:id="@+id/my_leave_message"

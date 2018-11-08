@@ -10,7 +10,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.Map;
 
-import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.ParseJsonUtil;
 
 /**
@@ -50,7 +49,6 @@ class HttpTask implements Runnable {
                     sHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            L.e("----------------result:" + result + ":" + url);
                             int code = ParseJsonUtil.getErrorCode(result);
                             String desc = ParseJsonUtil.getErrorDesc(result);
                             if (code == 200) {
@@ -66,7 +64,6 @@ class HttpTask implements Runnable {
 
                             } else {
                                 listener.onFailure(code, desc);
-                                L.e("-------result:" + result + url);
                             }
                         }
                     });

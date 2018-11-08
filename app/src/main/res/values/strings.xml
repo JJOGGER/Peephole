@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="app_name">MySmartX</string>
     <string name="input_phone_email">请输入手机号或邮箱</string>
     <string name="input_pwd">输入密码</string>
@@ -161,7 +161,7 @@
     <string name="no_camera">未检测到摄像头</string>
     <string name="leave_message_audio_start_msg">主人不在家，请再次按下门铃键开始留言</string>
     <string name="leave_message_audio_end_msg">留言结束</string>
-    <string name="video_leave_msg">视频留言</string>
+    <string name="video_leave_msg">视频记录</string>
     <string name="sensor_set_changed">传感动作已更改</string>
     <string name="send_msg_content_format">【%1$s】%2$s，来自%3$s</string>
     <string name="someone_doorbell">有人按门铃</string>
@@ -226,6 +226,10 @@
     <string name="download_pause">下载已暂停</string>
     <string name="download_completed">下载完成</string>
     <string name="current_newst_version">当前已是最新版本</string>
+    <string name="open_lock">打开门锁</string>
+    <string name="face_set_closed">人脸识别已关闭</string>
+    <string name="face_set_opened">人脸识别已开启</string>
+    <string name="unlock_success">开锁成功</string>
 
     <!--                   系统设置end             -->
     <!--<string name="date_week_format">%d年%d月%d日&#160;%s</string>-->

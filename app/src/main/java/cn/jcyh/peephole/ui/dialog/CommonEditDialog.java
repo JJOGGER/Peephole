@@ -74,7 +74,7 @@ public class CommonEditDialog extends BaseDialogFragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (!TextUtils.isEmpty(mContent))
+        if (mContent!=null)
             etContent.setText(mContent);
     }
 

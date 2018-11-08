@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.jcyh.peephole.R;
-import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.entity.User;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
@@ -76,7 +75,7 @@ public class UserManager implements IUserManager {
 
     @Override
     public void getUserSync(final IDataListener<List<User>> listener) {
-        HttpAction.getHttpAction().getBindUsers(ControlCenter.getSN(), listener);
+        HttpAction.getHttpAction().getBindUsers( listener);
 //        NIMClient.getService(UserService.class).fetchUserInfo(ControlCenter.getUserManager().getBindUserIDs())
 //                .setCallback(new RequestCallbackWrapper<List<NimUserInfo>>() {
 //                    @Override
@@ -132,11 +131,11 @@ public class UserManager implements IUserManager {
      * 解绑用户
      */
     @Override
-    public void unbindUser(String userID, String deviceID, String authorizationCode, IDataListener<Boolean> listener) {
+    public void unbindUser(String userID,String authorizationCode, IDataListener<Boolean> listener) {
         if (!NetworkUtil.isConnected()) {
             T.show(R.string.network_is_not_available);
             return;
         }
-        HttpAction.getHttpAction().unbindUser(userID, deviceID, authorizationCode, listener);
+        HttpAction.getHttpAction().unbindUser(userID, authorizationCode, listener);
     }
 }

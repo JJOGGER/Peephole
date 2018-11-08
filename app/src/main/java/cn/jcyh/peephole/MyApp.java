@@ -12,10 +12,10 @@ import cn.jcyh.peephole.utils.Util;
 
 
 public class MyApp extends Application {
+
     @Override
     public void onCreate() {
         super.onCreate();
-        //网易云信
         NIMClient.init(this, null, null);
         if (NIMUtil.isMainProcess(this)) {
             Util.init(this);
@@ -24,11 +24,10 @@ public class MyApp extends Application {
         }
     }
 
+
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         MultiDex.install(base);
     }
-
-
 }

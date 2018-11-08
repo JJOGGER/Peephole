@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import cn.jcyh.peephole.constant.Config;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.SystemUtil;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -29,9 +30,9 @@ public class UploadService implements IHttpService {
 
     UploadService(String filePath) {
         mOkHttpClient = new OkHttpClient().newBuilder()
-                .connectTimeout(100, TimeUnit.SECONDS)//设置超时时间
-                .readTimeout(100, TimeUnit.SECONDS)//设置读取超时时间
-                .writeTimeout(100, TimeUnit.SECONDS)//设置写入超时时间
+                .connectTimeout(15, TimeUnit.SECONDS)//设置超时时间
+                .readTimeout(15, TimeUnit.SECONDS)//设置读取超时时间
+                .writeTimeout(15, TimeUnit.SECONDS)//设置写入超时时间
                 .build();
         mFilePath = filePath;
     }
@@ -67,6 +68,7 @@ public class UploadService implements IHttpService {
         Request request = new Request.Builder()
                 .url(mUrl)
                 .header("Content-Type", "image/jpeg; charset=utf-8;")
+                .addHeader("Version", String.valueOf(SystemUtil.getVersionCode()))
                 .addHeader("DeviceId", ControlCenter.getSN())
                 .addHeader("AppKey", headerConfig.getAppkey())
                 .addHeader("Nonce", headerConfig.getNonce())

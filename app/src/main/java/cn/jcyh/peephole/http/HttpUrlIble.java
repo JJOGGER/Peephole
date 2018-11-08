@@ -12,14 +12,14 @@ public interface HttpUrlIble {
     //119.23.58.28服务器
 //    http://mysmart.9cyh.cn/
     String EAGLERKING_IP = "http://mysmartxcateye.9cyh.cn/";
-
+//    String EAGLERKING_IP = "http://119.23.58.28:8015/";
     //    String EAGLERKING_IP = "http://192.168.0.134:8083/";
     String INIT_NIM = EAGLERKING_IP + "Doorbell/CateyeRegister";
     //文件上传
     String UPLOAD_DOORBELL_ALARM_URL = EAGLERKING_IP + "Doorbell/DoorbellAlarm";
     String DOORBELL_SET_NAME_URL = EAGLERKING_IP + "Doorbell/SetDeviceName";
     //设置猫眼配置
-    String DOORBELL_SET_CONFIG_URL = EAGLERKING_IP + "Doorbell/Setting";
+    String DOORBELL_SET_CONFIG_URL = EAGLERKING_IP + "Doorbell/CateyeSet";
     String DOORBELL_GET_CONFIG_URL = EAGLERKING_IP + "Doorbell/GetSetting";
     //删除用户
     String DOORBELL_UNBIND_USER_URL = EAGLERKING_IP + "Doorbell/DelDev";
@@ -44,4 +44,12 @@ public interface HttpUrlIble {
     String DOORBELL_UPDATE_SOFT_URL = EAGLERKING_IP + "Doorbell/UpdateFormalPatch";
     //检查系统更新
     String DOORBELL_UPDATE_SYSTEM_URL = EAGLERKING_IP + "Doorbell/GetFormalVersion";
+    //防折报警通知
+    String DOORBELL_ANTI_BREAK_ALARM = EAGLERKING_IP + "Doorbell/AntiBreakAlarm";
+    //门磁通知
+    String DOORBELL_MAGNETIC_NOTICE = EAGLERKING_IP + "Doorbell/DoorMagneticNotice";
+    //通话时长
+    String DOORBELL_TALK_TIME_RECORD = EAGLERKING_IP + "Doorbell/UserTalkTimeRecord";
+    //上传定位
+    String DOORBELL_UPLOAD_LOCATION = EAGLERKING_IP + "Doorbell/AddDeviceLocationInfo";
 }

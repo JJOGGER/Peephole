@@ -51,11 +51,12 @@ public class DoorbellManager implements IDoorbellManager {
             if (!NetworkUtil.isConnected()) {
                 return config;
             }
-            HttpAction.getHttpAction().setDoorbellConfig(ControlCenter.getSN(), config, null);
+            HttpAction.getHttpAction().setDoorbellConfig( config, null);
         } else {
             config = GsonUtil.fromJson(configJson, DoorbellConfig.class);
         }
         sDoorbellConfig = config;
+        L.e("------->"+DoorbellConfig.getGson().toJson(sDoorbellConfig));
         return config;
     }
 
@@ -103,12 +104,12 @@ public class DoorbellManager implements IDoorbellManager {
 
     @Override
     public void setDoorbellConfig2Server(String deviceID, final DoorbellConfig config, IDataListener<Boolean> listener) {
-        HttpAction.getHttpAction().setDoorbellConfig(deviceID, config, listener);
+        HttpAction.getHttpAction().setDoorbellConfig(config, listener);
     }
 
     @Override
     public void getDoorbellConfigFromServer(String deviceID, IDataListener<ConfigData> listener) {
-        HttpAction.getHttpAction().getDoorbellConfig(deviceID, listener);
+        HttpAction.getHttpAction().getDoorbellConfig(listener);
     }
 
 
@@ -121,7 +122,7 @@ public class DoorbellManager implements IDoorbellManager {
             T.show(R.string.network_is_not_available);
             return;
         }
-        HttpAction.getHttpAction().setDoorbellName(deviceID, name, listener);
+        HttpAction.getHttpAction().setDoorbellName( name, listener);
     }
 
     /**
@@ -161,8 +162,7 @@ public class DoorbellManager implements IDoorbellManager {
             commandJson.setCommand(CommandJson.CommandType.NOTIFICATION_DOORBELL_ALARM);
         }
         String command = GsonUtil.toJson(commandJson);
-        L.e("--------------------------按门铃图片上传" + thumbPath);
-        HttpAction.getHttpAction().sendDoorbellImg(ControlCenter.getSN(), command, t,
+        HttpAction.getHttpAction().sendDoorbellImg(command, t,
                 thumbPath, listener);
     }
 

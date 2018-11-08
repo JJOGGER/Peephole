@@ -16,26 +16,12 @@ public class DoorbellConfig {
     //从本地取，如果为空，则去服务器取，如果有，存到本地，如果没有，创建，并保存到服务器
     private static final String DEFAULT_RING = "ring/doorbell01.mp3";
     private static final String DEFAULT_ALARM = "alarm/alarm01.mp3";
+    private DoorbellModelParam doorbellModelParam = new DoorbellModelParam();
+    private DoorbellSensorParam doorbellSensorParam = new DoorbellSensorParam();
+    private int faceRecognize = 0;//人脸识别
+    private int voiceprintRecognize = 0;//声纹识别
     private String nickName = "";
-    private int doorbellNetPush = 1;
-    private int doorbellVideoCall = 1;
-    private int doorbellVideotap = 0;//录像
-    private int doorbellSendMsg = 0;
-    private int doorbellDial = 0;
-    private int doorbellLeaveMessage = 0;
-    private int monitorSwitch = 0;
-    private int sensorNetPush = 1;
-    private int sensorVideoCall = 1;
-    private int sensorVideotap = 0;
-    private int sensorSendMsg = 0;
-    private int sensorDial = 0;
-    private int sensorRingAlarm = 0;//铃声报警
-    //    private int videoTime = 5;//猫眼录制时间
-//    private int doorbellSelect = 15;//猫眼查看时间
-//    private int leaveMessageTime = 20;//猫眼留言时间
     private int autoSensorTime = 5;
-    private String masterNumber;//主人号码
-    private String sosNumber;//sos号码
     private int videoLeaveMsgTime = 5;//猫眼留言时间
     private int videotapTime = 5;//录像时间
     private int doorbellLookTime = 10;//猫眼查看时间
@@ -44,9 +30,49 @@ public class DoorbellConfig {
     private int ringVolume = 50;
     private int alarmVolume = 50;
     private boolean isExistOfflineData = false;//标记是否存在离线数据
-
     private Doorbell doorbell;//网易云登录
     private ConfigData.VideoConfig videoConfig;//视频通话配置
+
+    public DoorbellModelParam getDoorbellModelParam() {
+        if (doorbellModelParam == null) {
+            doorbellModelParam = new DoorbellModelParam();
+        }
+        if (doorbellModelParam.getLeaveMessage() == 1) {
+            doorbellModelParam.setVideotap(0);
+            doorbellModelParam.setVideoCall(0);
+        }
+        return doorbellModelParam;
+    }
+
+    public void setDoorbellModelParam(DoorbellModelParam doorbellModelParam) {
+        this.doorbellModelParam = doorbellModelParam;
+    }
+
+    public DoorbellSensorParam getDoorbellSensorParam() {
+        if (doorbellSensorParam == null)
+            doorbellSensorParam = new DoorbellSensorParam();
+        return doorbellSensorParam;
+    }
+
+    public void setDoorbellSensorParam(DoorbellSensorParam doorbellSensorParam) {
+        this.doorbellSensorParam = doorbellSensorParam;
+    }
+
+    public int getFaceRecognize() {
+        return faceRecognize;
+    }
+
+    public void setFaceRecognize(int faceRecognize) {
+        this.faceRecognize = faceRecognize;
+    }
+
+    public int getVoiceprintRecognize() {
+        return voiceprintRecognize;
+    }
+
+    public void setVoiceprintRecognize(int voiceprintRecognize) {
+        this.voiceprintRecognize = voiceprintRecognize;
+    }
 
     public String getNickName() {
         return nickName;
@@ -56,132 +82,12 @@ public class DoorbellConfig {
         this.nickName = nickName;
     }
 
-    public int getDoorbellNetPush() {
-        return doorbellNetPush;
-    }
-
-    public void setDoorbellNetPush(int doorbellNetPush) {
-        this.doorbellNetPush = doorbellNetPush;
-    }
-
-    public int getDoorbellVideoCall() {
-        return doorbellVideoCall;
-    }
-
-    public void setDoorbellVideoCall(int doorbellVideoCall) {
-        this.doorbellVideoCall = doorbellVideoCall;
-    }
-
-    public int getDoorbellVideotap() {
-        return doorbellVideotap;
-    }
-
-    public void setDoorbellVideotap(int doorbellVideotap) {
-        this.doorbellVideotap = doorbellVideotap;
-    }
-
-    public int getDoorbellSendMsg() {
-        return doorbellSendMsg;
-    }
-
-    public void setDoorbellSendMsg(int doorbellSendMsg) {
-        this.doorbellSendMsg = doorbellSendMsg;
-    }
-
-    public int getDoorbellDial() {
-        return doorbellDial;
-    }
-
-    public void setDoorbellDial(int doorbellDial) {
-        this.doorbellDial = doorbellDial;
-    }
-
-    public int getSensorVideotap() {
-        return sensorVideotap;
-    }
-
-    public void setSensorVideotap(int sensorVideotap) {
-        this.sensorVideotap = sensorVideotap;
-    }
-
-    public int getDoorbellLeaveMessage() {
-        return doorbellLeaveMessage;
-    }
-
-    public void setDoorbellLeaveMessage(int doorbellLeaveMessage) {
-        this.doorbellLeaveMessage = doorbellLeaveMessage;
-    }
-
-    public int getMonitorSwitch() {
-        return monitorSwitch;
-    }
-
-    public void setMonitorSwitch(int monitorSwitch) {
-        this.monitorSwitch = monitorSwitch;
-    }
-
     public int getAutoSensorTime() {
         return autoSensorTime;
     }
 
     public void setAutoSensorTime(int autoSensorTime) {
         this.autoSensorTime = autoSensorTime;
-    }
-
-    public int getSensorNetPush() {
-        return sensorNetPush;
-    }
-
-    public void setSensorNetPush(int sensorNetPush) {
-        this.sensorNetPush = sensorNetPush;
-    }
-
-    public int getSensorVideoCall() {
-        return sensorVideoCall;
-    }
-
-    public void setSensorVideoCall(int sensorVideoCall) {
-        this.sensorVideoCall = sensorVideoCall;
-    }
-
-    public int getSensorSendMsg() {
-        return sensorSendMsg;
-    }
-
-    public void setSensorSendMsg(int sensorSendMsg) {
-        this.sensorSendMsg = sensorSendMsg;
-    }
-
-    public int getSensorDial() {
-        return sensorDial;
-    }
-
-    public void setSensorDial(int sensorDial) {
-        this.sensorDial = sensorDial;
-    }
-
-    public int getSensorRingAlarm() {
-        return sensorRingAlarm;
-    }
-
-    public void setSensorRingAlarm(int sensorRingAlarm) {
-        this.sensorRingAlarm = sensorRingAlarm;
-    }
-
-    public String getMasterNumber() {
-        return masterNumber == null ? "" : masterNumber;
-    }
-
-    public void setMasterNumber(String masterNumber) {
-        this.masterNumber = masterNumber;
-    }
-
-    public String getSosNumber() {
-        return sosNumber == null ? "" : sosNumber;
-    }
-
-    public void setSosNumber(String sosNumber) {
-        this.sosNumber = sosNumber;
     }
 
     public int getVideoLeaveMsgTime() {
@@ -264,44 +170,25 @@ public class DoorbellConfig {
         this.videoConfig = videoConfig;
     }
 
-    public void setDoorbellParams(DoorbellParam doorbellParams) {
-        this.doorbellNetPush = doorbellParams.getNetPush();
-        this.doorbellVideotap = doorbellParams.getVideotap();
-        this.doorbellDial = doorbellParams.getDial();
-        this.doorbellLeaveMessage = doorbellParams.getLeaveMessage();
-        this.doorbellVideoCall = doorbellParams.getVideoCall();
-        this.doorbellSendMsg = doorbellParams.getSendMsg();
-    }
-
-    public void setMonitorParams(DoorbellParam doorbellParams) {
-        this.sensorNetPush = doorbellParams.getNetPush();
-        this.sensorVideotap = doorbellParams.getVideotap();
-        this.sensorDial = doorbellParams.getDial();
-        this.sensorRingAlarm = doorbellParams.getRingAlarm();
-        this.sensorVideoCall = doorbellParams.getVideoCall();
-        this.sensorSendMsg = doorbellParams.getSendMsg();
-        this.monitorSwitch = doorbellParams.getMonitor();
-    }
-
     public static Gson getGson() {
         return new GsonBuilder().setExclusionStrategies(new ExclusionStrategy() {
             @Override
             public boolean shouldSkipField(FieldAttributes f) {
                 String name = f.getName();
-                return !("doorbellNetPush".equals(name) ||
-                        "doorbellVideoCall".equals(name) ||
-                        "doorbellVideotap".equals(name) ||
-                        "doorbellSendMsg".equals(name) ||
-                        "doorbellDial".equals(name) ||
-                        "doorbellLeaveMessage".equals(name) ||
-                        "monitorSwitch".equals(name) ||
-                        "sensorNetPush".equals(name) ||
-                        "sensorVideoCall".equals(name) ||
-                        "sensorVideotap".equals(name) ||
-                        "sensorSendMsg".equals(name) ||
-                        "sensorDial".equals(name) ||
-                        "sensorRingAlarm".equals(name)
-                );
+                return
+                        ("nickName".equals(name) ||
+                                "autoSensorTime".equals(name) ||
+                                "videoLeaveMsgTime".equals(name) ||
+                                "videotapTime".equals(name) ||
+                                "doorbellLookTime".equals(name) ||
+                                "doorbellRingName".equals(name) ||
+                                "doorbellAlarmName".equals(name) ||
+                                "ringVolume".equals(name) ||
+                                "alarmVolume".equals(name) ||
+                                "isExistOfflineData".equals(name) ||
+                                "doorbell".equals(name) ||
+                                "videoConfig".equals(name)
+                        );
             }
 
             @Override
@@ -314,25 +201,22 @@ public class DoorbellConfig {
     @Override
     public String toString() {
         return "DoorbellConfig{" +
-                "doorbellNetPush=" + doorbellNetPush +
-                ", doorbellVideoCall=" + doorbellVideoCall +
-                ", doorbellVideotap=" + doorbellVideotap +
-                ", doorbellSendMsg=" + doorbellSendMsg +
-                ", doorbellDial=" + doorbellDial +
-                ", doorbellLeaveMessage=" + doorbellLeaveMessage +
-                ", monitorSwitch=" + monitorSwitch +
-                ", sensorNetPush=" + sensorNetPush +
-                ", sensorVideoCall=" + sensorVideoCall +
-                ", sensorVideotap=" + sensorVideotap +
-                ", sensorSendMsg=" + sensorSendMsg +
-                ", sensorDial=" + sensorDial +
-                ", sensorRingAlarm=" + sensorRingAlarm +
+                "nickName='" + nickName + '\'' +
+                ", doorbellModelParam=" + doorbellModelParam +
+                ", doorbellSensorParam=" + doorbellSensorParam +
                 ", autoSensorTime=" + autoSensorTime +
-                ", masterNumber='" + masterNumber + '\'' +
-                ", sosNumber='" + sosNumber + '\'' +
                 ", videoLeaveMsgTime=" + videoLeaveMsgTime +
                 ", videotapTime=" + videotapTime +
                 ", doorbellLookTime=" + doorbellLookTime +
+                ", doorbellRingName='" + doorbellRingName + '\'' +
+                ", doorbellAlarmName='" + doorbellAlarmName + '\'' +
+                ", ringVolume=" + ringVolume +
+                ", alarmVolume=" + alarmVolume +
+                ", isExistOfflineData=" + isExistOfflineData +
+                ", faceRecognize=" + faceRecognize +
+                ", voiceprintRecognize=" + voiceprintRecognize +
+                ", doorbell=" + doorbell +
+                ", videoConfig=" + videoConfig +
                 '}';
     }
 }

@@ -40,15 +40,11 @@ public class CameraActivity extends BaseActivity implements VideoCameraHelper.On
     protected void init() {
         cRecord.setVisibility(View.GONE);
         SystemUtil.wakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP |
-                PowerManager.SCREEN_BRIGHT_WAKE_LOCK);
+                PowerManager.SCREEN_DIM_WAKE_LOCK);
         ControlCenter.sIsVideo = true;
         String type = getIntent().getStringExtra(Constant.TYPE);
         mCameraHelper = new VideoCameraHelper();
         mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
-        if (mDoorbellConfig.getMonitorSwitch() == 1) {
-            //暂时关闭停留报警
-            ControlCenter.getBCManager().setPIRSensorOn(false);
-        }
         surfaceCamera.getHolder().addCallback(mCameraHelper);
         int cameraNumber = mCameraHelper.GetCameraNumber();
         if (cameraNumber == 0) {
@@ -92,10 +88,6 @@ public class CameraActivity extends BaseActivity implements VideoCameraHelper.On
         if (mIsDestroyed)
             return;
         ControlCenter.sIsVideo = false;
-        if (mDoorbellConfig.getMonitorSwitch() == 1) {
-            //还原停留报警
-            ControlCenter.getBCManager().setPIRSensorOn(true);
-        }
         if (mRingAction != null) {
             mRingAction.stop();
             mRingAction = null;

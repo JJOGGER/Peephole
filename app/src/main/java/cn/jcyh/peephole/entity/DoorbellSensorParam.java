@@ -7,39 +7,33 @@ import android.os.Parcelable;
  * Created by jogger on 2018/2/23.
  */
 
-public class DoorbellParam implements Parcelable {
-    private int netPush;
-    private int videotap;
-    private int videoCall;
-    private int sendMsg;
-    private int dial;
-    private int leaveMessage;
-    private int ringAlarm;
-    private int monitor;
+public class DoorbellSensorParam implements Parcelable {
+    private int netPush=1;
+    private int videotap=0;
+    private int videoCall=1;
+    private int ringAlarm=0;
+    private int monitor=0;
 
-    public DoorbellParam() {
+    public DoorbellSensorParam() {
     }
 
-    protected DoorbellParam(Parcel in) {
+    protected DoorbellSensorParam(Parcel in) {
         netPush = in.readInt();
         videotap = in.readInt();
         videoCall = in.readInt();
-        sendMsg = in.readInt();
-        dial = in.readInt();
-        leaveMessage = in.readInt();
         ringAlarm = in.readInt();
         monitor = in.readInt();
     }
 
-    public static final Creator<DoorbellParam> CREATOR = new Creator<DoorbellParam>() {
+    public static final Creator<DoorbellSensorParam> CREATOR = new Creator<DoorbellSensorParam>() {
         @Override
-        public DoorbellParam createFromParcel(Parcel in) {
-            return new DoorbellParam(in);
+        public DoorbellSensorParam createFromParcel(Parcel in) {
+            return new DoorbellSensorParam(in);
         }
 
         @Override
-        public DoorbellParam[] newArray(int size) {
-            return new DoorbellParam[size];
+        public DoorbellSensorParam[] newArray(int size) {
+            return new DoorbellSensorParam[size];
         }
     };
 
@@ -67,30 +61,6 @@ public class DoorbellParam implements Parcelable {
         this.videoCall = videoCall;
     }
 
-    public int getSendMsg() {
-        return sendMsg;
-    }
-
-    public void setSendMsg(int sendMsg) {
-        this.sendMsg = sendMsg;
-    }
-
-    public int getDial() {
-        return dial;
-    }
-
-    public void setDial(int dial) {
-        this.dial = dial;
-    }
-
-    public int getLeaveMessage() {
-        return leaveMessage;
-    }
-
-    public void setLeaveMessage(int leaveMessage) {
-        this.leaveMessage = leaveMessage;
-    }
-
     public int getRingAlarm() {
         return ringAlarm;
     }
@@ -109,13 +79,10 @@ public class DoorbellParam implements Parcelable {
 
     @Override
     public String toString() {
-        return "DoorbellParam{" +
+        return "DoorbellModelParam{" +
                 "netPush=" + netPush +
                 ", videotap=" + videotap +
                 ", videoCall=" + videoCall +
-                ", sendMsg=" + sendMsg +
-                ", dial=" + dial +
-                ", leaveMessage=" + leaveMessage +
                 ", ringAlarm=" + ringAlarm +
                 ", monitor=" + monitor +
                 '}';
@@ -131,9 +98,6 @@ public class DoorbellParam implements Parcelable {
         dest.writeInt(netPush);
         dest.writeInt(videotap);
         dest.writeInt(videoCall);
-        dest.writeInt(sendMsg);
-        dest.writeInt(dial);
-        dest.writeInt(leaveMessage);
         dest.writeInt(ringAlarm);
         dest.writeInt(monitor);
     }

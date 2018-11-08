@@ -11,7 +11,9 @@ import cn.jcyh.peephole.entity.User;
 import cn.jcyh.peephole.entity.Version;
 import cn.jcyh.peephole.http.download.ProgressHttpListener;
 import cn.jcyh.peephole.utils.NetworkUtil;
+import cn.jcyh.peephole.utils.SystemUtil;
 import cn.jcyh.peephole.utils.T;
+import cn.jcyh.peephole.utils.Util;
 
 /**
  * Created by jogger on 2018/1/10.
@@ -39,36 +41,36 @@ public class HttpAction extends BaseHttpAction {
         return sHttpAction;
     }
 
-    public void initNIM(String deviceID, IDataListener<Doorbell> listener) {
+    public void initNIM(IDataListener<Doorbell> listener) {
         if (!NetworkUtil.isConnected()) return;
-        mHttpRequest.initNIM(deviceID, listener);
+        mHttpRequest.initNIM(listener);
     }
 
     /**
      * 设置猫眼名称
      */
-    public void setDoorbellName(String deviceID, String name, IDataListener<Boolean> listener) {
-        mHttpRequest.setDoorbellName(deviceID, name, listener);
+    public void setDoorbellName(String name, IDataListener<Boolean> listener) {
+        mHttpRequest.setDoorbellName(name, listener);
     }
 
     /**
      * 设置猫眼参数
      */
-    public void setDoorbellConfig(String deviceID, DoorbellConfig config, IDataListener<Boolean> listener) {
+    public void setDoorbellConfig(DoorbellConfig config, IDataListener<Boolean> listener) {
         if (!NetworkUtil.isConnected()) return;
-        mHttpRequest.setDoorbellConfig(deviceID, DoorbellConfig.getGson().toJson(config), listener);
+        mHttpRequest.setDoorbellConfig(DoorbellConfig.getGson().toJson(config), listener);
     }
 
-    public void getDoorbellConfig(String deviceID, final IDataListener<ConfigData> listener) {
+    public void getDoorbellConfig(final IDataListener<ConfigData> listener) {
         if (!NetworkUtil.isConnected()) return;
-        mHttpRequest.getDoorbellConfig(deviceID, listener);
+        mHttpRequest.getDoorbellConfig(listener);
     }
 
     /**
      * 解绑用户关系
      */
-    public void unbindUser(String userID, String deviceID, String authorizationCode, final IDataListener<Boolean> listener) {
-        mHttpRequest.unbindUser(userID, deviceID, authorizationCode, listener);
+    public void unbindUser(String userID, String authorizationCode, final IDataListener<Boolean> listener) {
+        mHttpRequest.unbindUser(userID, authorizationCode, listener);
     }
 
     /**
@@ -77,9 +79,14 @@ public class HttpAction extends BaseHttpAction {
 //    public void getADPictures(final IDataListener<List<Advert>> listener) {
 //        request2(HttpUrlIble.DOORBELL_AD_GET_URL, null, Advert.class, listener);
 //    }
-    public void sendDoorbellImg(String deviceId, String command, int type, String filePath, final IDataListener<Boolean> listener) {
-        if (!NetworkUtil.isConnected()) return;
-        mHttpRequest.sendDoorbellImg(deviceId, command, type, filePath, listener);
+    public void sendDoorbellImg(String command, int type, String filePath, final IDataListener<Boolean> listener) {
+        if (!NetworkUtil.isConnected()) {
+            if (listener != null) {
+                listener.onFailure(-1, Util.getApp().getString(R.string.network_is_not_available));
+                return;
+            }
+        }
+        mHttpRequest.sendDoorbellImg(command, type, filePath, listener);
     }
 
     /**
@@ -109,18 +116,18 @@ public class HttpAction extends BaseHttpAction {
             T.show(R.string.network_is_not_available);
             return;
         }
-        mHttpRequest.updateSystem(versionCode,sysVersion, screenResolution, listener);
+        mHttpRequest.updateSystem(versionCode, sysVersion, screenResolution, listener);
     }
 
     /**
      * 获取版本信息
      */
-    public void updateSoft( String sysVersion, String screenResolution, IDataListener<Version> listener) {
+    public void updateSoft(String sysVersion, String screenResolution, IDataListener<Version> listener) {
         if (!NetworkUtil.isConnected()) {
             T.show(R.string.network_is_not_available);
             return;
         }
-        mHttpRequest.updateSoft( sysVersion, screenResolution, listener);
+        mHttpRequest.updateSoft(sysVersion, screenResolution, listener);
     }
 
     /**
@@ -133,34 +140,69 @@ public class HttpAction extends BaseHttpAction {
     /**
      * 上传电量
      */
-    public void uploadBattery(String imei, int battery, IDataListener<Boolean> listener) {
-        mHttpRequest.uploadBattery(imei, battery, listener);
+    public void uploadBattery(int battery, IDataListener<Boolean> listener) {
+        if (!NetworkUtil.isConnected()) return;
+        mHttpRequest.uploadBattery(battery, listener);
     }
 
     /**
      * 获取banner
      */
-    public void getBanners(int terminalSize, IDataListener<AdvertData> listener) {
+    public void getBanners(IDataListener<AdvertData> listener) {
         if (!NetworkUtil.isConnected()) return;
+        int terminalSize = SystemUtil.getTerminalSize();
         mHttpRequest.getBanners(terminalSize, listener);
     }
 
     /**
      * 获取绑定猫眼的用户列表
      */
-    public void getBindUsers(String imei, IDataListener<List<User>> listener) {
+    public void getBindUsers(IDataListener<List<User>> listener) {
         if (!NetworkUtil.isConnected()) {
             T.show(R.string.network_is_not_available);
             return;
         }
-        mHttpRequest.getBindUsers(imei, listener);
+        mHttpRequest.getBindUsers(listener);
     }
 
     /**
      * 指定设备的管理员
      */
-    public void setDoorbellManager(String imei, String userID, String authorizationCode, IDataListener<List<User>> listener) {
-        mHttpRequest.setDoorbellManager(imei, userID, authorizationCode, listener);
+    public void setDoorbellManager(String userID, String authorizationCode, IDataListener<List<User>> listener) {
+        mHttpRequest.setDoorbellManager(userID, authorizationCode, listener);
+    }
+
+    /**
+     * 上传防拆报警
+     */
+    public void antiBreakAlarm(boolean isAlarm, IDataListener listener) {
+        if (!NetworkUtil.isConnected()) return;
+        mHttpRequest.antiBreakAlarm(isAlarm, listener);
+    }
+
+    /**
+     * 上传门磁状态
+     */
+    public void doorbellMagneticNotice(boolean isOpen, IDataListener listener) {
+        if (!NetworkUtil.isConnected()) return;
+        mHttpRequest.doorbellMagneticNotice(isOpen, listener);
+    }
+
+    /**
+     * 上传用户通话时长
+     */
+    public void userTaklTimeRecord(String userID, long sessionDuration, IDataListener listener) {
+        if (!NetworkUtil.isConnected()) return;
+        mHttpRequest.userTaklTimeRecord(userID, sessionDuration, listener);
+    }
+
+    /**
+     * 上传定位
+     */
+    public void uploadLocation(double longitude, double latitude, String country, String province,
+                               String city, String district, String street, String addrStr, IDataListener listener) {
+        if (!NetworkUtil.isConnected()) return;
+        mHttpRequest.uploadLocation(longitude, latitude, country, province, city, district, street, addrStr, listener);
     }
 }
 

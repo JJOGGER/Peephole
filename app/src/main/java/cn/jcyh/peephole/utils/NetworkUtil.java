@@ -50,6 +50,7 @@ public class NetworkUtil {
                         .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         );
     }
+
     public static int getNetworkTypeForLink(Context context) {
         try {
             ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -90,6 +91,7 @@ public class NetworkUtil {
         }
         return LinkNetWorkType.UNKNOWN;
     }
+
     public interface LinkNetWorkType {
         public static final int UNKNOWN = 0;
         public static final int WIFI = 1;
@@ -98,6 +100,7 @@ public class NetworkUtil {
         public static final int _3G = 4;
         public static final int _4G = 5;
     }
+
     /**
      * Return whether network is connected.
      * <p>Must hold
@@ -108,7 +111,7 @@ public class NetworkUtil {
     @RequiresPermission(ACCESS_NETWORK_STATE)
     public static boolean isConnected() {
         NetworkInfo info = getActiveNetworkInfo();
-        return info != null && info.isConnected();
+        return info != null && info.isConnected() || info != null && info.getState() == NetworkInfo.State.CONNECTED;
     }
 
     /**

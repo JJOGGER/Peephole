@@ -14,21 +14,21 @@ public class UserStatusObserver implements Observer<StatusCode> {
     public void onEvent(StatusCode statusCode) {
         if (statusCode == StatusCode.UNLOGIN) {
             //未登录
-            L.e("----------未登录");
+            L.i("----------未登录");
 //            NIMClient.getService(AuthService.class).logout();
         } else if (statusCode == StatusCode.NET_BROKEN) {
             //当前网络不可用
             L.e("----------当前网络不可用");
         } else if (statusCode == StatusCode.CONNECTING) {
             //连接中
-            L.e("----------连接中");
+            L.i("----------连接中");
         } else if (statusCode == StatusCode.LOGINING) {
             //登录中
-            L.e("----------登录中");
+            L.i("----------登录中");
         } else if (statusCode == StatusCode.SYNCING) {
-            L.e("----------正在同步数据");
+            L.i("----------正在同步数据");
         } else if (statusCode == StatusCode.LOGINED) {
-            L.e("----------已成功登录");
+            L.i("----------已成功登录");
             OnlineStateEventManager.publishOnlineStateEvent();
         } else if (statusCode == StatusCode.KICKOUT) {
             L.e("----------被其他端的登录踢掉");

@@ -12,6 +12,7 @@
         android:id="@+id/banner"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        app:image_scale_type="fit_xy"
         app:banner_default_image="@mipmap/no_banner"
         app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
         app:layout_constraintEnd_toEndOf="parent"
@@ -149,17 +150,17 @@
         </FrameLayout>
 
         <TextView
-            android:id="@+id/tv_sos_number"
+            android:id="@+id/tv_unlock"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:drawablePadding="@dimen/y8"
-            android:drawableTop="@mipmap/device_phone"
+            android:drawableTop="@mipmap/device_lock"
             android:gravity="center"
             android:includeFontPadding="false"
             android:paddingEnd="@dimen/x39"
             android:paddingStart="@dimen/x39"
             android:paddingTop="@dimen/y10"
-            android:text="@string/sos_phone"
+            android:text="@string/open_lock"
             android:textColor="@color/white"
             android:textSize="@dimen/x24"
             app:layout_constraintBottom_toBottomOf="@+id/tv_monitor_switch"
@@ -179,9 +180,9 @@
             android:text="@string/look_outdoor"
             android:textColor="@color/white"
             android:textSize="@dimen/x24"
-            app:layout_constraintBottom_toBottomOf="@+id/tv_sos_number"
-            app:layout_constraintStart_toEndOf="@+id/tv_sos_number"
-            app:layout_constraintTop_toTopOf="@+id/tv_sos_number"/>
+            app:layout_constraintBottom_toBottomOf="@+id/tv_unlock"
+            app:layout_constraintStart_toEndOf="@+id/tv_unlock"
+            app:layout_constraintTop_toTopOf="@+id/tv_unlock"/>
         <!--<RelativeLayout
             android:id="@+id/rl_media_record"
             android:layout_width="@dimen/x100"

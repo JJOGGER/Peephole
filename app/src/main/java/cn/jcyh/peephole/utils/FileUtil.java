@@ -8,6 +8,8 @@ import android.os.Environment;
 import android.os.storage.StorageManager;
 import android.text.TextUtils;
 
+import com.mediatek.storage.StorageManagerEx;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -52,8 +54,9 @@ public class FileUtil {
      * 猫眼图片路径
      */
     public static String getDoorbellImgPath() {
-        String path = Environment.getExternalStoragePublicDirectory(Environment
-                .DIRECTORY_DCIM).getAbsolutePath() + File.separator + "Camera";
+//        String path = Environment.getExternalStoragePublicDirectory(Environment
+//                .DIRECTORY_DCIM).getAbsolutePath() + File.separator + "Camera";
+        String path = StorageManagerEx.getDefaultPath() + File.separator + "DCIM" + File.separator + "Camera";
         File file = new File(path + File.separator + "thumbnail");
         if (!file.exists()) {
             boolean mkdirs = file.mkdirs();
@@ -71,8 +74,7 @@ public class FileUtil {
      * 猫眼图片路径
      */
     public static String getDoorbellVideoPath() {
-        String path = Environment.getExternalStoragePublicDirectory(Environment
-                .DIRECTORY_DCIM).getAbsolutePath() + File.separator + "Camera";
+        String path = StorageManagerEx.getDefaultPath() + File.separator + "DCIM" + File.separator + "Camera";
         File file = new File(path);
         if (!file.exists()) {
             boolean mkdir = file.mkdir();
@@ -160,7 +162,7 @@ public class FileUtil {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            L.e("APP缓存路径获取失败"+e.getMessage());
+            L.e("APP缓存路径获取失败" + e.getMessage());
         }
         if (TextUtils.isEmpty(storageRootPath)) {
             // SD卡应用公共存储区(APP卸载后，该目录不会被清除，下载安装APP后，缓存数据依然可以被加载。SDK默认使用此目录)，该存储区域需要写权限!

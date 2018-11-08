@@ -40,13 +40,13 @@ public class BatteryReceiver extends BroadcastReceiver {
                         } else {
                             //发推送
                             SPUtil.getInstance().put(Constant.BATTERY, true);//置反
-                            HttpAction.getHttpAction().uploadBattery(ControlCenter.getSN(), battery, null);
+                            HttpAction.getHttpAction().uploadBattery(battery, null);
                         }
                     } else if (battery <= 5) {
                         boolean isBattery = SPUtil.getInstance().getBoolean(Constant.BATTERY);
                         if (isBattery) {
                             //发推送
-                            HttpAction.getHttpAction().uploadBattery(ControlCenter.getSN(), battery, null);
+                            HttpAction.getHttpAction().uploadBattery( battery, null);
                             SPUtil.getInstance().put(Constant.BATTERY, false);//置反
                         } else {
                             //不发推送

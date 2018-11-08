@@ -92,16 +92,16 @@ public class DESUtil {
                     cos.close();
                     os.close();
                     is.close();
-//                    bis.close();
-//                    bos.close();
-//                    handler.post(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            if (listener != null) {
-//                                listener.onSuccess(true);
-//                            }
-//                        }
-//                    });
+                    bis.close();
+                    bos.close();
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (listener != null) {
+                                listener.onSuccess(true);
+                            }
+                        }
+                    });
 
                 } catch (Exception e) {
                     e.printStackTrace();

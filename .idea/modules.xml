@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/OpenCVLibrary320/OpenCVLibrary320.iml" filepath="$PROJECT_DIR$/OpenCVLibrary320/OpenCVLibrary320.iml" />
       <module fileurl="file://$PROJECT_DIR$/PeepholeNIM.iml" filepath="$PROJECT_DIR$/PeepholeNIM.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/eaglelock/eaglelock.iml" filepath="$PROJECT_DIR$/eaglelock/eaglelock.iml" />

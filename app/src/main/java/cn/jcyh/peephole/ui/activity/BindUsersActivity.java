@@ -5,6 +5,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import com.chad.library.adapter.base.BaseQuickAdapter;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -25,7 +27,6 @@ import cn.jcyh.peephole.ui.dialog.CommonEditDialog;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.HintDialogFragmemt;
 import cn.jcyh.peephole.ui.dialog.OnDialogListener;
-import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.T;
 
 //绑定用户列表
@@ -48,7 +49,7 @@ public class BindUsersActivity extends BaseActivity implements BindUsersAdapter.
         if (!EventBus.getDefault().isRegistered(this))
             EventBus.getDefault().register(this);
         rvContent.setLayoutManager(new LinearLayoutManager(this));
-        mAdapter = new BindUsersAdapter();
+        mAdapter = new BindUsersAdapter(null);
         mAdapter.setOnItemClickListener(this);
         rvContent.setAdapter(mAdapter);
         mProgressDialog = new ProgressDialog(this);
@@ -62,7 +63,7 @@ public class BindUsersActivity extends BaseActivity implements BindUsersAdapter.
             @Override
             public void onSuccess(List<User> users) {
                 Collections.sort(users);
-                mAdapter.loadData(users);
+                mAdapter.setNewData(users);
             }
 
             @Override
@@ -77,52 +78,12 @@ public class BindUsersActivity extends BaseActivity implements BindUsersAdapter.
         finish();
     }
 
-    @Override
-    public void onItemClick(final User user, int pos) {
-        if (mUnbindDialog == null) {
-            final CommonEditDialog commonEditDialog = new CommonEditDialog();
-            commonEditDialog.setTitle(getString(R.string.unbind_user));
-            commonEditDialog.setHintContent(getString(R.string.input_auth_code));
-            commonEditDialog.setOnDialogListener(new OnDialogListener() {
-                @Override
-                public void onConfirm(final Object content) {
-                    L.e("-------user:" + user);
-                    if (user.isAdmin()) {
-                        if (mAdminBindHintDialog == null) {
-                            HintDialogFragmemt hintDialogFragmemt = new HintDialogFragmemt();
-                            hintDialogFragmemt.setHintContent(getString(R.string.unbind_admin_msg));
-                            hintDialogFragmemt.setOnHintDialogListener(new HintDialogFragmemt.OnHintDialogListener() {
-                                @Override
-                                public void onConfirm(boolean isConfirm) {
-                                    if (isConfirm) {
-                                        unbindUser(user, content.toString());
-                                    }
-                                    mAdminBindHintDialog.dismiss();
-                                }
-                            });
-                            mAdminBindHintDialog = new DialogHelper(BindUsersActivity.this, hintDialogFragmemt);
-                        }
-                        mAdminBindHintDialog.commit();
-                    } else {
-                        unbindUser(user, content.toString());
-                    }
-
-                }
-            });
-            mUnbindDialog = new DialogHelper(this, commonEditDialog);
-        }
-        CommonEditDialog dialogFragment = (CommonEditDialog) mUnbindDialog.getDialogFragment();
-        if (dialogFragment != null)
-            dialogFragment.setContent("");
-        mUnbindDialog.commit();
-    }
-
     /**
      * 解绑设备
      */
     private void unbindUser(User user, String code) {
         showProgressDialog();
-        ControlCenter.getUserManager().unbindUser(user.getUserId(), SN, code, new IDataListener<Boolean>() {
+        ControlCenter.getUserManager().unbindUser(user.getUserId(),code, new IDataListener<Boolean>() {
             @Override
             public void onSuccess(Boolean b) {
                 cancelProgressDialog();
@@ -152,5 +113,42 @@ public class BindUsersActivity extends BaseActivity implements BindUsersAdapter.
             mUnbindDialog.dismiss();
         if (mProgressDialog != null && mProgressDialog.isShowing())
             mProgressDialog.dismiss();
+    }
+
+    @Override
+    public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
+        final User user = (User) adapter.getItem(position);
+        if (user == null) return;
+        final CommonEditDialog commonEditDialog = new CommonEditDialog();
+        commonEditDialog.setTitle(getString(R.string.unbind_user));
+        commonEditDialog.setHintContent(getString(R.string.input_auth_code));
+        commonEditDialog.setContent("");
+        commonEditDialog.setOnDialogListener(new OnDialogListener() {
+            @Override
+            public void onConfirm(final Object content) {
+                if (user.isAdmin()) {
+                    if (mAdminBindHintDialog == null) {
+                        HintDialogFragmemt hintDialogFragmemt = new HintDialogFragmemt();
+                        hintDialogFragmemt.setHintContent(getString(R.string.unbind_admin_msg));
+                        hintDialogFragmemt.setOnHintDialogListener(new HintDialogFragmemt.OnHintDialogListener() {
+                            @Override
+                            public void onConfirm(boolean isConfirm) {
+                                if (isConfirm) {
+                                    unbindUser(user, content.toString());
+                                }
+                                mAdminBindHintDialog.dismiss();
+                            }
+                        });
+                        mAdminBindHintDialog = new DialogHelper(BindUsersActivity.this, hintDialogFragmemt);
+                    }
+                    mAdminBindHintDialog.commit();
+                } else {
+                    unbindUser(user, content.toString());
+                }
+
+            }
+        });
+        mUnbindDialog = new DialogHelper(this, commonEditDialog);
+        mUnbindDialog.commit();
     }
 }

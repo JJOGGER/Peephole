@@ -32,7 +32,7 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onFoundDevice(ExtendedBluetoothDevice extendedBluetoothDevice) {
-        Log.i(TAG,"------------onFoundDevice");
+        Log.i(TAG, "------------onFoundDevice");
         //发现设备并广播
         Intent intent = new Intent(Constant.ACTION_BLE_DEVICE);
         intent.putExtra(Constant.DEVICE, extendedBluetoothDevice);
@@ -65,17 +65,18 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onDeviceConnected(ExtendedBluetoothDevice extendedBluetoothDevice) {
-        Log.e(TAG,"--------onDeviceConnected:" + MyLockAPI.sBleSession.getOperation());
+        Log.e(TAG, "--------onDeviceConnected:" + MyLockAPI.sBleSession.getOperation());
         MyLockAPI lockAPI = MyLockAPI.getLockAPI();
         LockKey localKey = null;
         String operation = MyLockAPI.sBleSession.getOperation();
         if (Operation.ADD_ADMIN.equals(operation)) {
             lockAPI.addAdministrator(extendedBluetoothDevice);
         }
+
         if (localKey == null) return;
         switch (operation) {
             case Operation.LOCKCAR_DOWN:
-                Log.e(TAG,"--------------UNLOCK" + localKey);
+                Log.e(TAG, "--------------UNLOCK" + localKey);
                 //本地存在锁
                 if (localKey.isAdmin()) {
                     lockAPI.unlockByAdministrator(extendedBluetoothDevice, localKey);
@@ -90,11 +91,11 @@ public class MyLockCallback implements LockCallback {
                 Bundle argments = MyLockAPI.sBleSession.getArgments();
                 localKey.setStartDate(argments.getLong(Constant.START_DATE));
                 localKey.setEndDate(argments.getLong(Constant.END_DATE));
-                Log.e(TAG,"------CUSTOM_PWD");
+                Log.e(TAG, "------CUSTOM_PWD");
                 lockAPI.addPeriodKeyboardPassword(extendedBluetoothDevice, argments.getString(Constant.PWD), localKey);
                 break;
             case Operation.DELETE_ONE_KEYBOARDPASSWORD://刪除密碼
-                Log.e(TAG,"---------DELETE_ONE_KEYBOARDPASSWORD");
+                Log.e(TAG, "---------DELETE_ONE_KEYBOARDPASSWORD");
                 argments = MyLockAPI.sBleSession.getArgments();
                 LockPwdRecord lockPwdRecord = argments.getParcelable(Constant.PWD_INFO);
                 if (lockPwdRecord == null) return;
@@ -162,7 +163,7 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onDeviceDisconnected(ExtendedBluetoothDevice extendedBluetoothDevice) {
-         Log.e(TAG,"-----------onDeviceDisconnected");
+        Log.e(TAG, "-----------onDeviceDisconnected");
         //断开连接
         MyLockAPI.sBleSession.setOperation(Operation.LOCKCAR_DOWN);
         Intent intent = new Intent(Constant.ACTION_BLE_DISCONNECTED);
@@ -177,18 +178,18 @@ public class MyLockCallback implements LockCallback {
     @Override
     public void onGetLockVersion(ExtendedBluetoothDevice extendedBluetoothDevice, int var2, int var3, int var4,
                                  int var5, int var6, Error var7) {
-         Log.e(TAG,"-----------onGetLockVersion");
+        Log.e(TAG, "-----------onGetLockVersion");
     }
 
     @Override
     public void onAddAdministrator(ExtendedBluetoothDevice extendedBluetoothDevice, String lockVersionString, String adminPs, String unlockKey, String adminKeyboardPwd, String deletePwd, String pwdInfo, long timestamp, String aesKeystr, int feature, String modelNumber, String hardwareRevision, String firmwareRevision, Error error) {
-         Log.e(TAG,"-----------onAddAdministrator");
+        Log.e(TAG, "-----------onAddAdministrator");
         addAdmin(extendedBluetoothDevice, lockVersionString, adminPs, unlockKey, adminKeyboardPwd, deletePwd, pwdInfo, timestamp, aesKeystr, feature, modelNumber, hardwareRevision, firmwareRevision, error);
     }
 
     @Override
     public void onResetEKey(ExtendedBluetoothDevice extendedBluetoothDevice, int lockFlagPos, Error error) {
-         Log.e(TAG,"-----------onResetEKey");
+        Log.e(TAG, "-----------onResetEKey");
         Intent intent = new Intent(Constant.ACTION_RESET_KEY);
         intent.putExtra(Constant.ERROR_MSG, error);
         mLocalBroadcastManager.sendBroadcast(intent);
@@ -196,13 +197,13 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onSetLockName(ExtendedBluetoothDevice extendedBluetoothDevice, String var2, Error var3) {
-         Log.e(TAG,"-----------onSetLockName");
+        Log.e(TAG, "-----------onSetLockName");
     }
 
     @Override
     public void onSetAdminKeyboardPassword(ExtendedBluetoothDevice extendedBluetoothDevice, String adminCode, Error
             error) {
-         Log.e(TAG,"-----------onSetAdminKeyboardPassword" + adminCode);
+        Log.e(TAG, "-----------onSetAdminKeyboardPassword" + adminCode);
         Intent intent = new Intent(Constant.ACTION_SET_ADMIN_PWD);
         intent.putExtra(Constant.ERROR_MSG, error);
         intent.putExtra(Constant.PWD, adminCode);
@@ -211,17 +212,16 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onSetDeletePassword(ExtendedBluetoothDevice extendedBluetoothDevice, String var2, Error var3) {
-         Log.e(TAG,"-----------onSetDeletePassword");
+        Log.e(TAG, "-----------onSetDeletePassword");
     }
 
     /**
      * @param uniqueid 开锁的唯一标识id 只有三代锁有用 其它默认(取系统时间)
      * @param lockTime 锁时间 只有三代锁有用 其它默认(取系统时间)
-     * @param error
      */
     @Override
     public void onUnlock(ExtendedBluetoothDevice extendedBluetoothDevice, int uid, int uniqueid, long lockTime, Error error) {
-         Log.e(TAG,"---------onUnlock:" + error);
+        Log.e(TAG, "---------onUnlock:" + error);
         Intent intent = new Intent(Constant.ACTION_UNLOCK);
         intent.putExtra(Constant.ERROR_MSG, error);
         intent.putExtra(Constant.LOCK_ADDRESS, extendedBluetoothDevice.getAddress());
@@ -234,7 +234,7 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onSetLockTime(ExtendedBluetoothDevice extendedBluetoothDevice, Error error) {
-         Log.e(TAG,"-----------onSetLockTime");
+        Log.e(TAG, "-----------onSetLockTime");
         Intent intent = new Intent(Constant.ACTION_LOCK_SYNC_TIME);
         intent.putExtra(Constant.ERROR_MSG, error);
         mLocalBroadcastManager.sendBroadcast(intent);
@@ -242,7 +242,7 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onGetLockTime(ExtendedBluetoothDevice extendedBluetoothDevice, long date, Error error) {
-         Log.e(TAG,"-----------onGetLockTime");
+        Log.e(TAG, "-----------onGetLockTime");
         Intent intent = new Intent(Constant.ACTION_LOCK_GET_TIME);
         intent.putExtra(Constant.ERROR_MSG, error);
         intent.putExtra(Constant.DATE, date);
@@ -251,7 +251,7 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onResetKeyboardPassword(ExtendedBluetoothDevice extendedBluetoothDevice, String pwdInfo, long timestamp, Error error) {
-         Log.e(TAG,"-----------onResetKeyboardPassword" + pwdInfo + "--?" + timestamp);
+        Log.e(TAG, "-----------onResetKeyboardPassword" + pwdInfo + "--?" + timestamp);
         Intent intent = new Intent(Constant.ACTION_RESET_PWD);
         intent.putExtra(Constant.ERROR_MSG, error);
         intent.putExtra(Constant.PWD_RESET_DATA, pwdInfo);
@@ -262,18 +262,18 @@ public class MyLockCallback implements LockCallback {
     @Override
     public void onSetMaxNumberOfKeyboardPassword(ExtendedBluetoothDevice extendedBluetoothDevice, int var2, Error
             var3) {
-         Log.e(TAG,"-----------onSetMaxNumberOfKeyboardPassword");
+        Log.e(TAG, "-----------onSetMaxNumberOfKeyboardPassword");
     }
 
     @Override
     public void onResetKeyboardPasswordProgress(ExtendedBluetoothDevice extendedBluetoothDevice, int var2, Error
             var3) {
-         Log.e(TAG,"-----------onResetKeyboardPasswordProgress");
+        Log.e(TAG, "-----------onResetKeyboardPasswordProgress");
     }
 
     @Override
     public void onResetLock(ExtendedBluetoothDevice extendedBluetoothDevice, Error error) {
-         Log.e(TAG,"-----------onResetLock");
+        Log.e(TAG, "-----------onResetLock");
         Intent intent = new Intent(Constant.ACTION_RESET_LOCK);
         intent.putExtra(Constant.ERROR_MSG, error);
         mLocalBroadcastManager.sendBroadcast(intent);
@@ -283,7 +283,7 @@ public class MyLockCallback implements LockCallback {
     @Override
     public void onAddKeyboardPassword(ExtendedBluetoothDevice extendedBluetoothDevice, int var2, String customPwd,
                                       long startTime, long endTime, Error error) {
-         Log.e(TAG,"-----------onAddKeyboardPassword" + customPwd);
+        Log.e(TAG, "-----------onAddKeyboardPassword" + customPwd);
         Intent intent = new Intent(Constant.ACTION_CUSTOM_PWD);
         intent.putExtra(Constant.ERROR_MSG, error);
         mLocalBroadcastManager.sendBroadcast(intent);
@@ -292,12 +292,12 @@ public class MyLockCallback implements LockCallback {
     @Override
     public void onModifyKeyboardPassword(ExtendedBluetoothDevice extendedBluetoothDevice, int var2, String
             var3, String var4, Error var5) {
-         Log.e(TAG,"-----------onModifyKeyboardPassword");
+        Log.e(TAG, "-----------onModifyKeyboardPassword");
     }
 
     @Override
     public void onDeleteOneKeyboardPassword(ExtendedBluetoothDevice extendedBluetoothDevice, int keyboardPwdType, String deletedPwd, Error error) {
-         Log.e(TAG,"-----------onDeleteOneKeyboardPassword");
+        Log.e(TAG, "-----------onDeleteOneKeyboardPassword");
         Intent intent = new Intent(Constant.ACTION_DELETE_PWD);
         intent.putExtra(Constant.ERROR_MSG, error);
         mLocalBroadcastManager.sendBroadcast(intent);
@@ -305,30 +305,30 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onDeleteAllKeyboardPassword(ExtendedBluetoothDevice extendedBluetoothDevice, Error var2) {
-         Log.e(TAG,"-----------onDeleteAllKeyboardPassword");
+        Log.e(TAG, "-----------onDeleteAllKeyboardPassword");
     }
 
     @Override
     public void onGetOperateLog(ExtendedBluetoothDevice extendedBluetoothDevice, String records, Error error) {
-         Log.e(TAG,"-----------onGetOperateLog");
+        Log.e(TAG, "-----------onGetOperateLog");
         if (Error.SUCCESS != error) return;
         //根据accessToken和lockmac获取钥匙
 //        if (ControlCenter.sCurrentKey != null && ControlCenter.sCurrentKey.getLockMac().equals(extendedBluetoothDevice.getAddress())) {
 //            LockHttpAction.getHttpAction().uploadLockRecords(ControlCenter.sCurrentKey.getLockId(), records, null);
 //        }
-         Log.e(TAG,"----------records:" + records + "-->" + error);
+        Log.e(TAG, "----------records:" + records + "-->" + error);
     }
 
     @Override
     public void onSearchDeviceFeature(ExtendedBluetoothDevice extendedBluetoothDevice, int var2, int var3, Error
             var4) {
-         Log.e(TAG,"-----------onSearchDeviceFeature");
+        Log.e(TAG, "-----------onSearchDeviceFeature");
     }
 
     @Override
     public void onAddICCard(ExtendedBluetoothDevice extendedBluetoothDevice, int status, int battery, long cardNo, Error error) {
         //onAddICCard2--9--1036620029
-         Log.e(TAG,"-----------onAddICCard" + status + "--" + battery + "--" + cardNo);
+        Log.e(TAG, "-----------onAddICCard" + status + "--" + battery + "--" + cardNo);
         Intent intent = new Intent(Constant.ACTION_LOCK_IC_CARD);
         intent.putExtra(Constant.TYPE, Constant.TYPE_ADD_IC_CARD);
         intent.putExtra(Constant.ERROR_MSG, error);
@@ -339,7 +339,7 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onModifyICCardPeriod(ExtendedBluetoothDevice extendedBluetoothDevice, int battery, long cardNo, long startDate, long endDate, Error error) {
-         Log.e(TAG,"-----------onModifyICCardPeriod" + startDate + "-->" + endDate);
+        Log.e(TAG, "-----------onModifyICCardPeriod" + startDate + "-->" + endDate);
         Intent intent = new Intent(Constant.ACTION_LOCK_IC_CARD);
         intent.putExtra(Constant.TYPE, Constant.TYPE_MODIFY_IC_CARD);
         intent.putExtra(Constant.IC_CARD_NUMBER, cardNo);
@@ -351,7 +351,7 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onDeleteICCard(ExtendedBluetoothDevice extendedBluetoothDevice, int battery, long cardNo, Error error) {
-         Log.e(TAG,"-----------onDeleteICCard");
+        Log.e(TAG, "-----------onDeleteICCard");
         Intent intent = new Intent(Constant.ACTION_LOCK_IC_CARD);
         intent.putExtra(Constant.TYPE, Constant.TYPE_DELETE_IC_CARD);
         intent.putExtra(Constant.ERROR_MSG, error);
@@ -361,7 +361,7 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onClearICCard(ExtendedBluetoothDevice extendedBluetoothDevice, int battery, Error error) {
-         Log.e(TAG,"-----------onClearICCard");
+        Log.e(TAG, "-----------onClearICCard");
         Intent intent = new Intent(Constant.ACTION_LOCK_IC_CARD);
         intent.putExtra(Constant.TYPE, Constant.TYPE_CLEAR_IC_CARD);
         intent.putExtra(Constant.ERROR_MSG, error);
@@ -370,17 +370,17 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onSetWristbandKeyToLock(ExtendedBluetoothDevice extendedBluetoothDevice, int var2, Error var3) {
-         Log.e(TAG,"-----------onSetWristbandKeyToLock");
+        Log.e(TAG, "-----------onSetWristbandKeyToLock");
     }
 
     @Override
     public void onSetWristbandKeyToDev(Error error) {
-         Log.e(TAG,"-----------onSetWristbandKeyToDev");
+        Log.e(TAG, "-----------onSetWristbandKeyToDev");
     }
 
     @Override
     public void onSetWristbandKeyRssi(Error error) {
-         Log.e(TAG,"-----------onSetWristbandKeyRssi");
+        Log.e(TAG, "-----------onSetWristbandKeyRssi");
     }
 
     @Override
@@ -390,7 +390,7 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onAddFingerPrint(ExtendedBluetoothDevice extendedBluetoothDevice, int status, int bery, long fingerPrintNo, int maxVail, Error error) {
-         Log.e(TAG,"-----------onAddFingerPrint:" + "status:" + status + "-->fingerPrintNo:" + fingerPrintNo + "-->maxVail:" + maxVail + "error:" + error);
+        Log.e(TAG, "-----------onAddFingerPrint:" + "status:" + status + "-->fingerPrintNo:" + fingerPrintNo + "-->maxVail:" + maxVail + "error:" + error);
         Intent intent = new Intent(Constant.ACTION_LOCK_FINGERPRINT);
         intent.putExtra(Constant.TYPE, Constant.TYPE_ADD_FINGERPRINT);
         intent.putExtra(Constant.FRNO, fingerPrintNo);
@@ -407,7 +407,7 @@ public class MyLockCallback implements LockCallback {
     @Override
     public void onFingerPrintCollection(ExtendedBluetoothDevice extendedBluetoothDevice, int battery, int vail,
                                         int maxVail, Error error) {
-         Log.e(TAG,"-----------onFingerPrintCollection" + vail + "--:" + maxVail);//1--:4
+        Log.e(TAG, "-----------onFingerPrintCollection" + vail + "--:" + maxVail);//1--:4
         Intent intent = new Intent(Constant.ACTION_LOCK_FINGERPRINT);
         intent.putExtra(Constant.TYPE, Constant.TYPE_COLLECTION_FINGERPRINT);
         intent.putExtra(Constant.ERROR_MSG, error);
@@ -418,7 +418,7 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onModifyFingerPrintPeriod(ExtendedBluetoothDevice extendedBluetoothDevice, int battery, long FRNo, long startDate, long endDate, Error error) {
-         Log.e(TAG,"-----------onModifyFingerPrintPeriod");
+        Log.e(TAG, "-----------onModifyFingerPrintPeriod");
         Intent intent = new Intent(Constant.ACTION_LOCK_FINGERPRINT);
         intent.putExtra(Constant.TYPE, Constant.TYPE_MODIFY_FINGERPRINT);
         intent.putExtra(Constant.FRNO, FRNo);
@@ -430,7 +430,7 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onDeleteFingerPrint(ExtendedBluetoothDevice extendedBluetoothDevice, int battery, long FRNo, Error error) {
-         Log.e(TAG,"-----------onDeleteFingerPrint");
+        Log.e(TAG, "-----------onDeleteFingerPrint");
         Intent intent = new Intent(Constant.ACTION_LOCK_FINGERPRINT);
         intent.putExtra(Constant.TYPE, Constant.TYPE_DELETE_FINGERPRINT);
         intent.putExtra(Constant.FRNO, FRNo);
@@ -440,7 +440,7 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onClearFingerPrint(ExtendedBluetoothDevice extendedBluetoothDevice, int battery, Error error) {
-         Log.e(TAG,"-----------onClearFingerPrint");
+        Log.e(TAG, "-----------onClearFingerPrint");
         Intent intent = new Intent(Constant.ACTION_LOCK_FINGERPRINT);
         intent.putExtra(Constant.TYPE, Constant.TYPE_CLEAR_FINGERPRINT);
         intent.putExtra(Constant.ERROR_MSG, error);
@@ -450,74 +450,74 @@ public class MyLockCallback implements LockCallback {
     @Override
     public void onSearchAutoLockTime(ExtendedBluetoothDevice extendedBluetoothDevice, int var2, int var3, int var4,
                                      int var5, Error var6) {
-         Log.e(TAG,"-----------onSearchAutoLockTime");
+        Log.e(TAG, "-----------onSearchAutoLockTime");
     }
 
     @Override
     public void onModifyAutoLockTime(ExtendedBluetoothDevice extendedBluetoothDevice, int var2, int var3, Error
             var4) {
-         Log.e(TAG,"-----------onModifyAutoLockTime");
+        Log.e(TAG, "-----------onModifyAutoLockTime");
     }
 
     @Override
     public void onReadDeviceInfo(ExtendedBluetoothDevice extendedBluetoothDevice, String var2, String var3, String
             var4, String var5, String var6) {
-         Log.e(TAG,"-----------onReadDeviceInfo");
+        Log.e(TAG, "-----------onReadDeviceInfo");
     }
 
     @Override
     public void onEnterDFUMode(ExtendedBluetoothDevice extendedBluetoothDevice, Error var2) {
-         Log.e(TAG,"-----------onEnterDFUMode");
+        Log.e(TAG, "-----------onEnterDFUMode");
     }
 
     @Override
     public void onGetLockSwitchState(ExtendedBluetoothDevice extendedBluetoothDevice, int var2, int var3, Error
             var4) {
-         Log.e(TAG,"-----------onGetLockSwitchState");
+        Log.e(TAG, "-----------onGetLockSwitchState");
     }
 
     @Override
     public void onLock(ExtendedBluetoothDevice extendedBluetoothDevice, int battery, int uid, int uniqueid, long lockTime, Error error) {
-         Log.e(TAG,"-----------onLock");
+        Log.e(TAG, "-----------onLock");
     }
 
     @Override
     public void onScreenPasscodeOperate(ExtendedBluetoothDevice extendedBluetoothDevice, int var2, int var3, Error
             var4) {
-         Log.e(TAG,"-----------onScreenPasscodeOperate");
+        Log.e(TAG, "-----------onScreenPasscodeOperate");
     }
 
     @Override
     public void onRecoveryData(ExtendedBluetoothDevice extendedBluetoothDevice, int var2, Error var3) {
-         Log.e(TAG,"-----------onRecoveryData");
+        Log.e(TAG, "-----------onRecoveryData");
     }
 
     @Override
     public void onSearchICCard(ExtendedBluetoothDevice extendedBluetoothDevice, int var2, String var3, Error var4) {
-         Log.e(TAG,"-----------onSearchICCard");
+        Log.e(TAG, "-----------onSearchICCard");
     }
 
     @Override
     public void onSearchFingerPrint(ExtendedBluetoothDevice extendedBluetoothDevice, int var2, String var3, Error
             var4) {
-         Log.e(TAG,"-----------onSearchFingerPrint");
+        Log.e(TAG, "-----------onSearchFingerPrint");
     }
 
     @Override
     public void onSearchPasscode(ExtendedBluetoothDevice extendedBluetoothDevice, String var2, Error var3) {
-         Log.e(TAG,"-----------onSearchPasscode");
+        Log.e(TAG, "-----------onSearchPasscode");
     }
 
     @Override
     public void onSearchPasscodeParam(ExtendedBluetoothDevice extendedBluetoothDevice, int var2, String var3,
                                       long var4, Error var6) {
-         Log.e(TAG,"-----------onSearchPasscodeParam");
+        Log.e(TAG, "-----------onSearchPasscodeParam");
     }
 
     @Override
     public void onOperateRemoteUnlockSwitch(ExtendedBluetoothDevice extendedBluetoothDevice, int var2, int var3,
                                             int var4, int var5, Error var6) {
-         Log.e(TAG,"-----------onOperateRemoteUnlockSwitch");
+        Log.e(TAG, "-----------onOperateRemoteUnlockSwitch");
     }
 
 
@@ -525,7 +525,7 @@ public class MyLockCallback implements LockCallback {
      * 添加管理员
      */
     private void addAdmin(ExtendedBluetoothDevice extendedBluetoothDevice, String lockVersionString, String adminPs, String unlockKey, String adminKeyboardPwd, String deletePwd, String pwdInfo, long timestamp, String aesKeystr, int feature, String modelNumber, String hardwareRevision, String firmwareRevision, final Error error) {
-         Log.e(TAG,"--------error:" + error + "--->" + (error == Error.SUCCESS));
+        Log.e(TAG, "--------error:" + error + "--->" + (error == Error.SUCCESS));
         if (error == Error.SUCCESS) {
             LockKey key = new LockKey();
 //            key.setAccessToken(ControlCenter.getControlCenter().getUserInfo().getAccess_token());

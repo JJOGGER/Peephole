@@ -4,6 +4,8 @@ package cn.jcyh.peephole.constant;
  * Created by jogger on 2018/7/16.intent等传递的常量
  */
 public class Constant {
+    public static final String EAGLEKING_SN = "900";
+    public static final String SIYE_SN = "901";
     public static final String FILE_PATH = "filePath";
     public static final String DW_USERID = "dw_userid";
     public static final String FILE_LENGTH = "file_length";
@@ -46,4 +48,5 @@ public class Constant {
     public static final String IS_AUDIO_VALI_REGISTED = "is_audio_vali_registed";
     public static final String DOWNLOAD_INFO = "download_info";
     public static final String COMMAND_PATH = "command_path";
+    public static final String DOWNLOAD_APK_ID = "download_apk_id";
 }

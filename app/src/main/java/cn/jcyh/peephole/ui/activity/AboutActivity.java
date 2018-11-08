@@ -1,7 +1,10 @@
 package cn.jcyh.peephole.ui.activity;
 
 import android.annotation.SuppressLint;
+import android.app.DownloadManager;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.TextView;
@@ -19,6 +22,8 @@ import cn.jcyh.peephole.service.UpdateSoftService;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.HintDialogFragmemt;
 import cn.jcyh.peephole.utils.APKUtil;
+import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.SPUtil;
 import cn.jcyh.peephole.utils.SystemUtil;
 import cn.jcyh.peephole.utils.T;
 
@@ -55,6 +60,12 @@ public class AboutActivity extends BaseActivity {
         switch (v.getId()) {
             case R.id.tv_wifi_update:
                 checkUpdate();
+//                Intent intent = new Intent();
+//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                intent.setAction(android.content.Intent.ACTION_VIEW);
+//                intent.setDataAndType(Uri.fromFile(new File(APKUtil.APK_PATH)),
+//                        "application/vnd.android.package-archive");
+//                startActivity(intent);
                 break;
         }
     }
@@ -63,6 +74,27 @@ public class AboutActivity extends BaseActivity {
      * 检查更新
      */
     private void checkUpdate() {
+        DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+        DownloadManager.Query query = new DownloadManager.Query();
+        query.setFilterById(SPUtil.getInstance().getLong(Constant.DOWNLOAD_APK_ID));
+        L.e("------------::id:" + SPUtil.getInstance().getLong(Constant.DOWNLOAD_APK_ID));
+        assert downloadManager != null;
+        Cursor cursor = downloadManager.query(query);
+        if (cursor.moveToNext()) {
+            int state = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
+//            if (DownloadManager.STATUS_SUCCESSFUL == state) {
+//                //已经下载成功，直接安装
+//                APKUtil.installUpdateAPK();
+//                return;
+//            } else
+            if (DownloadManager.STATUS_FAILED != state && DownloadManager.STATUS_SUCCESSFUL != state) {
+                L.e("-------------当前状态:" + state);
+                T.show(R.string.downloading);
+                cursor.close();
+                return;
+            }
+        }
+        cursor.close();
         showProgressDialog();
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);

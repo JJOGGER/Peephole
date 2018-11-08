@@ -53,7 +53,7 @@ public class UpdateSoftService extends Service {
             request.setDestinationUri(Uri.fromFile(file));
             assert downloadManager != null;
             long id = downloadManager.enqueue(request);
-            SPUtil.getInstance().put(mDownloadInfo.getType(), id);
+            SPUtil.getInstance().put(Constant.DOWNLOAD_APK_ID, id);
             T.show(R.string.start_download);
 //            startUpdate(mFilePath, new OnUpdateListener() {
 //                @Override

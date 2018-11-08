@@ -63,10 +63,16 @@ public class MainSetFragment extends BaseFragment {
     TextView tvSensorSetTitle;
     @BindView(R.id.tv_sensor_set)
     TextView tvSensorSet;
-//    @BindView(R.id.tv_master_number)
+    @BindView(R.id.rl_extend_function)
+    RelativeLayout rlExtendFunction;
+    //    @BindView(R.id.tv_master_number)
 //    TextView tvMasterNumber;
 //    @BindView(R.id.tv_sos_number)
 //    TextView tvSOSNumber;
+    @BindView(R.id.cb_face_switch)
+    CheckBox cbFaceSwitch;
+    @BindView(R.id.tv_face_set)
+    TextView tvFaceSet;
     @BindView(R.id.tv_doorbell_videotap_time)
     TextView tvDoorbellVideotapTime;
     @BindView(R.id.tv_doorbell_look_time)
@@ -87,16 +93,20 @@ public class MainSetFragment extends BaseFragment {
         if (!EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().register(this);
         }
+        boolean siye = ControlCenter.getSN().startsWith(Constant.SIYE_SN);
+        rlExtendFunction.setVisibility(siye ? View.VISIBLE : View.GONE);
         mFragmentManager = getFragmentManager();
         updateView();
     }
+
 
     @OnClick({R.id.rl_doorbell_set, R.id.rl_sensor_set, R.id.rl_monitor, R.id.rl_sensor_time,
             R.id.rl_ring_volume,
 //            R.id.rl_master_number, R.id.rl_sos_number,
             R.id.rl_doorbell_leavel_time, R.id.rl_doorbell_videotap_time,
             R.id.rl_doorbell_look_time,
-            R.id.rl_extend_function
+            R.id.rl_extend_function,
+            R.id.rl_face_set
     })
     public void onClick(View v) {
         switch (v.getId()) {
@@ -151,7 +161,21 @@ public class MainSetFragment extends BaseFragment {
                 transaction.hide(mFragmentManager.findFragmentByTag(MainSetFragment.class.getName()));
                 transaction.commit();
                 break;
+            case R.id.rl_face_set:
+                switchFace();
+                break;
         }
+    }
+
+    /**
+     * 开关人脸识别
+     */
+    private void switchFace() {
+        cbFaceSwitch.setChecked(!cbFaceSwitch.isChecked());
+        mDoorbellConfig.setFaceRecognize(cbFaceSwitch.isChecked() ? 1 : 0);
+        ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
+        tvFaceSet.setText(cbFaceSwitch.isChecked() ? R.string.face_set_opened : R.string.face_set_closed);
+        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(), mDoorbellConfig, null);
     }
 
     /**
@@ -313,7 +337,7 @@ public class MainSetFragment extends BaseFragment {
      */
     private void switchMonitor() {
         cbMonitor.setChecked(!cbMonitor.isChecked());
-        mDoorbellConfig.setMonitorSwitch(cbMonitor.isChecked() ? 1 : 0);
+        mDoorbellConfig.getDoorbellSensorParam().setMonitor(cbMonitor.isChecked() ? 1 : 0);
         ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
         tvMonitorState.setText(cbMonitor.isChecked() ? R.string.monitor_opened : R.string.monitor_closed);
         rlSensorTime.setEnabled(cbMonitor.isChecked());
@@ -322,7 +346,7 @@ public class MainSetFragment extends BaseFragment {
         rlSensorSet.setEnabled(cbMonitor.isChecked());
         tvSensorSetTitle.setEnabled(cbMonitor.isChecked());
         tvSensorSet.setEnabled(cbMonitor.isChecked());
-        ControlCenter.getBCManager().setPIRSensorOn(mDoorbellConfig.getMonitorSwitch() == 1);
+        ControlCenter.getBCManager().setPIRSensorOn(mDoorbellConfig.getDoorbellSensorParam().getMonitor() == 1);
         ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(), mDoorbellConfig, null);
     }
 
@@ -356,8 +380,9 @@ public class MainSetFragment extends BaseFragment {
     private void updateView() {
         mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
         //获取智能监控开关
-        boolean isMonitor = mDoorbellConfig.getMonitorSwitch() == 1;
+        boolean isMonitor = mDoorbellConfig.getDoorbellSensorParam().getMonitor() == 1;
         cbMonitor.setChecked(isMonitor);
+        cbFaceSwitch.setChecked(mDoorbellConfig.getFaceRecognize() == 1);
         tvSensorTimeTitle.setEnabled(isMonitor);
         tvSensorTime.setEnabled(isMonitor);
         if (mDoorbellConfig.getAutoSensorTime() == 60)
@@ -368,7 +393,8 @@ public class MainSetFragment extends BaseFragment {
         tvSensorSetTitle.setEnabled(isMonitor);
         tvSensorSet.setEnabled(isMonitor);
         rlSensorSet.setEnabled(isMonitor);
-        if (mDoorbellConfig.getMonitorSwitch() != 1) {
+        tvFaceSet.setText(cbFaceSwitch.isChecked() ? R.string.face_set_opened : R.string.face_set_closed);
+        if (mDoorbellConfig.getDoorbellSensorParam().getMonitor() != 1) {
             tvMonitorState.setText(R.string.monitor_closed);
             rlSensorTime.setEnabled(false);
             rlSensorSet.setEnabled(false);

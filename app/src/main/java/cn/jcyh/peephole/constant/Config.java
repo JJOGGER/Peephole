@@ -8,10 +8,10 @@ import cn.jcyh.peephole.utils.Tool;
  * Created by jogger on 2018/6/29.
  */
 public class Config {
-    public final static String AUDIO_APP_ID = "5b35dcf9";//讯飞appid
+    public final static String AUDIO_APP_ID = "5bbc7ad3";//讯飞appid
     public final static String UMENG_APP_KEY = "5b50612e8f4a9d3b360000eb";//友盟appkey
-    private static final String APP_KEY = "890A95AB9C184655B0BCA8B762706C2C";//猫眼appid
-    private static final String APP_SECRET = "7D40589DCF59432197475F83BD11C456";
+    private static final String APP_KEY = "670A95AB9C184655B0BCA8B762706C2C";//猫眼appid
+    private static final String APP_SECRET = "7D40129DCF59432197475F83BD11C689";
     private static final int NONCE_LENGTH = 32;
 
     public static HeaderConfig getHeaderConfig() {

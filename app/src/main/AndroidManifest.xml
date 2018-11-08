@@ -43,7 +43,10 @@
     <uses-permission
         android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
         tools:ignore="ProtectedPermissions"/>
-
+    <!-- 这个权限用于进行网络定位-->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!-- 这个权限用于访问GPS定位-->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <!-- 多媒体相关 -->
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
@@ -64,6 +67,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/MyAppTheme">
+        <!--百度定位            start-->
+        <meta-data
+            android:name="com.baidu.lbsapi.API_KEY"
+            android:value="xNy4uRxeoqukB7RRL7wQuAV4rskR6WG0">
+        </meta-data>
+        <service
+            android:name="com.baidu.location.f"
+            android:enabled="true"
+            android:process=":remote"/>
+
+        <!--百度定位            end-->
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTask">
@@ -91,6 +105,7 @@
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
             </intent-filter>
         </receiver>
+        <receiver android:name=".receiver.AwakenReceiver"/> <!-- 定时器 -->
         <receiver android:name=".receiver.AlarmReceiver"/> <!-- 定时器 -->
         <!-- 安装apk监听 -->
         <receiver
@@ -152,14 +167,17 @@
         </activity>
         <activity android:name=".ui.activity.CameraActivity">
         </activity>
+        <activity android:name=".ui.activity.CameratestActivity">
+        </activity>
         <activity android:name=".ui.activity.BannerDescActivity"/>
         <activity android:name=".ui.activity.SystemSettingActivity">
         </activity>
         <activity android:name=".ui.activity.FaceActivity">
         </activity>
-        <activity android:name=".ui.activity.ObjectDetectingActivity"
-            android:launchMode="singleTask">
-        </activity>
+        <!--<activity-->
+            <!--android:name=".ui.activity.ObjectDetectingActivity"-->
+            <!--android:launchMode="singleTask">-->
+        <!--</activity>-->
         <activity android:name=".ui.activity.AudioValiActivity">
         </activity>
         <activity android:name=".ui.activity.SystemUpdateActivity">

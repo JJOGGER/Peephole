@@ -1,16 +1,22 @@
 package cn.jcyh.peephole.utils;
 
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageParser;
 import android.content.pm.Signature;
+import android.net.Uri;
+import android.text.TextUtils;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
+
+import cn.jcyh.peephole.R;
+import cn.jcyh.peephole.http.IDataListener;
 
 /**
  * Created by jogger on 2018/8/28.
@@ -116,5 +122,47 @@ public class APKUtil {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static void installUpdateAPK(){
+        //解密
+        DESUtil.decrypt(APKUtil.APK_PATCH_PATH_ENCRYPT, APKUtil.APK_PATCH_PATH, DESUtil.KEY, new IDataListener<Boolean>() {
+            @Override
+            public void onSuccess(Boolean decrypt) {
+                if (decrypt) {
+                    //解密成功
+                    String oldVersionPath = APKUtil.getOldVersionPath();
+                    //合成差分包
+                    L.e("-------合成差分包");
+                    PatchUtil.patch(oldVersionPath, APKUtil.APK_PATH, APKUtil.APK_PATCH_PATH);
+                    L.e("-------合成差分包end");
+                    //签名校验
+                    String currentSignature = APKUtil.getCurrentSignature();
+                    String signature = APKUtil.getSignature(APKUtil.APK_PATH);
+                    if (TextUtils.isEmpty(signature) || signature.equals(currentSignature)) {
+                        //启动安装
+                        Intent intent = new Intent();
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.setAction(android.content.Intent.ACTION_VIEW);
+                        intent.setDataAndType(Uri.fromFile(new File(APKUtil.APK_PATH)),
+                                "application/vnd.android.package-archive");
+                        Util.getApp().startActivity(intent);
+//                        DoorbellSystemAction systemAction = new DoorbellSystemAction(DoorbellSystemAction.TYPE_DOORBELL_INSTALL_APK);
+//                        EventBus.getDefault().post(systemAction);
+//                        installAPK();
+                    } else {
+                        L.e("签名校验失败");
+                        T.show(R.string.download_file_des_failure);
+                    }
+                } else {
+                    T.show(R.string.download_file_des_failure);
+                }
+            }
+
+            @Override
+            public void onFailure(int errorCode, String desc) {
+                T.show(R.string.download_file_des_failure);
+            }
+        });
     }
 }

@@ -1,6 +1,7 @@
 package cn.jcyh.peephole.base;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
@@ -9,10 +10,12 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
+import android.view.inputmethod.InputMethodManager;
 
 import com.umeng.analytics.MobclickAgent;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
@@ -234,5 +237,49 @@ public abstract class BaseActivity extends AppCompatActivity {
     public void startActivity(Intent intent) {
         super.startActivity(intent);
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+    }
+
+    private static void fixInputMethodManagerLeak(Context context) {
+        if (context == null) {
+            return;
+        }
+        try {
+            // 对 mCurRootView mServedView mNextServedView 进行置空...
+            InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm == null) {
+                return;
+            }// author:sodino mail:sodino@qq.com
+
+            Object obj_get = null;
+            Field f_mCurRootView = imm.getClass().getDeclaredField("mCurRootView");
+            Field f_mServedView = imm.getClass().getDeclaredField("mServedView");
+            Field f_mNextServedView = imm.getClass().getDeclaredField("mNextServedView");
+
+            if (f_mCurRootView.isAccessible() == false) {
+                f_mCurRootView.setAccessible(true);
+            }
+            obj_get = f_mCurRootView.get(imm);
+            if (obj_get != null) { // 不为null则置为空
+                f_mCurRootView.set(imm, null);
+            }
+
+            if (f_mServedView.isAccessible() == false) {
+                f_mServedView.setAccessible(true);
+            }
+            obj_get = f_mServedView.get(imm);
+            if (obj_get != null) { // 不为null则置为空
+                f_mServedView.set(imm, null);
+            }
+
+            if (f_mNextServedView.isAccessible() == false) {
+                f_mNextServedView.setAccessible(true);
+            }
+            obj_get = f_mNextServedView.get(imm);
+            if (obj_get != null) { // 不为null则置为空
+                f_mNextServedView.set(imm, null);
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
     }
 }

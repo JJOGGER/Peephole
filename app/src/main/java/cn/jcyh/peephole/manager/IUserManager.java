@@ -25,6 +25,6 @@ public interface IUserManager {
 
     User getUserByUserID(String account);
 
-    void unbindUser(String userID, String deviceID, String authorizationCode, IDataListener<Boolean> listener);
+    void unbindUser(String userID,  String authorizationCode, IDataListener<Boolean> listener);
 
 }

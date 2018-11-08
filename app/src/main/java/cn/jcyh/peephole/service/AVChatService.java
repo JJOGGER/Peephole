@@ -29,6 +29,7 @@ import cn.jcyh.peephole.constant.AVChatExitCode;
 import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.event.AVChatAction;
+import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.observer.AVChatTimeoutObserver;
 import cn.jcyh.peephole.observer.PhoneCallStateObserver;
 import cn.jcyh.peephole.observer.SimpleAVChatStateObserver;
@@ -50,6 +51,7 @@ public class AVChatService extends Service {
     private static final byte SWITCH_CAMERA = AVChatControlCommand.NOTIFY_CUSTOM_BASE + 2;//切换摄像头
     private static final byte UNLOCK = AVChatControlCommand.NOTIFY_CUSTOM_BASE + 3;
     private int mMonitorSwitch;
+    private long mSessionDuration;
     private TimerTask mTimerTask = new TimerTask() {
         @Override
         public void run() {
@@ -57,12 +59,12 @@ public class AVChatService extends Service {
             AudioManager audioManager = (AudioManager) Util.getApp().getSystemService(Context.AUDIO_SERVICE);
             assert audioManager != null;
             int streamVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
-            L.i("streamVolume:" + streamVolume);
+            L.i("---streamVolume:" + streamVolume);
             if (streamVolume != CURRENT_AUDIO_VOLUME) {
                 audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, CURRENT_AUDIO_VOLUME, 0);
             }
             streamVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
-            L.i("streamVolume:" + streamVolume);
+            L.i("---streamVolume:" + streamVolume);
 
         }
     };
@@ -95,10 +97,8 @@ public class AVChatService extends Service {
                 stopSelf();
             }
         }, ControlCenter.getDoorbellManager().getDoorbellConfig().getVideoConfig().getVideoTimeLimit() * 1000);
-
-        L.e("-----------------onCreate");
         //通话过程暂时关闭停留报警
-        mMonitorSwitch = ControlCenter.getDoorbellManager().getDoorbellConfig().getMonitorSwitch();
+        mMonitorSwitch = ControlCenter.getDoorbellManager().getDoorbellConfig().getDoorbellSensorParam().getMonitor();
         if (mMonitorSwitch == 1) {
             ControlCenter.getBCManager().setPIRSensorOn(false);
         }
@@ -115,10 +115,7 @@ public class AVChatService extends Service {
         AVChatManager.getInstance().observeHangUpNotification(mCallHangupObserver, register);
         AVChatManager.getInstance().observeControlNotification(mCallControlObserver, register);
         AVChatTimeoutObserver.getInstance().observeTimeoutNotification(mTimeoutObserver, register, true);
-//        AVChatManager.getInstance().observeOnlineAckNotification(onlineAckObserver, register);
         PhoneCallStateObserver.getInstance().observeAutoHangUpForLocalPhone(mAutohangupforlocalphoneobserver, register);
-//        //放到所有UI的基类里面注册，所有的UI实现onKickOut接口
-//        NIMClient.getService(AuthServiceObserver.class).observeOnlineStatus(userStatusObserver, register);
         ControlCenter.getBCManager().setMainSpeakerOn(!register);
     }
 
@@ -146,6 +143,7 @@ public class AVChatService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        HttpAction.getHttpAction().userTaklTimeRecord(mAvChatData.getAccount(),mSessionDuration,null);
         if (mAVChatController != null) { //界面销毁时强制尝试挂断
             try {
                 mAVChatController.hangUp(AVChatExitCode.HANGUP);
@@ -162,7 +160,6 @@ public class AVChatService extends Service {
         EventBus.getDefault().post(avChatAction);
         AVChatProfile.getInstance().setAVChatting(false);
         ControlCenter.getDoorbellManager().setLastVideoTime(System.currentTimeMillis());
-        L.e("----------------onDestroy");
         cancelTimer();
     }
 
@@ -194,12 +191,13 @@ public class AVChatService extends Service {
         public void onFirstVideoFrameAvailable(String account) {
             super.onFirstVideoFrameAvailable(account);
 //            mAVChatController.getVideoCapturer().setZoom(10);
-            L.e("---------------zoom:" + mAVChatController.getVideoCapturer().getCurrentZoom() + ":" + mAVChatController.getVideoCapturer().getMaxZoom());
         }
 
         @Override
         public void onSessionStats(AVChatSessionStats sessionStats) {
-            if (ControlCenter.getDoorbellManager().getDoorbellConfig().getVideoConfig().getVideoTimeLimit() * 1000 <= sessionStats.sessionDuration) {
+            mSessionDuration = sessionStats.sessionDuration;
+            if (ControlCenter.getDoorbellManager().getDoorbellConfig().getVideoConfig().getVideoTimeLimit()
+                    * 1000 <= sessionStats.sessionDuration) {
                 if (mAVChatController != null) { //界面销毁时强制尝试挂断
                     try {
                         mAVChatController.hangUp(AVChatExitCode.HANGUP);
@@ -214,6 +212,7 @@ public class AVChatService extends Service {
         @Override
         public void onUserJoined(String account) {
             if (mAVChatController == null) return;
+            L.e("---------------onUserJoined");
             if (TextUtils.isEmpty(account)) {
                 mAVChatController.hangUp(AVChatExitCode.HANGUP);
                 stopSelf();
@@ -232,6 +231,7 @@ public class AVChatService extends Service {
         @Override
         public void onUserLeave(String account, int event) {
             if (mAVChatController == null) return;
+            L.e("---------------onUserLeave");
             mAVChatController.hangUp(AVChatExitCode.HANGUP);
             stopSelf();
         }
@@ -240,6 +240,7 @@ public class AVChatService extends Service {
         @Override
         public void onCallEstablished() {
 //            //移除超时监听
+            L.e("---------------onCallEstablished");
             AVChatTimeoutObserver.getInstance().observeTimeoutNotification(mTimeoutObserver, false, true);
 
         }
@@ -298,11 +299,7 @@ public class AVChatService extends Service {
         if (SWITCH_CAMERA == notification.getControlCommand()) {
             mAVChatController.switchCamera();
             AVChatManager.getInstance().sendControlCommand(AVChatManager.getInstance().getCurrentChatId(), SWITCH_CAMERA, null);
-//            AVChatManager.getInstance().enableVideo();
-//            AVChatManager.getInstance().startVideoPreview();
             if (AVChatManager.getInstance().isLocalVideoMuted()) {
-//                AVChatManager.getInstance().enableVideo();
-//                AVChatManager.getInstance().startVideoPreview();
                 AVChatManager.getInstance().muteLocalVideo(false);
             }
         } else if (UNLOCK == notification.getControlCommand()) {
@@ -312,40 +309,4 @@ public class AVChatService extends Service {
         }
     }
 
-
-//    private void createToucher() {
-//        WindowManager.LayoutParams params = new WindowManager.LayoutParams();
-//        mWindowManager = (WindowManager) Util.getApp().getSystemService(WINDOW_SERVICE);
-//        params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;//TYPE_SYSTEM_ALERT
-//        params.format = PixelFormat.RGBA_8888;
-//        params.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-//        //设置窗口初始停靠位置.
-//        params.gravity = Gravity.LEFT | Gravity.TOP;
-//        params.x = 110;
-//        params.y = 110;
-//
-//        //设置悬浮窗口长宽数据.
-//        //注意，这里的width和height均使用px而非dp.这里我偷了个懒
-//        //如果你想完全对应布局设置，需要先获取到机器的dpi
-//        //px与dp的换算为px = dp * (dpi / 160).
-//        params.width = 110;
-//        params.height = 110;
-//
-//        LayoutInflater inflater = LayoutInflater.from(getApplication());
-//        //获取浮动窗口视图所在布局.
-//        flSurfaceContainer = (FrameLayout) inflater.inflate(R.layout.video_float, null);
-//        //添加toucherlayout
-//        mWindowManager.addView(flSurfaceContainer, params);
-//        mSurfaceView = (SurfaceView) flSurfaceContainer.findViewById(R.id.surface_local);
-////        mDoorbellVideoHelper.initView(this, mSurfaceView);
-////        initTimerCheckAv();
-////        // 根据屏幕方向改变本地surfaceview的宽高比
-//        WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) flSurfaceContainer
-//                .getLayoutParams();
-//        layoutParams.width = 110;
-//        layoutParams.height = 110;
-//        flSurfaceContainer.setLayoutParams(layoutParams);
-
-//
-//    }
 }

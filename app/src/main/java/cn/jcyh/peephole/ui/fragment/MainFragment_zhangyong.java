@@ -11,8 +11,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.telephony.PhoneNumberUtils;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -45,7 +43,6 @@ import cn.jcyh.peephole.ui.activity.BannerDescActivity;
 import cn.jcyh.peephole.ui.activity.DoorbellLookActivity;
 import cn.jcyh.peephole.utils.FileUtil;
 import cn.jcyh.peephole.utils.L;
-import cn.jcyh.peephole.utils.PhoneUtil;
 import cn.jcyh.peephole.utils.T;
 import cn.jcyh.peephole.widget.MsgCircleView;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -126,7 +123,7 @@ public class MainFragment_zhangyong extends BaseFragment {
     }
 
     private void initBanners() {
-        HttpAction.getHttpAction().getBanners(7, new IDataListener<AdvertData>() {
+        HttpAction.getHttpAction().getBanners(new IDataListener<AdvertData>() {
             @Override
             public void onSuccess(AdvertData advertData) {
                 L.e("-------------advertData:" + advertData);
@@ -154,7 +151,9 @@ public class MainFragment_zhangyong extends BaseFragment {
         tvLeaveMessageMsg.setText(String.valueOf(doorbellLeaveMsgCount));
     }
 
-    @OnClick({R.id.fl_media_record, R.id.fl_leave_message, R.id.tv_sos_number, R.id.tv_doorbell_look})
+    @OnClick({R.id.fl_media_record, R.id.fl_leave_message,
+//            R.id.tv_sos_number,
+            R.id.tv_doorbell_look})
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.fl_media_record:
@@ -170,22 +169,22 @@ public class MainFragment_zhangyong extends BaseFragment {
                 intent.setType(VIDEO_DIR);
                 startActivity(intent);
                 break;
-            case R.id.tv_sos_number:
-                if (!PhoneUtil.isPhoneCallable()) {
-                    T.show(getString(R.string.no_sim_msg));
-                    return;
-                }
-                mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
-                if (!TextUtils.isEmpty(mDoorbellConfig.getSosNumber())) {
-                    if (!PhoneNumberUtils.isGlobalPhoneNumber(mDoorbellConfig.getSosNumber())) {
-                        T.show(R.string.phone_no_regex);
-                        return;
-                    }
-                    PhoneUtil.callPhone(mDoorbellConfig.getSosNumber());
-                } else {
-                    T.show(getString(R.string.no_sos_number));
-                }
-                break;
+//            case R.id.tv_sos_number:
+//                if (!PhoneUtil.isPhoneCallable()) {
+//                    T.show(getString(R.string.no_sim_msg));
+//                    return;
+//                }
+//                mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
+//                if (!TextUtils.isEmpty(mDoorbellConfig.getSosNumber())) {
+//                    if (!PhoneNumberUtils.isGlobalPhoneNumber(mDoorbellConfig.getSosNumber())) {
+//                        T.show(R.string.phone_no_regex);
+//                        return;
+//                    }
+//                    PhoneUtil.callPhone(mDoorbellConfig.getSosNumber());
+//                } else {
+//                    T.show(getString(R.string.no_sos_number));
+//                }
+//                break;
             case R.id.tv_doorbell_look:
 //                try{
 //                    //获取相机包名
@@ -218,15 +217,15 @@ public class MainFragment_zhangyong extends BaseFragment {
 
     private void switchMonitor() {
         final DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
-        doorbellConfig.setMonitorSwitch(1 - doorbellConfig.getMonitorSwitch());
-        if (doorbellConfig.getMonitorSwitch() == 1) {
+        doorbellConfig.getDoorbellSensorParam().setMonitor(1 - doorbellConfig.getDoorbellSensorParam().getMonitor());
+        int monitor = doorbellConfig.getDoorbellSensorParam().getMonitor();
+        if (monitor == 1) {
             T.show(R.string.monitor_opened);
         } else {
             T.show(R.string.monitor_closed);
         }
+        ControlCenter.getBCManager().setPIRSensorOn(monitor== 1);
         ControlCenter.getDoorbellManager().setDoorbellConfig(doorbellConfig);
-        ControlCenter.getBCManager().setPIRSensorOn(doorbellConfig.getMonitorSwitch()
-                == 1);
         ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(),
                 doorbellConfig, null);
     }

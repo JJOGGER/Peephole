@@ -124,7 +124,8 @@ dependencies {
     implementation rootProject.ext.dependencies.umeng_analytics
     implementation rootProject.ext.dependencies.rxbinding
     implementation rootProject.ext.dependencies.adapter_helper
-//    implementation rootProject.ext.dependencies.progressbar
+    implementation rootProject.ext.dependencies.http_logging
+    //    implementation rootProject.ext.dependencies.progressbar
     //    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.4'
     //    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
     compileOnly files('libs/classes-full-debug.jar')
@@ -133,5 +134,6 @@ dependencies {
     implementation files('libs/Sunflower.jar')
     implementation project(':eaglelock')
     implementation project(':nimlib')
-    implementation project(':OpenCVLibrary320')
+//    implementation project(':OpenCVLibrary320')
+    implementation files('libs/BaiduLBS_Android.jar')
 }

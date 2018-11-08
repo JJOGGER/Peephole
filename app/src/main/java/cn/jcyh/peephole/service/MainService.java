@@ -42,7 +42,7 @@ import cn.jcyh.peephole.observer.FriendServiceObserver;
 import cn.jcyh.peephole.observer.MessageReceiveObserver;
 import cn.jcyh.peephole.observer.NIMSystemMessageObserver;
 import cn.jcyh.peephole.observer.UserStatusObserver;
-import cn.jcyh.peephole.receiver.AlarmReceiver;
+import cn.jcyh.peephole.receiver.AwakenReceiver;
 import cn.jcyh.peephole.receiver.BatteryReceiver;
 import cn.jcyh.peephole.receiver.ScreenReceiver;
 import cn.jcyh.peephole.utils.L;
@@ -91,13 +91,12 @@ public class MainService extends Service {
         //初始化配置
         final DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
         if (ControlCenter.getBCManager() != null) {
-            ControlCenter.getBCManager().setPIRSensorOn(doorbellConfig.getMonitorSwitch() == 1);
+            ControlCenter.getBCManager().setPIRSensorOn(doorbellConfig.getDoorbellSensorParam().getMonitor() == 1);
         }
         //配置猫眼视频
         ControlCenter.getDoorbellManager().getDoorbellConfigFromServer(ControlCenter.getSN(), new IDataListener<ConfigData>() {
             @Override
             public void onSuccess(ConfigData configData) {
-                L.e("---------配置猫眼" + configData.getCatEyeConfig());
                 doorbellConfig.setVideoConfig(configData.getCatEyeConfig());
                 ControlCenter.getDoorbellManager().setDoorbellConfig(doorbellConfig);
                 ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(), doorbellConfig, null);
@@ -164,7 +163,7 @@ public class MainService extends Service {
 
     private void registAlarm() {
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        Intent intentAlarm = new Intent(this, AlarmReceiver.class);
+        Intent intentAlarm = new Intent(this, AwakenReceiver.class);
         PendingIntent pi = PendingIntent.getBroadcast(this, 0, intentAlarm, 0);
         assert alarmManager != null;
         alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 1000 * 60, pi);

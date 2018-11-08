@@ -322,7 +322,6 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
             if (mSurfaceViewCallback != null) {
                 mSurfaceViewCallback.onSurfaceCreated();
             }
-            L.e("--------------打开相机");
         } catch (Exception ex) {
             L.e("--------------打开相机失败");
             if (null != mCamera) {
@@ -460,7 +459,7 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
         saveFile = new File(tempPath);
         final int recordTime;
         if (DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_RING.equals(type)) {
-            if (config.getDoorbellVideotap() == 1) {
+            if (config.getDoorbellModelParam().getVideotap() == 1) {
                 recordTime = config.getVideotapTime();
             } else {
                 //留言
@@ -491,6 +490,7 @@ public class VideoCameraHelper implements SurfaceHolder.Callback {
         mRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
         L.e("------------支持宽度：" + mVideoSizeList.get(index).width + ":" + mVideoSizeList.get(index).height);
         mRecorder.setVideoSize(mVideoSizeList.get(index).width, mVideoSizeList.get(index).height);
+        mRecorder.setVideoEncodingBitRate(1024 * 1024 * 3);
         mRecorder.setOutputFile(saveFile.getAbsolutePath());
         mRecorder.setPreviewDisplay(currentHolder.getSurface());
 

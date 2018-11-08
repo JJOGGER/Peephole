@@ -29,6 +29,7 @@ import cn.jcyh.peephole.utils.L;
 public class IMMessageCommandImpl {
     public static final String DOORBELL_PARAMS_TYPE_MODE = "mode";
     public static final String DOORBELL_PARAMS_TYPE_SENSOR = "sensor";
+    public static final String DOORBELL_PARAMS_TYPE_FACE_VALI = "face";
 
     public static void sendDoorbellParamsGetResponse(String account) {
         CommandJson commandJson = new CommandJson();
@@ -54,6 +55,14 @@ public class IMMessageCommandImpl {
         CommandJson commandJson = new CommandJson();
         commandJson.setCommandType(CommandJson.CommandType.DOORBELL_PARAMS_RESPONSE);
         commandJson.setCommand(DOORBELL_PARAMS_TYPE_SENSOR);
+        commandJson.setFlag2(isSuccess);
+        sendTextCommand(account, commandJson);
+    }
+
+    public static void sendDoorbellFaceValiParamsResponse(String account, int isSuccess) {
+        CommandJson commandJson = new CommandJson();
+        commandJson.setCommandType(CommandJson.CommandType.DOORBELL_PARAMS_RESPONSE);
+        commandJson.setCommand(DOORBELL_PARAMS_TYPE_FACE_VALI);
         commandJson.setFlag2(isSuccess);
         sendTextCommand(account, commandJson);
     }

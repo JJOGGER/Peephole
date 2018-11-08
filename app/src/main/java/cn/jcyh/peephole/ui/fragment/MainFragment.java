@@ -11,7 +11,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -26,7 +25,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -37,7 +35,9 @@ import cn.jcyh.peephole.base.BaseFragment;
 import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.entity.AdvertData;
+import cn.jcyh.peephole.entity.CommandJson;
 import cn.jcyh.peephole.entity.DoorbellConfig;
+import cn.jcyh.peephole.event.NIMMessageAction;
 import cn.jcyh.peephole.event.NetworkAction;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
@@ -45,7 +45,6 @@ import cn.jcyh.peephole.ui.activity.BannerDescActivity;
 import cn.jcyh.peephole.ui.activity.DoorbellLookActivity;
 import cn.jcyh.peephole.utils.FileUtil;
 import cn.jcyh.peephole.utils.L;
-import cn.jcyh.peephole.utils.PhoneUtil;
 import cn.jcyh.peephole.utils.T;
 import cn.jcyh.peephole.widget.MsgCircleView;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -75,7 +74,6 @@ public class MainFragment extends BaseFragment {
     @SuppressLint("StaticFieldLeak")
     private static MainFragment sInstance;
     private ProgressDialog mProgressDialog;
-    private DoorbellConfig mDoorbellConfig;
     private MyReceiver mReceiver;
     private Disposable mSubscribe;
 
@@ -101,7 +99,6 @@ public class MainFragment extends BaseFragment {
     public void init() {
         mProgressDialog = new ProgressDialog(mActivity);
         mProgressDialog.setMessage(getString(R.string.waitting));
-        mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
         mReceiver = new MyReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_SCREEN_ON);
@@ -110,9 +107,6 @@ public class MainFragment extends BaseFragment {
         mActivity.registerReceiver(mReceiver, intentFilter);
         mBanner.setImageLoader(new GlideImageLoader());
         mBanner.setImages(null);
-//        banner.start();
-//        banner.setVisibility(View.GONE);
-//        ivHome.setVisibility(View.VISIBLE);
         //特殊处理的点击按钮
         mSubscribe = RxView.clicks(tvMonitorSwitch)
                 .throttleFirst(1, TimeUnit.SECONDS)
@@ -127,21 +121,32 @@ public class MainFragment extends BaseFragment {
     }
 
     private void initBanners() {
-        HttpAction.getHttpAction().getBanners(7, new IDataListener<AdvertData>() {
+        HttpAction.getHttpAction().getBanners(new IDataListener<AdvertData>() {
             @Override
             public void onSuccess(AdvertData advertData) {
-                L.e("-------------advertData:" + advertData);
+                L.i("-------------advertData:" + advertData);
                 List<AdvertData.Advert> adverts = advertData.getAdverts();
-                mBanner.releaseBanner();
-                mBanner.setImages(adverts);
+                if (adverts == null) {
+                    if (mBanner != null) {
+                        mBanner.releaseBanner();
+                        mBanner.setImages(null);
+                        mBanner.update(null);
+                    }
+                    return;
+                }
+
+//                mBanner.releaseBanner();
+//                mBanner.setImages(adverts);
                 mBanner.isAutoPlay(advertData.getAdvertConfig().isAutoPlay());
                 mBanner.setDelayTime(advertData.getAdvertConfig().getDisplayTime() * 1000);
-                mBanner.start();
+                mBanner.update(adverts);
+//                mBanner.start();
             }
 
             @Override
             public void onFailure(int errorCode, String desc) {
                 L.e("-------------onFailure");
+                mBanner.update(null);
             }
         });
     }
@@ -171,7 +176,7 @@ public class MainFragment extends BaseFragment {
         tvLeaveMessageMsg.setText(String.valueOf(doorbellLeaveMsgCount));
     }
 
-    @OnClick({R.id.fl_media_record, R.id.fl_leave_message, R.id.tv_sos_number, R.id.tv_doorbell_look})
+    @OnClick({R.id.fl_media_record, R.id.fl_leave_message, R.id.tv_unlock, R.id.tv_doorbell_look})
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.fl_media_record:
@@ -187,47 +192,29 @@ public class MainFragment extends BaseFragment {
                 intent.setType(VIDEO_DIR);
                 startActivity(intent);
                 break;
-            case R.id.tv_sos_number:
-                if (!PhoneUtil.isPhoneCallable()) {
-                    T.show(getString(R.string.no_sim_msg));
-                    return;
-                }
-                mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
-                if (!TextUtils.isEmpty(mDoorbellConfig.getSosNumber())) {
-                    if (!PhoneNumberUtils.isGlobalPhoneNumber(mDoorbellConfig.getSosNumber())) {
-                        T.show(R.string.phone_no_regex);
-                        return;
-                    }
-                    PhoneUtil.callPhone(mDoorbellConfig.getSosNumber());
-                } else {
-                    T.show(getString(R.string.no_sos_number));
-                }
+            case R.id.tv_unlock:
+
+                ControlCenter.getBCManager().setLock(true);
+                T.show(R.string.unlock_success);
+                //测试静默安装
+//                EventBus.getDefault().post(new DoorbellSystemAction(DoorbellSystemAction.TYPE_DOORBELL_INSTALL_APK));
+
+//                if (!PhoneUtil.isPhoneCallable()) {
+//                    T.show(getString(R.string.no_sim_msg));
+//                    return;
+//                }
+//                mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
+//                if (!TextUtils.isEmpty(mDoorbellConfig.getSosNumber())) {
+//                    if (!PhoneNumberUtils.isGlobalPhoneNumber(mDoorbellConfig.getSosNumber())) {
+//                        T.show(R.string.phone_no_regex);
+//                        return;
+//                    }
+//                    PhoneUtil.callPhone(mDoorbellConfig.getSosNumber());
+//                } else {
+//                    T.show(getString(R.string.no_sos_number));
+//                }
                 break;
             case R.id.tv_doorbell_look:
-//                try{
-//                    //获取相机包名
-//                    Intent infoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//                    ResolveInfo res = mActivity.getPackageManager().
-//                            resolveActivity(infoIntent, 0);
-//                    if (res != null)
-//                    {
-//                        String packageName=res.activityInfo.packageName;
-//                        if(packageName.equals("android"))
-//                        {
-//                            infoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE_SECURE);
-//                            res = mActivity.getPackageManager().
-//                                    resolveActivity(infoIntent, 0);
-//                            if (res != null)
-//                                packageName=res.activityInfo.packageName;
-//                        }
-//                        //启动相机
-//                        startApplicationByPackageName(packageName);
-//                    }
-//                }
-//                catch(Exception e)
-//                {
-//                    e.printStackTrace();
-//                }
                 startNewActivity(DoorbellLookActivity.class);
                 break;
         }
@@ -235,15 +222,15 @@ public class MainFragment extends BaseFragment {
 
     private void switchMonitor() {
         final DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
-        doorbellConfig.setMonitorSwitch(1 - doorbellConfig.getMonitorSwitch());
-        if (doorbellConfig.getMonitorSwitch() == 1) {
+        doorbellConfig.getDoorbellSensorParam().setMonitor(1 - doorbellConfig.getDoorbellSensorParam().getMonitor());
+        int monitor = doorbellConfig.getDoorbellSensorParam().getMonitor();
+        if (monitor == 1) {
             T.show(R.string.monitor_opened);
         } else {
             T.show(R.string.monitor_closed);
         }
+        ControlCenter.getBCManager().setPIRSensorOn(monitor == 1);
         ControlCenter.getDoorbellManager().setDoorbellConfig(doorbellConfig);
-        ControlCenter.getBCManager().setPIRSensorOn(doorbellConfig.getMonitorSwitch()
-                == 1);
         ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(),
                 doorbellConfig, null);
     }
@@ -273,7 +260,13 @@ public class MainFragment extends BaseFragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNetworkAction(NetworkAction networkAction) {
         if (NetworkAction.TYPE_NETWORK_CONNECTED.equals(networkAction.getType())) {
-            //
+            initBanners();
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onNIMMessageAction(NIMMessageAction messageAction) {
+        if (CommandJson.ServerCommand.DOORBELL_BANNER_UPDATE.equals(messageAction.getType())) {
             initBanners();
         }
     }
@@ -296,9 +289,7 @@ public class MainFragment extends BaseFragment {
         if (null == resolveInfoList) {
             return;
         }
-        Iterator<ResolveInfo> iter = resolveInfoList.iterator();
-        while (iter.hasNext()) {
-            ResolveInfo resolveInfo = (ResolveInfo) iter.next();
+        for (ResolveInfo resolveInfo : resolveInfoList) {
             if (null == resolveInfo) {
                 return;
             }
@@ -318,25 +309,7 @@ public class MainFragment extends BaseFragment {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (Intent.ACTION_SCREEN_ON.equals(action)) {
-                L.e("-----ACTION_SCREEN_ON");
-//                HttpAction.getHttpAction().getADPictures(new IDataListener<List<Advert>>() {
-//                    @Override
-//                    public void onSuccess(List<Advert> adverts) {
-//                        if (adverts == null || adverts.size() == 0) return;
-//                        ivHome.setVisibility(View.GONE);
-//                        List<String> imgUrls = new ArrayList<>();
-//                        for (int i = 0; i < adverts.size(); i++) {
-//                            imgUrls.add(adverts.get(i).getPicUrl());
-//                        }
-//                        banner.setImages(imgUrls);
-//                        banner.setDelayTime(adverts.get(0).getTimer());
-//                    }
-//
-//                    @Override
-//                    public void onFailure(int errorCode) {
-//
-//                    }
-//                });
+                L.i("-----ACTION_SCREEN_ON");
             }
         }
     }
@@ -349,12 +322,13 @@ public class MainFragment extends BaseFragment {
                     load(((AdvertData.Advert) path).getImageUrl())
                     .error(R.mipmap.no_banner)
                     .into(imageView);
-            imageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    startNewActivity(BannerDescActivity.class, Constant.URL, ((AdvertData.Advert) path).getUrl());
-                }
-            });
+            if (!TextUtils.isEmpty(((AdvertData.Advert) path).getUrl()))
+                imageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        startNewActivity(BannerDescActivity.class, Constant.URL, ((AdvertData.Advert) path).getUrl());
+                    }
+                });
         }//提供createImageView 方法，如果不用可以不重写这个方法，主要是方便自定义ImageView的创建
 
         @Override

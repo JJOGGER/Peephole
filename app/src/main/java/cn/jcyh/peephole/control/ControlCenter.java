@@ -44,6 +44,7 @@ public class ControlCenter {
     private static IUserManager sUserManager;//猫眼用户管理
     private static IDoorbellManager sDoorbellManager;//猫眼信息管理
     private static IBCManager sBCManager;//猫眼硬件管理
+    public static boolean sPIRRunning;//标记是否处于感应时间内
 
 
     public static IUserManager getUserManager() {
@@ -96,7 +97,7 @@ public class ControlCenter {
         final DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
         if (TextUtils.isEmpty(ControlCenter.getSN()) || "0123456789ABCDEF".equals(ControlCenter.getSN()))
             return;
-        HttpAction.getHttpAction().initNIM(ControlCenter.getSN(), new IDataListener<Doorbell>() {
+        HttpAction.getHttpAction().initNIM( new IDataListener<Doorbell>() {
             @Override
             public void onSuccess(Doorbell doorbell) {
                 doorbellConfig.setDoorbell(doorbell);
@@ -124,7 +125,6 @@ public class ControlCenter {
                 new RequestCallback<LoginInfo>() {
                     @Override
                     public void onSuccess(LoginInfo loginInfo) {
-                        L.e("------------onSuccess");
                     }
 
                     @Override

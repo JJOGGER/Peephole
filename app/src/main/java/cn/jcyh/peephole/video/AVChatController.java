@@ -64,7 +64,6 @@ public class AVChatController {
                 @Override
                 public void onSuccess(Void aVoid) {
                     isCallEstablish.set(true);
-                    L.e("------onSuccess");
 //                AVChatManager.getInstance().muteLocalVideo(false);
                 }
 
@@ -127,16 +126,7 @@ public class AVChatController {
             @Override
             public void onSuccess(Void aVoid) {
                 isCallEstablish.set(true);
-//                AVChatManager.getInstance().muteLocalVideo(false);
                 callback.onSuccess(aVoid);
-
-
-
-                L.e("----currentZoom:"+mVideoCapturer.getCurrentZoom()+
-                        ";maxZoom:"+mVideoCapturer.getMaxZoom()+
-                        ";hasMultipleCameras:"+AVChatCameraCapturer.hasMultipleCameras());
-//                AVChatManager.getInstance().getParameters(AVChatParameters.)
-//                L.e("----"+);
             }
 
             @Override

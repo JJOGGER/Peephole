@@ -89,8 +89,12 @@ public class CommandJson implements Parcelable {
                 ", flag2=" + flag2 +
                 '}';
     }
-
+    public class ServerCommand {
+        public static final String DOORBELL_BANNER_UPDATE = "doorbell_banner_update";
+    }
     public class CommandType {
+        public static final String BASE_DOORBELL_NOTIFICATION = "doorbell_notification";//猫眼通知，服务器返回的commandType（主要在手机端）
+        public static final String BASE_DOORBELL_COMMAND = "doorbell_command";//猫眼命令，服务器返回的commandType（主要在猫眼端）
         public static final int ERROR = -1;
         public static final String BIND_DOORBELL_REQUEST = "bind_doorbell_request";
         public static final String BIND_DOORBELL_RESPONSE = "bind_doorbell_response";
@@ -117,6 +121,7 @@ public class CommandJson implements Parcelable {
         public static final String DOORBELL_NOTIFICATION = "doorbell_notification";//猫眼通知
         public static final String NOTIFICATION_DOORBELL_RING = "doorbell_ring";//有人按门铃
         public static final String NOTIFICATION_DOORBELL_ALARM = "doorbell_alarm";//停留报警
+
         //视频呼叫图片请求
         public static final String DOORBELL_CALL_IMG_REQUEST = "doorbell_call_img_request";
         public static final String DOORBELL_LASTED_IMG_NAMES_REQUEST =

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <integer-array name="setting_month">
         <item>@string/January</item>
         <item>@string/February</item>
@@ -100,7 +100,7 @@
         <item>@string/date_time</item>
         <item>@string/system_update</item>
     </string-array>
-    <string-array name="SETTING_SYSTEM_RES">
+    <string-array name="SETTING_SYSTEM_RES"  tools:ignore="MissingTranslation">
         <item>@mipmap/ic_date</item>
         <item>@mipmap/ic_update</item>
     </string-array>

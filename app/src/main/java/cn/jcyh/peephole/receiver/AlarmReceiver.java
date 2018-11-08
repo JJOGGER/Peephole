@@ -7,37 +7,65 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.os.PowerManager;
 import android.os.SystemClock;
 
-import com.netease.nimlib.sdk.NIMClient;
-import com.netease.nimlib.sdk.StatusCode;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-import cn.jcyh.peephole.service.MainService;
+import cn.jcyh.peephole.constant.Constant;
+import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.control.DoorbellAudioManager;
+import cn.jcyh.peephole.entity.DoorbellConfig;
+import cn.jcyh.peephole.event.DoorbellSystemAction;
+import cn.jcyh.peephole.ui.activity.CameraActivity;
 import cn.jcyh.peephole.utils.L;
-import cn.jcyh.peephole.utils.NetworkUtil;
-import cn.jcyh.peephole.utils.SystemUtil;
 
 /**
  * Created by jogger on 2018/5/2.
- * 循环检测在线
+ * 停留报警计时
  */
 
 public class AlarmReceiver extends BroadcastReceiver {
+//    private PrintWriter mPrintWriter;
+//
+//    {
+//        try {
+//            FileOutputStream fileOutputStream = new FileOutputStream(new File(FileUtil.getSDCardPath() + "peephole_alarm_state.txt"), true);
+//            mPrintWriter = new PrintWriter(fileOutputStream);
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
     @Override
     public void onReceive(Context context, Intent intent) {
-        //再次注册闹钟广播
-        StatusCode status = NIMClient.getStatus();
-        L.i("-----------------AlarmReceiver" + status);
-        registAlarm(context);
-        if (status != StatusCode.LOGINED) {
-            SystemUtil.wakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP |
-                    PowerManager.PARTIAL_WAKE_LOCK);
-            if (!NetworkUtil.isConnected()) {
-                return;
+        if (!ControlCenter.sPIRRunning) return;
+        String time = SimpleDateFormat.getDateTimeInstance().format(new Date(System.currentTimeMillis()));
+//        mPrintWriter.write("---" + time + " 达到感应时间:");
+        boolean pirStatus = ControlCenter.getBCManager().getPIRStatus();
+//        mPrintWriter.write("--- 当前pir状态:" + pirStatus + "\n");
+//        mPrintWriter.flush();
+        if (pirStatus) {
+            DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
+            if (doorbellConfig.getFaceRecognize() != 1) {
+                //开启人脸识别，则停留报警不在此处理
+                if (doorbellConfig.getDoorbellSensorParam().getRingAlarm() == 1) {
+                    //开启了停留报警
+                    play(ControlCenter.DOORBELL_TYPE_ALARM);
+                }
             }
-            context.startService(new Intent(context, MainService.class));
+            ControlCenter.sPIRRunning = false;
+            if (ControlCenter.sIsVideo) return;
+            ControlCenter.sIsVideo = true;
+//            mPrintWriter.write("--------------发起报警 \n");
+//            mPrintWriter.flush();
+            intent = new Intent(context, CameraActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra(Constant.TYPE, DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_ALARM);
+            L.e("-----------发起报警");
+            context.startActivity(intent);
         }
+        ControlCenter.sPIRRunning = false;
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -51,5 +79,21 @@ public class AlarmReceiver extends BroadcastReceiver {
                 + 4000 * 60, pi);
 //        SystemUtil.wakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP |
 //                PowerManager.PARTIAL_WAKE_LOCK);
+    }
+
+    private void play(final int type) {
+        //如果正在留言中，则不再响铃
+        if (ControlCenter.sIsLeaveMsgRecording) {
+            return;
+        }
+        if (DoorbellAudioManager.getDoorbellAudioManager().isPlaying(DoorbellAudioManager.RingerTypeEnum.DOORBELL_RING)) {
+            //正在播放门铃，不处理
+            return;
+        }
+        if (type == ControlCenter.DOORBELL_TYPE_RING) {
+            DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager.RingerTypeEnum.DOORBELL_RING, null);
+        } else {
+            DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager.RingerTypeEnum.DOORBELL_ALARM, null);
+        }
     }
 }

@@ -14,11 +14,12 @@ import com.umeng.commonsdk.UMConfigure;
 
 import java.io.IOException;
 
-import cn.jcyh.eaglelock.api.MyLockAPI;
-import cn.jcyh.eaglelock.api.MyLockCallback;
+//import cn.jcyh.eaglelock.api.MyLockAPI;
+//import cn.jcyh.eaglelock.api.MyLockCallback;
 import cn.jcyh.peephole.BuildConfig;
 import cn.jcyh.peephole.MyApp;
 import cn.jcyh.peephole.constant.Config;
+import cn.jcyh.peephole.manager.impl.LocationManager;
 
 
 /**
@@ -45,12 +46,15 @@ public class Util {
 //            return;
 //        }
         //初始化蓝牙锁
-        MyLockAPI.init(app, new MyLockCallback(app));
+//        MyLockAPI.init(app, new MyLockCallback(app));
         //初始化语音
         SpeechUtility.createUtility(app, SpeechConstant.APPID + "=" + Config.AUDIO_APP_ID);
         //友盟
         UMConfigure.init(app, Config.UMENG_APP_KEY, null, UMConfigure.DEVICE_TYPE_PHONE, null);
         CacheUtil.init();
+        LocationManager.initLocation();
+        if (NetworkUtil.isConnected())
+            LocationManager.startLocation();
 //        JPushInterface.init(app);
 //        //初始化数据库
 //        DBManager.initDB(app);

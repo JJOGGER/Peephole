@@ -5,7 +5,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import cn.jcyh.peephole.constant.Config;
+import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.SystemUtil;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -13,6 +15,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 /**
  * Created by jogger on 2018/1/25.
@@ -35,11 +38,21 @@ public class JsonHttpService implements IHttpService {
     }
 
     JsonHttpService() {
+        //声明日志类
+        HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+            @Override
+            public void log(String message) {
+                L.i("----------message:" + message);
+            }
+        });
+        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
         mOkHttpClient = new OkHttpClient().newBuilder()
                 .connectTimeout(10, TimeUnit.SECONDS)//设置超时时间
                 .readTimeout(10, TimeUnit.SECONDS)//设置读取超时时间
                 .writeTimeout(10, TimeUnit.SECONDS)//设置写入超时时间
+                .addInterceptor(httpLoggingInterceptor)
                 .build();
+
     }
 
     @Override
@@ -71,6 +84,8 @@ public class JsonHttpService implements IHttpService {
                     .url(mUrl)
                     .post(formBody)
 //                                .header("cookie", SharePreUtil.getInstance(mContext).getString("cookie", "no_cookie"))
+                    .addHeader("Version", String.valueOf(SystemUtil.getVersionCode()))
+                    .addHeader("DeviceId", ControlCenter.getSN())
                     .addHeader("AppKey", headerConfig.getAppkey())
                     .addHeader("Nonce", headerConfig.getNonce())
                     .addHeader("Timestamp", headerConfig.getTimestamp())
@@ -79,7 +94,6 @@ public class JsonHttpService implements IHttpService {
             mOkHttpClient.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    L.e("---------onFailure" + e.getMessage() + ":" + mUrl);
                     mHttpListener.onFailure();
                 }
 
@@ -94,7 +108,6 @@ public class JsonHttpService implements IHttpService {
             });
         } catch (Exception e) {
             e.printStackTrace();
-            L.i("---error" + e);
         }
     }
 }

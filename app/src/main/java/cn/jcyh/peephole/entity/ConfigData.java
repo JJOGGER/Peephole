@@ -26,8 +26,8 @@ public class ConfigData {
     public static class VideoConfig {
         private String id;
         private String appId;
-        private int videoTimeLimit = 46;//通话时长限制
-        private int videoFrequencyLimit = 60;//通话频率限制
+        private int videoTimeLimit = 108;//通话时长限制
+        private int videoFrequencyLimit = 2;//通话频率限制
 
         public String getId() {
             return id;
@@ -60,5 +60,13 @@ public class ConfigData {
         public void setVideoFrequencyLimit(int videoFrequencyLimit) {
             this.videoFrequencyLimit = videoFrequencyLimit;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "ConfigData{" +
+                "cateEyeSet=" + cateEyeSet +
+                ", catEyeConfig=" + catEyeConfig +
+                '}';
     }
 }
