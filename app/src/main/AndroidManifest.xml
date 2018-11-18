@@ -130,6 +130,7 @@
         <service android:name=".service.UpdateSystemService"/>
         <service android:name=".service.AudioValiService"/>
         <service android:name=".service.UpdateSoftService"/>
+        <service android:name=".service.MultiAVChatService"/>
 
         <receiver android:name=".receiver.BcReceiver">
             <intent-filter>

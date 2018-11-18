@@ -114,6 +114,11 @@ public class CommandJson implements Parcelable {
         public static final String UNLOCK_DOORBELL_RESPONSE = "unlock_doorbell_response";//解锁响应
         public static final String UNLOCK_BLUETOOTH_REQUEST = "unlock_bluetooth_request";//解锁请求
         public static final String UNLOCK_BLUETOOTH_RESPONSE = "unlock_bluetooth_response";//解锁响应
+
+        public static final String MULTI_VIDEO_DOORBELL_REQUEST = "multi_video_doorbell_request";//多人请求
+        public static final String MULTI_VIDEO_DOORBELL_RESPONSE = "multi_video_doorbell_response";//多人响应
+
+
         public static final String DOORBELL_PARAMS_REQUEST = "doorbell_params_request";//参数设置
         public static final String DOORBELL_PARAMS_RESPONSE = "doorbell_params_response";//参数设置响应
         public static final String DOORBELL_PARAMS_GET_REQUEST = "doorbell_params_get_request";//猫眼参数获取

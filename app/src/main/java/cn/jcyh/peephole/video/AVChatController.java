@@ -6,6 +6,7 @@ import android.widget.Toast;
 
 import com.netease.nimlib.sdk.avchat.AVChatCallback;
 import com.netease.nimlib.sdk.avchat.AVChatManager;
+import com.netease.nimlib.sdk.avchat.constant.AVChatType;
 import com.netease.nimlib.sdk.avchat.constant.AVChatVideoQuality;
 import com.netease.nimlib.sdk.avchat.model.AVChatCameraCapturer;
 import com.netease.nimlib.sdk.avchat.model.AVChatData;
@@ -17,6 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import cn.jcyh.nimlib.config.AVChatConfigs;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.constant.AVChatExitCode;
+import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.service.video.AVChatControllerCallback;
 import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.NetworkUtil;
@@ -50,49 +52,95 @@ public class AVChatController {
         this.avChatConfigs = new AVChatConfigs(context);
     }
 
-    public void reCreateCameraCapturer() {
-        try {
-            L.e("-------------reCreateCameraCapturer");
-            mVideoCapturer = AVChatVideoCapturerFactory.createCameraCapturer();
-//            mVideoCapturer.switchCamera();
-            AVChatManager.getInstance().setupVideoCapturer(mVideoCapturer);
-            AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_DEFAULT_FRONT_CAMERA, false);
-            AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_FRAME_FILTER, true);
-            AVChatManager.getInstance().enableVideo();
-            AVChatManager.getInstance().startVideoPreview();
-            AVChatManager.getInstance().accept2(avChatData.getChatId(), new AVChatCallback<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    isCallEstablish.set(true);
-//                AVChatManager.getInstance().muteLocalVideo(false);
-                }
-
-                @Override
-                public void onFailed(int code) {
-                    L.e("------------建立连接失败:" + code);
-                    if (code == -1) {
-                        T.show(R.string.local_video_start_fail);
-                    } else {
-                        T.show(R.string.create_connect_fail);
-                    }
-                    hangUp(AVChatExitCode.CANCEL);
-                }
-
-                @Override
-                public void onException(Throwable exception) {
-                    L.e("----------exception:" + exception.getMessage());
-                    AVChatManager.getInstance().stopVideoPreview();
-                    AVChatManager.getInstance().disableVideo();
-                    hangUp(AVChatExitCode.CANCEL);
-                }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     public AVChatCameraCapturer getVideoCapturer() {
         return mVideoCapturer;
+    }
+
+    public void joinRoom(final AVChatControllerCallback<AVChatData> callback) {
+        AVChatManager.getInstance().enableRtc();
+        if (mVideoCapturer == null) {
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                mVideoCapturer = AVChatVideoCapturerFactory.createCamera2Capturer();
+//            } else {
+            mVideoCapturer = AVChatVideoCapturerFactory.createCameraCapturer();
+//            }
+//            mVideoCapturer.setZoom(10);
+            AVChatManager.getInstance().setupVideoCapturer(mVideoCapturer);
+            try {
+                AVChatManager.getInstance().setParameters(avChatConfigs.getAvChatParameters());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if (NetworkUtil.NetworkType.NETWORK_WIFI.equals(NetworkUtil.getNetworkType())) {
+            AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_QUALITY,
+                    AVChatVideoQuality.QUALITY_480P);
+        } else {
+            AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_QUALITY,
+                    AVChatVideoQuality.QUALITY_MEDIUM);
+        }
+        //设置流畅优先
+//        AVChatManager.getInstance().setVideoQualityStrategy(AVChatVideoQualityStrategy
+// .PreferImageQuality);
+        AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_FRAME_FILTER, true);
+        AVChatManager.getInstance().enableVideo();
+        AVChatManager.getInstance().startVideoPreview();
+//        mVideoCapturer.setZoom(10);
+        AVChatManager.getInstance().joinRoom2(ControlCenter.getSN(), AVChatType.VIDEO, new
+                AVChatCallback<AVChatData>() {
+            @Override
+            public void onSuccess(AVChatData avChatData) {
+                isCallEstablish.set(true);
+                callback.onSuccess(avChatData);
+            }
+
+            @Override
+            public void onFailed(int code) {
+                L.e("------------建立连接失败:" + code);
+                if (code == -1) {
+                    T.show(R.string.local_video_start_fail);
+                } else {
+                    T.show(R.string.create_connect_fail);
+                }
+//                hangUp(AVChatExitCode.CANCEL);
+                callback.onFailed(code, "");
+            }
+
+            @Override
+            public void onException(Throwable exception) {
+                AVChatManager.getInstance().stopVideoPreview();
+                AVChatManager.getInstance().disableVideo();
+//                hangUp(AVChatExitCode.CANCEL);
+                callback.onFailed(-1, exception.toString());
+            }
+        });
+    }
+
+    public void leaveRoom() {
+        if (destroyRTC) {
+            return;
+        }
+        AVChatManager.getInstance().leaveRoom2(ControlCenter.getSN(), new AVChatCallback<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                L.e("-------------leaveRoom");
+            }
+
+            @Override
+            public void onFailed(int code) {
+                L.e("leaveRoom onFailed->" + code);
+            }
+
+            @Override
+            public void onException(Throwable exception) {
+                L.e("-------leave onException->" + exception);
+            }
+        });
+        closeRtc();
+//        destroyRTC = true;
+//        AVChatSoundPlayer.instance().stop();
+//        showQuitToast(type);
     }
 
     public void receive(final AVChatControllerCallback<Void> callback) {
@@ -112,12 +160,15 @@ public class AVChatController {
             }
         }
         if (NetworkUtil.NetworkType.NETWORK_WIFI.equals(NetworkUtil.getNetworkType())) {
-            AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_QUALITY, AVChatVideoQuality.QUALITY_480P);
+            AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_QUALITY,
+                    AVChatVideoQuality.QUALITY_480P);
         } else {
-            AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_QUALITY, AVChatVideoQuality.QUALITY_MEDIUM);
+            AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_QUALITY,
+                    AVChatVideoQuality.QUALITY_MEDIUM);
         }
         //设置流畅优先
-//        AVChatManager.getInstance().setVideoQualityStrategy(AVChatVideoQualityStrategy.PreferImageQuality);
+//        AVChatManager.getInstance().setVideoQualityStrategy(AVChatVideoQualityStrategy
+// .PreferImageQuality);
         AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_FRAME_FILTER, true);
         AVChatManager.getInstance().enableVideo();
         AVChatManager.getInstance().startVideoPreview();
@@ -181,7 +232,8 @@ public class AVChatController {
             return;
         }
         if ((type == AVChatExitCode.HANGUP || type == AVChatExitCode.PEER_NO_RESPONSE
-                || type == AVChatExitCode.CANCEL || type == AVChatExitCode.REJECT || type == AVChatExitCode.FREQUENCY_LIMIT) && avChatData != null) {
+                || type == AVChatExitCode.CANCEL || type == AVChatExitCode.REJECT || type ==
+                AVChatExitCode.FREQUENCY_LIMIT) && avChatData != null) {
             AVChatManager.getInstance().hangUp2(avChatData.getChatId(), new AVChatCallback<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
@@ -224,7 +276,8 @@ public class AVChatController {
             case AVChatExitCode.NET_CHANGE: // 网络切换
             case AVChatExitCode.NET_ERROR: // 网络异常
             case AVChatExitCode.CONFIG_ERROR: // 服务器返回数据错误
-                Toast.makeText(context, R.string.avchat_net_error_then_quit, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, R.string.avchat_net_error_then_quit, Toast.LENGTH_SHORT)
+                        .show();
                 break;
             case AVChatExitCode.REJECT:
                 Toast.makeText(context, R.string.avchat_call_reject, Toast.LENGTH_SHORT).show();
@@ -239,13 +292,16 @@ public class AVChatController {
                 Toast.makeText(context, R.string.avchat_peer_busy, Toast.LENGTH_SHORT).show();
                 break;
             case AVChatExitCode.PROTOCOL_INCOMPATIBLE_PEER_LOWER:
-                Toast.makeText(context, R.string.avchat_peer_protocol_low_version, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, R.string.avchat_peer_protocol_low_version, Toast
+                        .LENGTH_SHORT).show();
                 break;
             case AVChatExitCode.PROTOCOL_INCOMPATIBLE_SELF_LOWER:
-                Toast.makeText(context, R.string.avchat_local_protocol_low_version, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, R.string.avchat_local_protocol_low_version, Toast
+                        .LENGTH_SHORT).show();
                 break;
             case AVChatExitCode.INVALIDE_CHANNELID:
-                Toast.makeText(context, R.string.avchat_invalid_channel_id, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, R.string.avchat_invalid_channel_id, Toast.LENGTH_SHORT)
+                        .show();
                 break;
             case AVChatExitCode.LOCAL_CALL_BUSY:
                 Toast.makeText(context, R.string.avchat_local_call_busy, Toast.LENGTH_SHORT).show();

@@ -38,7 +38,8 @@ public class IMMessageCommandImpl {
             commandJson.setFlag2(0);
         else {
             commandJson.setFlag2(1);
-            commandJson.setFlag(DoorbellConfig.getGson().toJson(ControlCenter.getDoorbellManager().getDoorbellConfig()));
+            commandJson.setFlag(DoorbellConfig.getGson().toJson(ControlCenter.getDoorbellManager
+                    ().getDoorbellConfig()));
         }
         sendTextCommand(account, commandJson);
     }
@@ -200,9 +201,17 @@ public class IMMessageCommandImpl {
 //        sendTextCommand(userId, commandJson);
     }
 
+    public static void sendMultiVideoResponse(String account, int isSuccess) {
+        CommandJson commandJson = new CommandJson();
+        commandJson.setCommandType(CommandJson.CommandType.MULTI_VIDEO_DOORBELL_RESPONSE);
+        commandJson.setFlag2(isSuccess);
+        sendTextCommand(account, commandJson);
+    }
+
     private static void sendTextCommand(String account, CommandJson command) {
         SessionTypeEnum sessionType = SessionTypeEnum.P2P;
-        IMMessage messageTxt = MessageBuilder.createTextMessage(account, sessionType, GsonUtil.toJson(command));
+        IMMessage messageTxt = MessageBuilder.createTextMessage(account, sessionType, GsonUtil
+                .toJson(command));
         configMessage(messageTxt);
         NIMClient.getService(MsgService.class).sendMessage(messageTxt, true);
     }
@@ -211,7 +220,8 @@ public class IMMessageCommandImpl {
         SessionTypeEnum sessionType = SessionTypeEnum.P2P;
         CommandJson commandJson = new CommandJson();
         commandJson.setCommandType(command);
-        IMMessage messageImg = MessageBuilder.createImageMessage(account, sessionType, file, file.getName());
+        IMMessage messageImg = MessageBuilder.createImageMessage(account, sessionType, file, file
+                .getName());
         messageImg.setContent(GsonUtil.toJson(commandJson));
         configMessage(messageImg);
         NIMClient.getService(MsgService.class).sendMessage(messageImg, true);
@@ -230,5 +240,6 @@ public class IMMessageCommandImpl {
         config.enableSelfSync = false;
         message.setConfig(config);
     }
+
 
 }

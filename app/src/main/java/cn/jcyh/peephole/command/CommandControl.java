@@ -69,4 +69,8 @@ public class CommandControl {
     public static void sendDoorbellFaceValiParamsResponse(String account, int isSuccess) {
         IMMessageCommandImpl.sendDoorbellFaceValiParamsResponse(account, isSuccess);
     }
+
+    public static void sendMultiVideoResponse(String account, int isSuccess) {
+        IMMessageCommandImpl.sendMultiVideoResponse(account,isSuccess);
+    }
 }

@@ -61,7 +61,7 @@ public class BcReceiver extends BroadcastReceiver {
             }
             case RING: {
                 //当前查看猫眼界面时不抓拍
-                if (SystemUtil.getVersionCode() ==10086) {
+                if (SystemUtil.getVersionCode() == 10086) {
                     debugRingAction(context, extAct);
                 } else {
                     ringAction(context, extAct);
@@ -83,23 +83,56 @@ public class BcReceiver extends BroadcastReceiver {
         }
     }
 
-    private void debugRingAction(Context context, String extAct) {
-        AVChatManager.getInstance().createRoom(ControlCenter.getSN(), null, new AVChatCallback<AVChatChannelInfo>() {
-            @Override
-            public void onSuccess(AVChatChannelInfo avChatChannelInfo) {
-                L.e("----------创建房间成功");
-            }
+    private void debugRingAction(final Context context, String extAct) {
+        if (extAct.equals(PRESSED)) {
+            AVChatManager.getInstance().createRoom(ControlCenter.getSN(), null, new
+                    AVChatCallback<AVChatChannelInfo>() {
+                        @Override
+                        public void onSuccess(AVChatChannelInfo avChatChannelInfo) {
+                            L.e("----------创建房间成功");
+                            //启动播放服务后且服务未结束、抓拍界面未关闭时，不再重复抓拍
+                            if (!ControlCenter.sIsVideo) {
+                                ControlCenter.sIsVideo = true;
+                                Intent intent = new Intent(context, CameraActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                intent.putExtra(Constant.TYPE, DoorbellSystemAction
+                                        .TYPE_DOORBELL_SYSTEM_RING);
 
-            @Override
-            public void onFailed(int i) {
-                L.e("----------创建房间失败");
-            }
+                                context.startActivity(intent);
+                            }
+                            //发送
+                            DoorbellSystemAction systemAction = new DoorbellSystemAction
+                                    (DoorbellSystemAction
+                                            .TYPE_DOORBELL_SYSTEM_RING);
+                            EventBus.getDefault().post(systemAction);
+                        }
 
-            @Override
-            public void onException(Throwable throwable) {
-                L.e("----------创建房间失败"+throwable.getMessage());
-            }
-        });
+                        @Override
+                        public void onFailed(int i) {
+                            L.e("----------创建房间失败" + i);
+                            if (i != 417) return;
+                            //启动播放服务后且服务未结束、抓拍界面未关闭时，不再重复抓拍
+                            if (!ControlCenter.sIsVideo) {
+                                ControlCenter.sIsVideo = true;
+                                Intent intent = new Intent(context, CameraActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                intent.putExtra(Constant.TYPE, DoorbellSystemAction
+                                        .TYPE_DOORBELL_SYSTEM_RING);
+                                context.startActivity(intent);
+                            }
+                            //发送
+                            DoorbellSystemAction systemAction = new DoorbellSystemAction
+                                    (DoorbellSystemAction
+                                    .TYPE_DOORBELL_SYSTEM_RING);
+                            EventBus.getDefault().post(systemAction);
+                        }
+
+                        @Override
+                        public void onException(Throwable throwable) {
+                            L.e("----------创建房间失败" + throwable.getMessage());
+                        }
+                    });
+        }
     }
 
     /**
@@ -118,7 +151,8 @@ public class BcReceiver extends BroadcastReceiver {
                 context.startActivity(intent);
             }
             //发送
-            DoorbellSystemAction systemAction = new DoorbellSystemAction(DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_RING);
+            DoorbellSystemAction systemAction = new DoorbellSystemAction(DoorbellSystemAction
+                    .TYPE_DOORBELL_SYSTEM_RING);
             EventBus.getDefault().post(systemAction);
         }
 
@@ -144,7 +178,8 @@ public class BcReceiver extends BroadcastReceiver {
 
 //    {
 //        try {
-//            FileOutputStream fileOutputStream = new FileOutputStream(new File(FileUtil.getSDCardPath() + "peephole_alarm_state.txt"), true);
+//            FileOutputStream fileOutputStream = new FileOutputStream(new File(FileUtil
+// .getSDCardPath() + "peephole_alarm_state.txt"), true);
 //            mPrintWriter = new PrintWriter(fileOutputStream);
 //        } catch (FileNotFoundException e) {
 //            e.printStackTrace();
@@ -156,11 +191,13 @@ public class BcReceiver extends BroadcastReceiver {
      */
     private void pirAction(Context context, String extAct) {
         //通话过程、猫眼查看界面、播放铃声过程不报警
-        int monitorSwitch = ControlCenter.getDoorbellManager().getDoorbellConfig().getDoorbellSensorParam().getMonitor();
+        int monitorSwitch = ControlCenter.getDoorbellManager().getDoorbellConfig()
+                .getDoorbellSensorParam().getMonitor();
         if (monitorSwitch != 1) return;
         if (AVChatProfile.getInstance().isAVChatting()) return;
         if (extAct.equals(PEOPLE_IN)) {
-            String time = SimpleDateFormat.getDateTimeInstance().format(new Date(System.currentTimeMillis()));
+            String time = SimpleDateFormat.getDateTimeInstance().format(new Date(System
+                    .currentTimeMillis()));
 //            mPrintWriter.write("---" + time + ": PIR中断有人来了" + "\n");
 //            mPrintWriter.flush();
             L.e("---------PIR中断:有人来了");
@@ -168,11 +205,13 @@ public class BcReceiver extends BroadcastReceiver {
             if (!ControlCenter.sPIRRunning) {
 //                mPrintWriter.write("---" + time + ": 唤醒和创建计时线程操作" + "\n");
 //                mPrintWriter.flush();
-                AlarmManager alarmManager = (AlarmManager) Util.getApp().getSystemService(Context.ALARM_SERVICE);
+                AlarmManager alarmManager = (AlarmManager) Util.getApp().getSystemService(Context
+                        .ALARM_SERVICE);
                 Intent intentAlarm = new Intent(context, AlarmReceiver.class);
                 PendingIntent pi = PendingIntent.getBroadcast(context, 0, intentAlarm, 0);
                 assert alarmManager != null;
-                alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 1000 * mSensorTime, pi);
+                alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock
+                        .elapsedRealtime() + 1000 * mSensorTime, pi);
                 ControlCenter.sPIRRunning = true;
             }
 //            else {
@@ -182,7 +221,8 @@ public class BcReceiver extends BroadcastReceiver {
         }
 //        else if (extAct.equals(PEOPLE_OUT)) {
 //            L.e("----- PIR中断:人走了");
-//            String time = SimpleDateFormat.getDateTimeInstance().format(new Date(System.currentTimeMillis()));
+//            String time = SimpleDateFormat.getDateTimeInstance().format(new Date(System
+// .currentTimeMillis()));
 //            mPrintWriter.write("---" + time + " PIR中断:人走了" + "\n");
 //            mPrintWriter.flush();
 //        }
@@ -208,14 +248,17 @@ public class BcReceiver extends BroadcastReceiver {
         if (ControlCenter.sIsLeaveMsgRecording) {
             return;
         }
-        if (DoorbellAudioManager.getDoorbellAudioManager().isPlaying(DoorbellAudioManager.RingerTypeEnum.DOORBELL_RING)) {
+        if (DoorbellAudioManager.getDoorbellAudioManager().isPlaying(DoorbellAudioManager
+                .RingerTypeEnum.DOORBELL_RING)) {
             //正在播放门铃，不处理
             return;
         }
         if (type == ControlCenter.DOORBELL_TYPE_RING) {
-            DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager.RingerTypeEnum.DOORBELL_RING, null);
+            DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager
+                    .RingerTypeEnum.DOORBELL_RING, null);
         } else {
-            DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager.RingerTypeEnum.DOORBELL_ALARM, null);
+            DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager
+                    .RingerTypeEnum.DOORBELL_ALARM, null);
         }
     }
 
