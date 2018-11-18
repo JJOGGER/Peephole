@@ -71,7 +71,6 @@ public class APKUtil {
             // 2.反射获取parsePackage方法
             Object packageObject = getPackageInfo(path, packageParser);
             // 3.调用collectCertificates方法
-            L.e("----------packageObject" + packageObject + "::" + packageParser);
             if (packageObject == null || packageParser == null) {
                 PackageParser packagePar = new PackageParser();
                 PackageParser.Package packageser = packagePar.parsePackage(new File(path), 0);
@@ -85,7 +84,6 @@ public class APKUtil {
             Field signaturesField = packageObject.getClass().getDeclaredField("mSignatures");
             signaturesField.setAccessible(true);
             Signature[] mSignatures = (Signature[]) signaturesField.get(packageObject);
-            L.e("------------->>sign2:" + mSignatures[0].toCharsString());
             return mSignatures[0].toCharsString();
         } catch (Exception e) {
             e.printStackTrace();
@@ -151,7 +149,6 @@ public class APKUtil {
 //                        EventBus.getDefault().post(systemAction);
 //                        installAPK();
                     } else {
-                        L.e("签名校验失败");
                         T.show(R.string.download_file_des_failure);
                     }
                 } else {

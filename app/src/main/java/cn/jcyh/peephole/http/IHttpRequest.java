@@ -1,5 +1,7 @@
 package cn.jcyh.peephole.http;
 
+import cn.jcyh.peephole.entity.LogRecord;
+import cn.jcyh.peephole.entity.RequestUploadElectricQuantity;
 import cn.jcyh.peephole.http.download.ProgressHttpListener;
 
 /**
@@ -47,4 +49,12 @@ public interface IHttpRequest {
     void userTaklTimeRecord(String userID, long sessionDuration, IDataListener listener);
 
     void uploadLocation(double longitude, double latitude, String country, String province, String city, String district, String street, String addrStr, IDataListener listener);
+
+    void lockUpdateElectricQuantity(RequestUploadElectricQuantity requestUploadElectricQuantity, IDataListener listener);
+
+    void getUnLockKeyData(String sn, IDataListener listener);
+
+    void lockUploadLog(int lockId, String accessToken, String records, IDataListener listener);
+
+    void uploadLog(LogRecord logRecord, IDataListener listener);
 }

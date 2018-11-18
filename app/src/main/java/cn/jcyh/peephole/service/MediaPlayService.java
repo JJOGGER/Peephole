@@ -64,8 +64,6 @@ public class MediaPlayService extends Service {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }else {
-
         }
         return START_NOT_STICKY;
     }

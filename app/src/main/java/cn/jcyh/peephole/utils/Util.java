@@ -14,12 +14,13 @@ import com.umeng.commonsdk.UMConfigure;
 
 import java.io.IOException;
 
-//import cn.jcyh.eaglelock.api.MyLockAPI;
-//import cn.jcyh.eaglelock.api.MyLockCallback;
-import cn.jcyh.peephole.BuildConfig;
+import cn.jcyh.eaglelock.BuildConfig;
 import cn.jcyh.peephole.MyApp;
 import cn.jcyh.peephole.constant.Config;
 import cn.jcyh.peephole.manager.impl.LocationManager;
+
+//import cn.jcyh.eaglelock.api.MyLockAPI;
+//import cn.jcyh.eaglelock.api.MyLockCallback;
 
 
 /**

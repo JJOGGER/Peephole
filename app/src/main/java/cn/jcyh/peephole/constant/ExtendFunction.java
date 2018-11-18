@@ -6,4 +6,5 @@ package cn.jcyh.peephole.constant;
 public class ExtendFunction {
     public static final String FUNCTION_FACE_VALI ="function_face_vail";
     public static final String FUNCTION_AUDIO_VALI ="function_audio_vail";
+    public static final String FUNCTION_BLUETOOTH_LOCK = "function_bluetooth_lock";
 }

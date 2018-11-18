@@ -89,9 +89,12 @@ public class CommandJson implements Parcelable {
                 ", flag2=" + flag2 +
                 '}';
     }
+
     public class ServerCommand {
         public static final String DOORBELL_BANNER_UPDATE = "doorbell_banner_update";
+        public static final String DOORBELL_POPUP_UPDATE = "doorbell_popup_update";
     }
+
     public class CommandType {
         public static final String BASE_DOORBELL_NOTIFICATION = "doorbell_notification";//猫眼通知，服务器返回的commandType（主要在手机端）
         public static final String BASE_DOORBELL_COMMAND = "doorbell_command";//猫眼命令，服务器返回的commandType（主要在猫眼端）
@@ -109,7 +112,8 @@ public class CommandJson implements Parcelable {
 
         public static final String UNLOCK_DOORBELL_REQUEST = "unlock_doorbell_request";//解锁请求
         public static final String UNLOCK_DOORBELL_RESPONSE = "unlock_doorbell_response";//解锁响应
-
+        public static final String UNLOCK_BLUETOOTH_REQUEST = "unlock_bluetooth_request";//解锁请求
+        public static final String UNLOCK_BLUETOOTH_RESPONSE = "unlock_bluetooth_response";//解锁响应
         public static final String DOORBELL_PARAMS_REQUEST = "doorbell_params_request";//参数设置
         public static final String DOORBELL_PARAMS_RESPONSE = "doorbell_params_response";//参数设置响应
         public static final String DOORBELL_PARAMS_GET_REQUEST = "doorbell_params_get_request";//猫眼参数获取

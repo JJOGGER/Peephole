@@ -78,7 +78,7 @@ public class MainSetFragment extends BaseFragment {
     @BindView(R.id.tv_doorbell_look_time)
     TextView tvDoorbellLookTime;
     private DoorbellConfig mDoorbellConfig;
-    private DialogHelper mAutoSensorTimeDialog, mMasterNumberDialog, mSOSNumberDialog,
+    private DialogHelper mAutoSensorTimeDialog,
             mVideotapTimeDialog, mDoorbellLookDialog, mDoorbellLeavelTimeDialog;
     private FragmentManager mFragmentManager;
 
@@ -426,10 +426,6 @@ public class MainSetFragment extends BaseFragment {
         }
         if (mAutoSensorTimeDialog != null)
             mAutoSensorTimeDialog.dismiss();
-        if (mMasterNumberDialog != null)
-            mMasterNumberDialog.dismiss();
-        if (mSOSNumberDialog != null)
-            mSOSNumberDialog.dismiss();
         if (mDoorbellLookDialog != null)
             mDoorbellLookDialog.dismiss();
         if (mVideotapTimeDialog != null)

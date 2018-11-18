@@ -25,6 +25,7 @@ public class UploadService implements IHttpService {
     private IHttpListener mHttpListener;
     private String mUrl;
     private Map<String, Object> mParams;
+    private RequestBody mRequestBody;
     private OkHttpClient mOkHttpClient;
     private String mFilePath;
 
@@ -45,6 +46,11 @@ public class UploadService implements IHttpService {
     @Override
     public void setParams(Map<String, Object> params) {
         mParams = params;
+    }
+
+    @Override
+    public void setRequestBody(RequestBody requestBody) {
+        mRequestBody=requestBody;
     }
 
     @Override

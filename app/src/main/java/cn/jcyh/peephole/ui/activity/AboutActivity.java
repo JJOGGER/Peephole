@@ -70,6 +70,13 @@ public class AboutActivity extends BaseActivity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mUpdateDialog != null)
+            mUpdateDialog.dismiss();
+    }
+
     /**
      * 检查更新
      */

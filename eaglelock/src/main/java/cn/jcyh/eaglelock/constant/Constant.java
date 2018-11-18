@@ -26,6 +26,7 @@ public class Constant {
     public static final String ACTION_DELETE_PWD = PACKAGE_NAME + "action_delete_pwd";
     public static final String ACTION_SET_ADMIN_PWD = PACKAGE_NAME + "action_set_admin_pwd";//管理员键盘密码
     public static final String ACTION_LOCK_IC_CARD = PACKAGE_NAME + "action_lock_ic_card";
+    public static final String ACTION_GET_OPERATE_LOG = PACKAGE_NAME + "action_get_operate_log";//开锁日志
     public static final String TYPE_ADD_IC_CARD = "type_add_ic_card";
     public static final String TYPE_DELETE_IC_CARD = "type_delete_ic_card";
     public static final String TYPE_MODIFY_IC_CARD = "type_modify_ic_card";
@@ -62,4 +63,5 @@ public class Constant {
     public static final String UNIQUE_ID = "unique_id";
     public static final String LOCK_ADDRESS = "lock_address";
 
+    public static final String RECORDS = "records";
 }

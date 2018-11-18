@@ -7,6 +7,7 @@ import java.util.List;
 import cn.jcyh.eaglelock.constant.Operation;
 import cn.jcyh.eaglelock.entity.BleSession;
 import cn.jcyh.eaglelock.entity.LockKey;
+import cn.jcyh.eaglelock.entity.UnLockData;
 import cn.jcyh.locklib.api.LockAPI;
 import cn.jcyh.locklib.scanner.ExtendedBluetoothDevice;
 
@@ -63,7 +64,9 @@ public class MyLockAPI extends LockAPI {
     public void unlockByAdministrator(ExtendedBluetoothDevice extendedBluetoothDevice, LockKey lockKey) {
         unlockByAdministrator(extendedBluetoothDevice, sOpenID, lockKey.getLockVersion(), lockKey.getAdminPwd(), lockKey.getLockKey(), lockKey.getLockFlagPos(), System.currentTimeMillis(), lockKey.getAesKeystr(), lockKey.getTimezoneRawOffset());
     }
-
+    public void unlockByAdministrator(ExtendedBluetoothDevice extendedBluetoothDevice, UnLockData lockKey) {
+        unlockByAdministrator(extendedBluetoothDevice, lockKey.getSmartLockUserId(), lockKey.getLockVersion(), lockKey.getAdminPwd(), lockKey.getLockKey(), lockKey.getLockFlagPos(), System.currentTimeMillis(), lockKey.getAesKeyStr(), lockKey.getTimezoneRawOffset());
+    }
     public void lockByAdministrator(ExtendedBluetoothDevice extendedBluetoothDevice, LockKey lockKey) {
         lockByAdministrator(extendedBluetoothDevice, sOpenID, lockKey.getLockVersion(), lockKey.getAdminPwd(), lockKey.getLockKey(), lockKey.getLockFlagPos(), lockKey.getAesKeystr());
     }

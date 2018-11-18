@@ -172,7 +172,7 @@ public class ControlCenter {
     }
 
     /**
-     * 判断拓展功能是否开启
+     * 判断拓展功能是否开启{@link cn.jcyh.peephole.constant.ExtendFunction}
      */
     public static boolean isFunctionUse(String function) {
         return SPUtil.getInstance().getBoolean(function);

@@ -1,6 +1,7 @@
 package cn.jcyh.peephole.http;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -8,6 +9,7 @@ import cn.jcyh.peephole.constant.Config;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.SystemUtil;
+import cn.jcyh.peephole.utils.Util;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -26,6 +28,7 @@ public class JsonHttpService implements IHttpService {
     private String mUrl;
     private Map<String, Object> mParams;
     private OkHttpClient mOkHttpClient;
+    private RequestBody mRequestBody;
 
     @Override
     public void setUrl(String url) {
@@ -35,6 +38,11 @@ public class JsonHttpService implements IHttpService {
     @Override
     public void setParams(Map<String, Object> params) {
         mParams = params;
+    }
+
+    @Override
+    public void setRequestBody(RequestBody requestBody) {
+        mRequestBody = requestBody;
     }
 
     JsonHttpService() {
@@ -77,12 +85,15 @@ public class JsonHttpService implements IHttpService {
                 }
             }
             //生成表单实体对象
-            RequestBody formBody = builder.build();
+            if (mRequestBody == null)
+                mRequestBody = builder.build();
             //补全请求地址
             Config.HeaderConfig headerConfig = Config.getHeaderConfig();
+            Locale locale = Util.getApp().getResources().getConfiguration().locale;
+            String language = locale.getLanguage();
             final Request request = new Request.Builder()
                     .url(mUrl)
-                    .post(formBody)
+                    .post(mRequestBody)
 //                                .header("cookie", SharePreUtil.getInstance(mContext).getString("cookie", "no_cookie"))
                     .addHeader("Version", String.valueOf(SystemUtil.getVersionCode()))
                     .addHeader("DeviceId", ControlCenter.getSN())
@@ -90,6 +101,7 @@ public class JsonHttpService implements IHttpService {
                     .addHeader("Nonce", headerConfig.getNonce())
                     .addHeader("Timestamp", headerConfig.getTimestamp())
                     .addHeader("Sign", headerConfig.getSign())
+                    .addHeader("language", language)
                     .build();
             mOkHttpClient.newCall(request).enqueue(new Callback() {
                 @Override

@@ -7,10 +7,12 @@ import com.google.gson.Gson;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.util.Map;
 
+import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.ParseJsonUtil;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 
 /**
  * Created by jogger on 2018/1/25.
@@ -21,18 +23,57 @@ class HttpTask implements Runnable {
     //含有请求服务器的接口引用
     private IHttpService mHttpService;
     private static Handler sHandler;
+    private Gson mGson;
 
-    /**
-     * 上传文件
-     */
 
-    HttpTask(String url, File file, IHttpListener httpListener) {
-//        mHttpService = new UploadHttpService();
-//        mHttpService.setUrl(url);
-//        //设置处理结果的接口
-//        mHttpService.setHttpListener(httpListener);
-//        ((UploadHttpService) mHttpService).setFileName(file.getName());
-//        ((UploadHttpService) mHttpService).setFilePath(file.getAbsolutePath());
+    <T> HttpTask(String url, final Class<T> clazz, String json, final IDataListener listener) {
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        RequestBody body = RequestBody.create(JSON, json);
+        if (sHandler == null)
+            sHandler = new Handler();
+        mHttpService = new JsonHttpService();
+        mHttpService.setUrl(url);
+        mHttpService.setRequestBody(body);
+        mHttpService.setHttpListener(new IHttpListener() {
+            @Override
+            public void onSuccess(final String result) {
+                if (listener != null) {
+                    sHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            int code = ParseJsonUtil.getErrorCode(result);
+                            String desc = ParseJsonUtil.getErrorDesc(result);
+                            if (code == 200) {
+                                try {
+                                    JSONObject jsonObject = new JSONObject(result);
+                                    JSONObject data = jsonObject.getJSONObject("data");
+                                    mGson = new Gson();
+                                    T t = mGson.fromJson(data.toString(), clazz);
+                                    listener.onSuccess(t);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                listener.onFailure(code, desc);
+                            }
+                        }
+                    });
+
+                }
+            }
+
+            @Override
+            public void onFailure() {
+                if (listener != null)
+                    sHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onFailure(-1, "");
+                        }
+                    });
+
+            }
+        });
     }
 
     <T> HttpTask(final String url, final Map<String, Object> params, final Class<T> clazz, final IDataListener listener) {
@@ -56,10 +97,13 @@ class HttpTask implements Runnable {
                                 try {
                                     JSONObject jsonObject = new JSONObject(result);
                                     JSONObject data = jsonObject.getJSONObject("data");
-                                    T t = new Gson().fromJson(data.toString(), clazz);
+                                    mGson = new Gson();
+                                    T t = mGson.fromJson(data.toString(), clazz);
                                     listener.onSuccess(t);
-                                } catch (JSONException e) {
+                                } catch (Exception e) {
                                     e.printStackTrace();
+                                    L.e("--------->e:"+e.getMessage());
+                                    listener.onFailure(code, desc);
                                 }
 
                             } else {

@@ -24,6 +24,8 @@ public class VolumeSetDialog extends BaseDialogFragment implements SeekBar.OnSee
     SeekBar sbDoorbell;
     @BindView(R.id.sb_alarm)
     SeekBar sbAlarm;
+    @BindView(R.id.sb_video)
+    SeekBar sbVideo;
     private DoorbellConfig mDoorbellConfig;
 
     @Override
@@ -35,6 +37,7 @@ public class VolumeSetDialog extends BaseDialogFragment implements SeekBar.OnSee
     protected void init(View view) {
         sbDoorbell.setOnSeekBarChangeListener(this);
         sbAlarm.setOnSeekBarChangeListener(this);
+        sbVideo.setOnSeekBarChangeListener(this);
     }
 
     @Override
@@ -43,6 +46,7 @@ public class VolumeSetDialog extends BaseDialogFragment implements SeekBar.OnSee
         mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
         sbDoorbell.setProgress(mDoorbellConfig.getRingVolume());
         sbAlarm.setProgress(mDoorbellConfig.getAlarmVolume());
+        sbVideo.setProgress(mDoorbellConfig.getVideoVolume());
     }
 
     @OnClick(R.id.tv_confirm)
@@ -79,6 +83,9 @@ public class VolumeSetDialog extends BaseDialogFragment implements SeekBar.OnSee
                 intent.putExtra(Constant.VOLUME, seekBar.getProgress() / 100f);
                 mActivity.startService(intent);
 //                play(TYPE_ALARM, seekBar.getProgress());
+                break;
+            case R.id.sb_video:
+                mDoorbellConfig.setVideoVolume(seekBar.getProgress());
                 break;
         }
     }

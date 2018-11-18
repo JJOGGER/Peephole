@@ -10,12 +10,27 @@ import android.text.TextUtils;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+
+import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.entity.DoorbellConfig;
+import cn.jcyh.peephole.entity.LogRecord;
 import cn.jcyh.peephole.event.NetworkAction;
+import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.manager.impl.LocationManager;
+import cn.jcyh.peephole.utils.FileUtil;
+import cn.jcyh.peephole.utils.GsonUtil;
 import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.Util;
 
 
 /**
@@ -65,12 +80,13 @@ public class NetworkStateReceiver extends BroadcastReceiver {
             if (activeNetwork == null || !activeNetwork.isConnected()) {
                 L.e("-------当前连接的网络不可用");
                 LocationManager.stopLocation();
+                recordLog();
                 return;
             }
             if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
                 LocationManager.startLocation();
             }
-            L.e("-------当前连接的网络可用");
+            L.i("-------当前连接的网络可用");
             NetworkAction networkAction = new NetworkAction();
             networkAction.setType(NetworkAction.TYPE_NETWORK_CONNECTED);
             EventBus.getDefault().post(networkAction);
@@ -92,52 +108,52 @@ public class NetworkStateReceiver extends BroadcastReceiver {
                     }
                 });
             }
-//                }
-//                if (NIMClient.getStatus() == StatusCode.LOGINED) {
-//                    L.e("-------------网络更新发布状态");
-//                    OnlineStateEventManager.publishOnlineStateEvent();
-//                }
+            uploadLog();
         }
-//        else if (WifiManager.NETWORK_STATE_CHANGED_ACTION.equals(action)) {
-//            NetworkInfo networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
-//            L.e("-----------NETWORK_STATE_CHANGED_ACTION" + networkInfo);
-//            if (networkInfo != null) {
-//                NetworkInfo.State state = networkInfo.getState();
-//                boolean isConnected = state == NetworkInfo.State.CONNECTED;
-//                if (isConnected) {
-//                    //连接上了
-//                    L.e("------------连接上了网络");
-//                }
-//            }
-//        } else if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action)) {
-//            L.e("-----------CONNECTIVITY_ACTION");
-//            ConnectivityManager manager = (ConnectivityManager) context
-//                    .getSystemService(Context.CONNECTIVITY_SERVICE);
-//            assert manager != null;
-//            NetworkInfo activeNetwork = manager.getActiveNetworkInfo();
-//            if (activeNetwork != null) { // connected to the internet
-//                if (activeNetwork.isConnected()) {
-//                    if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
-//                        // connected to wifi
-//                        L.e("-------当前连接的WiFi可用 ");
-//                    } else if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
-//                        // connected to the mobile provider's data plan
-//                        L.e("---------当前移动网络连接可用 ");
-//                    }
-//                } else {
-//                    L.e("---------当前没有网络连接，请确保你已经打开网络 ");
-//                }
-//            } else {   // not connected to the internet
-//                L.e("---------activeNetwork为null当前没有网络连接，请确保你已经打开网络 ");
-//            }
-//        }
+
     }
 
     /**
-     * 上传地理位置
+     * 上传日志
      */
-    private void uploadLocation() {
-
+    private void uploadLog() {
+        String logPath = FileUtil.getAPKPath() + File.separator + "log.txt";
+        LogRecord logRecord = null;
+        File file = new File(logPath);
+        try {
+            InputStreamReader isr = new InputStreamReader(new FileInputStream(file), "utf8");
+            BufferedReader br = new BufferedReader(isr);
+            String line = br.readLine();
+            L.e("---------:" + line);
+            if (!TextUtils.isEmpty(line)) {
+                logRecord = GsonUtil.fromJson(line, LogRecord.class);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        HttpAction.getHttpAction().uploadLog(logRecord, null);
     }
 
+    /**
+     * 记录日志
+     */
+    private void recordLog() {
+        String logPath = FileUtil.getAPKPath();
+        File file = new File(logPath + File.separator + "log.txt");
+        try {
+            OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(file));
+            LogRecord logRecord = new LogRecord();
+            logRecord.setAlarmType(LogRecord.ALARM_DOORBELL_OFFLINE);
+            logRecord.setDeviceId(ControlCenter.getSN());
+            logRecord.setDeviceType(LogRecord.TYPE_DOORBELL);
+            logRecord.setRemark(Util.getApp().getString(R.string.network_is_not_available));
+            osw.write(GsonUtil.toJson(logRecord));
+            osw.flush();
+            osw.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

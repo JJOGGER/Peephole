@@ -1,11 +1,15 @@
 package cn.jcyh.peephole;
 
+import android.app.DownloadManager;
 import android.bluetooth.BluetoothAdapter;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
-import android.os.Messenger;
+import android.os.Handler;
 import android.os.PersistableBundle;
 import android.support.v4.view.ViewPager;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
 import com.netease.nimlib.sdk.NIMClient;
@@ -13,6 +17,8 @@ import com.netease.nimlib.sdk.misc.DirCacheFileType;
 import com.netease.nimlib.sdk.misc.MiscService;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,27 +28,32 @@ import cn.jcyh.eaglelock.api.MyLockAPI;
 import cn.jcyh.eaglelock.api.MyLockCallback;
 import cn.jcyh.peephole.adapter.MainPageAdapter;
 import cn.jcyh.peephole.base.BaseActivity;
+import cn.jcyh.peephole.constant.Constant;
+import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.entity.CommandJson;
+import cn.jcyh.peephole.entity.DownloadInfo;
+import cn.jcyh.peephole.entity.Version;
+import cn.jcyh.peephole.event.NIMMessageAction;
+import cn.jcyh.peephole.event.NetworkAction;
+import cn.jcyh.peephole.http.HttpAction;
+import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.service.MainService;
+import cn.jcyh.peephole.service.UpdateSoftService;
+import cn.jcyh.peephole.ui.dialog.ADPopupDialog;
+import cn.jcyh.peephole.ui.dialog.DialogHelper;
+import cn.jcyh.peephole.ui.dialog.HintDialogFragmemt;
+import cn.jcyh.peephole.utils.APKUtil;
 import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.SPUtil;
+import cn.jcyh.peephole.utils.SystemUtil;
 
 //按门铃，发消息--》app收到消息--》发起视频通话
 public class MainActivity extends BaseActivity implements ViewPager.OnPageChangeListener {
     @BindView(R.id.vp_main)
     ViewPager vpMain;
-    public static final int MSG_INSTALL_APK = 0;
-    public static final int MSG_INSTALL_APK_RESULT = 2;
-    private Messenger mService = null;
-//    private ServiceConnection mConnection = new ServiceConnection() {//静默安装服务
-//        public void onServiceConnected(ComponentName className, IBinder service) {
-//            L.e("------onServiceConnected");
-//            mService = new Messenger(service);
-//            installApk();
-//        }
-//
-//        public void onServiceDisconnected(ComponentName className) {
-//            mService = null;
-//        }
-//    };
+    private DialogHelper mUpdateDialog;
+    private Handler mHandler;
+    private DialogHelper mAdPopupDialog;
 
     @Override
     public int getLayoutId() {
@@ -66,22 +77,20 @@ public class MainActivity extends BaseActivity implements ViewPager.OnPageChange
 
     @Override
     protected void init() {
-//        if (!EventBus.getDefault().isRegistered(this))
-//            EventBus.getDefault().register(this);
+        if (!EventBus.getDefault().isRegistered(this))
+            EventBus.getDefault().register(this);
+        mHandler = new Handler();
         startService(new Intent(this, MainService.class));
         vpMain.setAdapter(new MainPageAdapter(getSupportFragmentManager()));
         vpMain.setOffscreenPageLimit(2);
         vpMain.addOnPageChangeListener(this);
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int heightPixels = displayMetrics.heightPixels;
-        int widthPixels = displayMetrics.widthPixels;
-        L.e("---->h:" + heightPixels + "---w:" + widthPixels);
         clearCache();
-//        boolean siye = ControlCenter.getSN().startsWith(Constant.SIYE_SN);
-//        if (siye) {
-        siyeInit();
-//        }
+        boolean siye = ControlCenter.getSN().startsWith(Constant.SIYE_SN);
+        if (siye) {
+            siyeInit();
+        }
     }///storage/sdcard0
 
     /**
@@ -136,87 +145,118 @@ public class MainActivity extends BaseActivity implements ViewPager.OnPageChange
 
     }
 
-//    @Subscribe(threadMode = ThreadMode.MAIN)
-//    public void onSystemAction(DoorbellSystemAction systemAction) {
-//        L.e("---------onSystemAction:"+systemAction.getType());
-//        if (!DoorbellSystemAction.TYPE_DOORBELL_INSTALL_APK.equals(systemAction.getType())) return;
-//        doBindService(this);
-//    }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onNIMMessageAction(NIMMessageAction messageAction) {
+        if (CommandJson.ServerCommand.DOORBELL_POPUP_UPDATE.equals(messageAction.getType())) {
+            CommandJson commandJson = messageAction.getParcelableExtra(Constant.COMMAND);
+            if (TextUtils.isEmpty(commandJson.getFlag())) return;
+            if (mAdPopupDialog == null) {
+                ADPopupDialog adPopupDialog = new ADPopupDialog();
+                Bundle bundle = new Bundle();
+                bundle.putString(Constant.URL, commandJson.getFlag());
+                adPopupDialog.setArguments(bundle);
+                mAdPopupDialog = new DialogHelper(this, adPopupDialog);
+            } else {
+                ((ADPopupDialog) mAdPopupDialog.getDialogFragment()).updateAD(commandJson.getFlag());
+            }
+            mAdPopupDialog.commit();
+        }
+    }
 
-//    // 取消绑定到服务
-//    private void doUnbindService(Context context) {
-//        if (mService != null) {
-//            mService = null;
-//            if (context != null) {
-//                context.unbindService(mConnection);
-//            }
-//        }
-//    }
-
-    // 绑定到服务
-//    private boolean doBindService(Context context) {
-//        boolean isbind = false;
-//        if (context != null) {
-//            //Intent intent = new Intent();
-//            //intent.setComponent(new ComponentName("com.kphone.installcontrol",
-//            //        "com.kphone.installcontrol.InstallService"));
-//
-//            Intent intent = new Intent();
-//            intent.setAction("android.intent.action.apkcontrol");
-//            intent.setPackage("com.kphone.installcontrol");
-//            isbind = context.bindService(intent,
-//                    mConnection, Context.BIND_AUTO_CREATE);
-//        }
-//        return isbind;
-//    }
-//
-//    public void installApk() {
-//        if (mService != null) {
-//            Message msg = Message.obtain(null, MSG_INSTALL_APK);
-//            msg.replyTo = new Messenger(new ResultHandler());
-//            ;
-//            Bundle data = new Bundle();
-//            data.putString("path", APKUtil.APK_PATH);
-//            data.putInt("flag", 0x00000002);
-//            msg.setData(data);
-//
-//            try {
-//                mService.send(msg);
-//            } catch (RemoteException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
-
-    /**
-     * 处理程序安装结果
-     *
-     * @author fengmeiyin
-     */
-//    class ResultHandler extends Handler {
-//        @Override
-//        public void handleMessage(Message msg) {
-//
-//            Bundle data = msg.getData();
-//
-//            switch (msg.what) {
-//
-//                case MSG_INSTALL_APK_RESULT:
-//                    L.e("-------------MSG_INSTALL_APK_RESULT安装完成");
-//                    doUnbindService(MainActivity.this);
-//                    break;
-////                case MSG_UNINSTALL_APK_RESULT:
-////                    Log.d(TAG, "RST:" +  data.getString("basePackageName") + " returnCode:" + data.getInt("returnCode"));
-////                    break;
-//                default:
-//                    super.handleMessage(msg);
-//            }
-//        }
-//    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (mUpdateDialog != null)
+            mUpdateDialog.dismiss();
+        if (mAdPopupDialog != null)
+            mAdPopupDialog.dismiss();
         if (EventBus.getDefault().isRegistered(this))
             EventBus.getDefault().unregister(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onNetworkAction(NetworkAction networkAction) {
+        if (NetworkAction.TYPE_NETWORK_CONNECTED.equals(networkAction.getType())) {
+            checkUpdate();
+        }
+    }
+
+    /**
+     * 检查更新
+     */
+    private void checkUpdate() {
+        DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+        DownloadManager.Query query = new DownloadManager.Query();
+        query.setFilterById(SPUtil.getInstance().getLong(Constant.DOWNLOAD_APK_ID));
+        assert downloadManager != null;
+        Cursor cursor = downloadManager.query(query);
+        if (cursor.moveToNext()) {
+            int state = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
+//            if (DownloadManager.STATUS_SUCCESSFUL == state) {
+//                //已经下载成功，直接安装
+//                APKUtil.installUpdateAPK();
+//                return;
+//            } else
+            if (DownloadManager.STATUS_FAILED != state && DownloadManager.STATUS_SUCCESSFUL != state) {
+                L.e("-------------当前状态:" + state);
+                cursor.close();
+                return;
+            }
+        }
+        cursor.close();
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int heightPixels = displayMetrics.heightPixels;
+        int widthPixels = displayMetrics.widthPixels;
+        String solutions = widthPixels + "x" + heightPixels;
+        HttpAction.getHttpAction().updateSoft(SystemUtil.getSystemVersion(), solutions, new IDataListener<Version>() {
+            @Override
+            public void onSuccess(final Version version) {
+                try {
+                    if (Integer.valueOf(version.getNumber()) > SystemUtil.getVersionCode()) {
+                        update(version);
+                    }
+                } catch (Exception ignore) {
+                }
+            }
+
+            @Override
+            public void onFailure(int errorCode, String desc) {
+            }
+        });
+    }
+
+    private void update(final Version version) {
+        if (mUpdateDialog == null) {
+            HintDialogFragmemt hintDialogFragmemt = new HintDialogFragmemt();
+            hintDialogFragmemt.setHintContent(getString(R.string.new_version_msg));
+            hintDialogFragmemt.setOnHintDialogListener(new HintDialogFragmemt.OnHintDialogListener() {
+                @Override
+                public void onConfirm(boolean isConfirm) {
+                    if (isConfirm) {
+                        DownloadInfo downloadInfo = new DownloadInfo();
+                        downloadInfo.setTitle(getString(R.string.video_service));
+                        downloadInfo.setDesc(getString(R.string.updating));
+                        downloadInfo.setSaveFilePath(APKUtil.APK_PATCH_PATH_ENCRYPT);
+                        downloadInfo.setUrl(version.getAddress());
+                        downloadInfo.setType(DownloadInfo.TYPE_DOWNLOAD_APK_ID);
+                        Intent intent = new Intent(MainActivity.this, UpdateSoftService.class);
+                        intent.putExtra(Constant.DOWNLOAD_INFO, downloadInfo);
+                        startService(intent);
+                    }
+                    mUpdateDialog.dismiss();
+                }
+            });
+            mUpdateDialog = new DialogHelper(this, hintDialogFragmemt);
+        }
+        mUpdateDialog.commit();
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (mUpdateDialog != null)
+                    mUpdateDialog.dismiss();
+            }
+        }, 5000);
+
     }
 }

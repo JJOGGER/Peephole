@@ -1,1 +1,1 @@
-include ':app', ':zxinglib', ':nimlib','eaglelock'
+include ':app', ':zxinglib', ':nimlib', ':eaglelock'

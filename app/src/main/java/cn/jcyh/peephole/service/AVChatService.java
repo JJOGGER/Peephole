@@ -28,6 +28,7 @@ import java.util.TimerTask;
 import cn.jcyh.peephole.constant.AVChatExitCode;
 import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.entity.DoorbellConfig;
 import cn.jcyh.peephole.event.AVChatAction;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.observer.AVChatTimeoutObserver;
@@ -44,7 +45,7 @@ import cn.jcyh.peephole.video.AVChatProfile;
  */
 
 public class AVChatService extends Service {
-    public static final int CURRENT_AUDIO_VOLUME = 1;
+    public int mCurrentVideoVolume = 1;
     private AVChatController mAVChatController;
     private AVChatData mAvChatData;
     private static final byte IS_DUAL_CAMERA = AVChatControlCommand.NOTIFY_CUSTOM_BASE + 1;
@@ -55,13 +56,12 @@ public class AVChatService extends Service {
     private TimerTask mTimerTask = new TimerTask() {
         @Override
         public void run() {
-
             AudioManager audioManager = (AudioManager) Util.getApp().getSystemService(Context.AUDIO_SERVICE);
             assert audioManager != null;
             int streamVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
             L.i("---streamVolume:" + streamVolume);
-            if (streamVolume != CURRENT_AUDIO_VOLUME) {
-                audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, CURRENT_AUDIO_VOLUME, 0);
+            if (streamVolume != mCurrentVideoVolume) {
+                audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, mCurrentVideoVolume, 0);
             }
             streamVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
             L.i("---streamVolume:" + streamVolume);
@@ -82,6 +82,8 @@ public class AVChatService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
+        mCurrentVideoVolume = doorbellConfig.getVideoVolume();
         mTimer.schedule(mTimerTask, 0, 1000);
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
@@ -96,9 +98,9 @@ public class AVChatService extends Service {
                 }
                 stopSelf();
             }
-        }, ControlCenter.getDoorbellManager().getDoorbellConfig().getVideoConfig().getVideoTimeLimit() * 1000);
+        }, doorbellConfig.getVideoConfig().getVideoTimeLimit() * 1000);
         //通话过程暂时关闭停留报警
-        mMonitorSwitch = ControlCenter.getDoorbellManager().getDoorbellConfig().getDoorbellSensorParam().getMonitor();
+        mMonitorSwitch = doorbellConfig.getDoorbellSensorParam().getMonitor();
         if (mMonitorSwitch == 1) {
             ControlCenter.getBCManager().setPIRSensorOn(false);
         }
@@ -143,7 +145,7 @@ public class AVChatService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        HttpAction.getHttpAction().userTaklTimeRecord(mAvChatData.getAccount(),mSessionDuration,null);
+        HttpAction.getHttpAction().userTaklTimeRecord(mAvChatData.getAccount(), mSessionDuration, null);
         if (mAVChatController != null) { //界面销毁时强制尝试挂断
             try {
                 mAVChatController.hangUp(AVChatExitCode.HANGUP);

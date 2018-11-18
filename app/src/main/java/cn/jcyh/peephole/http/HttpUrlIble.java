@@ -12,7 +12,8 @@ public interface HttpUrlIble {
     //119.23.58.28服务器
 //    http://mysmart.9cyh.cn/
     String EAGLERKING_IP = "http://mysmartxcateye.9cyh.cn/";
-//    String EAGLERKING_IP = "http://119.23.58.28:8015/";
+    String LOCK_IP = "http://119.23.58.28:8015/";
+    //    String EAGLERKING_IP = "http://119.23.58.28:8015/";
     //    String EAGLERKING_IP = "http://192.168.0.134:8083/";
     String INIT_NIM = EAGLERKING_IP + "Doorbell/CateyeRegister";
     //文件上传
@@ -52,4 +53,11 @@ public interface HttpUrlIble {
     String DOORBELL_TALK_TIME_RECORD = EAGLERKING_IP + "Doorbell/UserTalkTimeRecord";
     //上传定位
     String DOORBELL_UPLOAD_LOCATION = EAGLERKING_IP + "Doorbell/AddDeviceLocationInfo";
+
+
+    /*------------------------------蓝牙锁-----------------------------*/
+    String LOCK_UPDATE_ELECTRIC_QUANTITY = EAGLERKING_IP + "Extend/CateyeUpdateLockElectricQuantity";
+    String LOCK_GET_KEY_DATA = EAGLERKING_IP + "Extend/CateyeOpenLock";
+    String LOCK_RECORD_UPLOAD = EAGLERKING_IP + "Extend/CateyeLockRecordUpload";
+    String DOORBELL_LOG_UPLOAD = EAGLERKING_IP + "Extend/CateyeAlarmUpload";
 }

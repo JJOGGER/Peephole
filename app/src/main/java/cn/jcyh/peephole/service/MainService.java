@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.NotificationCompat;
 
 import com.netease.nimlib.sdk.NIMClient;
@@ -44,6 +45,7 @@ import cn.jcyh.peephole.observer.NIMSystemMessageObserver;
 import cn.jcyh.peephole.observer.UserStatusObserver;
 import cn.jcyh.peephole.receiver.AwakenReceiver;
 import cn.jcyh.peephole.receiver.BatteryReceiver;
+import cn.jcyh.peephole.receiver.LockReceiver;
 import cn.jcyh.peephole.receiver.ScreenReceiver;
 import cn.jcyh.peephole.utils.L;
 
@@ -62,6 +64,7 @@ public class MainService extends Service {
     private Observer<AVChatData> mAVChatObserver;
     private Observer<FriendChangedNotify> mFriendChangedNotifyObserver;
     private BatteryReceiver mBatteryReceiver;
+    private LockReceiver mLockReceiver;
 
     @Nullable
     @Override
@@ -150,14 +153,23 @@ public class MainService extends Service {
             intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
             intentFilter.addAction(Intent.ACTION_BATTERY_LOW);
             registerReceiver(mBatteryReceiver, intentFilter);
-            mScreenReceiver=new ScreenReceiver();
+            mScreenReceiver = new ScreenReceiver();
             intentFilter = new IntentFilter();
             intentFilter.addAction(Intent.ACTION_SCREEN_ON);
             intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
             registerReceiver(mScreenReceiver, intentFilter);
+            if (ControlCenter.getSN().startsWith(Constant.SIYE_SN)) {
+                mLockReceiver = new LockReceiver();
+                intentFilter = new IntentFilter();
+                intentFilter.addAction(cn.jcyh.eaglelock.constant.Constant.ACTION_UNLOCK);
+                intentFilter.addAction(cn.jcyh.eaglelock.constant.Constant.ACTION_GET_OPERATE_LOG);
+                LocalBroadcastManager.getInstance(this).registerReceiver(mLockReceiver, intentFilter);
+            }
         } else {
             unregisterReceiver(mBatteryReceiver);
-
+            if (ControlCenter.getSN().startsWith(Constant.SIYE_SN)) {
+                LocalBroadcastManager.getInstance(this).unregisterReceiver(mLockReceiver);
+            }
         }
     }
 

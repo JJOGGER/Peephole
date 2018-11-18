@@ -4,12 +4,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.FutureTask;
 
+import cn.jcyh.eaglelock.entity.UnLockData;
 import cn.jcyh.peephole.entity.AdvertData;
 import cn.jcyh.peephole.entity.ConfigData;
 import cn.jcyh.peephole.entity.Doorbell;
+import cn.jcyh.peephole.entity.LogRecord;
+import cn.jcyh.peephole.entity.RequestUploadElectricQuantity;
 import cn.jcyh.peephole.entity.User;
 import cn.jcyh.peephole.entity.Version;
 import cn.jcyh.peephole.http.download.ProgressHttpListener;
+import cn.jcyh.peephole.utils.GsonUtil;
 import cn.jcyh.peephole.utils.SystemUtil;
 
 /**
@@ -179,5 +183,35 @@ public class HttpRequest implements IHttpRequest {
         params.put("Address", addrStr);
         HttpTaskVoid uploadLocation = new HttpTaskVoid(HttpUrlIble.DOORBELL_UPLOAD_LOCATION, params, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(uploadLocation, listener));
+    }
+
+    @Override
+    public void lockUpdateElectricQuantity(RequestUploadElectricQuantity requestUploadElectricQuantity, IDataListener listener) {
+        HttpTaskVoid lockUpdateElectricQuantity = new HttpTaskVoid(HttpUrlIble.LOCK_UPDATE_ELECTRIC_QUANTITY, GsonUtil.toJson(requestUploadElectricQuantity), listener);
+        mThreadPoolManager.excute(new FutureTask<Object>(lockUpdateElectricQuantity, listener));
+    }
+
+    @Override
+    public void getUnLockKeyData(String sn, IDataListener listener) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("cateyeId", sn);
+        HttpTask unLockKeyData = new HttpTask(HttpUrlIble.LOCK_GET_KEY_DATA, params, UnLockData.class, listener);
+        mThreadPoolManager.excute(new FutureTask<Object>(unLockKeyData, listener));
+    }
+
+    @Override
+    public void lockUploadLog(int lockId, String accessToken, String records, IDataListener listener) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("lockId", lockId);
+        params.put("accessToken", accessToken);
+        params.put("records", records);
+        HttpTaskVoid lockUploadLog = new HttpTaskVoid(HttpUrlIble.LOCK_RECORD_UPLOAD, params, listener);
+        mThreadPoolManager.excute(new FutureTask<Object>(lockUploadLog, listener));
+    }
+
+    @Override
+    public void uploadLog(LogRecord logRecord, IDataListener listener) {
+        HttpTaskVoid lockUploadLog = new HttpTaskVoid(HttpUrlIble.DOORBELL_LOG_UPLOAD, GsonUtil.toJson(logRecord), listener);
+        mThreadPoolManager.excute(new FutureTask<Object>(lockUploadLog, listener));
     }
 }

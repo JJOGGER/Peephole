@@ -133,6 +133,7 @@ dependencies {
     implementation files('libs/Msc.jar')
     implementation files('libs/Sunflower.jar')
     implementation project(':eaglelock')
+//    implementation(name: 'ttlock-sdk-2.0', ext: 'aar')
     implementation project(':nimlib')
 //    implementation project(':OpenCVLibrary320')
     implementation files('libs/BaiduLBS_Android.jar')

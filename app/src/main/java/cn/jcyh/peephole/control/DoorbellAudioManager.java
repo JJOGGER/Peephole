@@ -84,6 +84,7 @@ public class DoorbellAudioManager {
                 DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
                 mResPath = doorbellConfig.getDoorbellRingName();
                 mVolume = doorbellConfig.getRingVolume() / 100f;
+                mPlayCount=3;
                 ControlCenter.getBCManager().setMainSpeakerOn(true);
                 break;
             case DOORBELL_ALARM:
@@ -144,6 +145,11 @@ public class DoorbellAudioManager {
                                 if (listener != null)
                                     listener.onCompletion();
                             } else {
+                                try {
+                                    Thread.sleep(1000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
                                 mPlayer.start();
                             }
                         }

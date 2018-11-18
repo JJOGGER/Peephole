@@ -3,13 +3,16 @@ package cn.jcyh.eaglelock.entity;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.gson.Gson;
+
 import cn.jcyh.locklib.entity.LockVersion;
+
 
 /**
  * Created by Administrator on 2016/9/6 0006.
  */
 public class LockKey implements Parcelable {
-    private static final String TYPE_ADMIN = "110301";
+
     private String accessToken;//访问令牌
     private int lockId;//锁id
     private int keyId;//钥匙id
@@ -34,7 +37,7 @@ public class LockKey implements Parcelable {
     private String deletePwd;//二代锁的管理员钥匙会有，清空码，用于清空锁上的密码
     private int electricQuantity;//电量
     private String aesKeyStr;//Aes加解密key
-    private String lockVersion;//锁版本信息 json格式
+    private LockVersion lockVersion;//锁版本信息 json格式
     private long startDate;//有效期开始时间
     private long endDate;//有效期结束时间
     /**
@@ -51,14 +54,31 @@ public class LockKey implements Parcelable {
     private String modelNumber;//锁型号
     private String hardwareRevision;//锁硬件版本号
     String firmwareRevision;//锁固件版本号
-
     private String username;
     private String senderUsername;
     private int openid;
     private long date;
-    private boolean clickable;//标记是否可点击
+    private String cateyeId;
+    private Gson mGson;
 
     public LockKey() {
+        mGson = new Gson();
+    }
+
+    public LockKey(UnLockData unLockData) {
+        mGson = new Gson();
+        openid = unLockData.getSmartLockUserId();
+        adminPwd = unLockData.getAdminPwd();
+        aesKeyStr = unLockData.getAesKeyStr();
+        lockFlagPos = unLockData.getLockFlagPos();
+        lockKey = unLockData.getLockKey();
+        lockId = unLockData.getLockId();
+        lockMac = unLockData.getLockMac();
+        setLockVersion(unLockData.getLockVersion());
+        accessToken = unLockData.getSmartLockAccessToken();
+        timezoneRawOffset = unLockData.getTimezoneRawOffset();
+        userType = unLockData.getUserType();
+        accessToken = unLockData.getSmartLockAccessToken();
     }
 
     private LockKey(Parcel in) {
@@ -91,7 +111,7 @@ public class LockKey implements Parcelable {
         modelNumber = in.readString();
         hardwareRevision = in.readString();
         firmwareRevision = in.readString();
-        clickable=in.readByte() != 0;
+        cateyeId = in.readString();
     }
 
     public static final Creator<LockKey> CREATOR = new Creator<LockKey>() {
@@ -120,7 +140,7 @@ public class LockKey implements Parcelable {
         dest.writeString(userType);
         dest.writeString(lockName);
         dest.writeString(lockAlias);
-        dest.writeByte((byte) (TYPE_ADMIN.equals(userType) ? 1 : 0));
+        dest.writeByte((byte) ("110301".equals(userType) ? 1 : 0));
         dest.writeString(lockKey);
         dest.writeString(lockMac);
         dest.writeInt(lockFlagPos);
@@ -129,7 +149,7 @@ public class LockKey implements Parcelable {
         dest.writeString(deletePwd);
         dest.writeInt(electricQuantity);
         dest.writeString(aesKeyStr);
-        dest.writeString(lockVersion);
+        dest.writeParcelable(lockVersion, flags);
         dest.writeLong(startDate);
         dest.writeLong(endDate);
         dest.writeInt(timezoneRawOffset);
@@ -142,7 +162,7 @@ public class LockKey implements Parcelable {
         dest.writeString(modelNumber);
         dest.writeString(hardwareRevision);
         dest.writeString(firmwareRevision);
-        dest.writeByte((byte) (clickable?1:0));
+        dest.writeString(cateyeId);
     }
 
     public String getAccessToken() {
@@ -202,7 +222,7 @@ public class LockKey implements Parcelable {
     }
 
     public boolean isAdmin() {
-        return TYPE_ADMIN.equals(userType);
+        return "110301".equals(userType);
     }
 
     public void setAdmin(boolean admin) {
@@ -274,11 +294,19 @@ public class LockKey implements Parcelable {
     }
 
     public String getLockVersion() {
+        return mGson.toJson(lockVersion);
+    }
+
+    public LockVersion getLockVersionEntity() {
         return lockVersion;
     }
 
-    public void setLockVersion(String lockVersion) {
+    public void setLockVersion(LockVersion lockVersion) {
         this.lockVersion = lockVersion;
+    }
+
+    public void setLockVersion(String lockVersion) {
+        this.lockVersion = mGson.fromJson(lockVersion, LockVersion.class);
     }
 
     public long getStartDate() {
@@ -417,17 +445,18 @@ public class LockKey implements Parcelable {
         this.date = date;
     }
 
-    public boolean isClickable() {
-        return clickable;
+    public String getCateyeId() {
+        return cateyeId;
     }
 
-    public void setClickable(boolean clickable) {
-        this.clickable = clickable;
+    public void setCateyeId(String cateyeId) {
+        this.cateyeId = cateyeId;
     }
 
     @Override
     public String toString() {
         return "LockKey{" +
+                "cateyeId='" + cateyeId + '\'' +
                 "accessToken='" + accessToken + '\'' +
                 ", lockId=" + lockId +
                 ", keyId=" + keyId +

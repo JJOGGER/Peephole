@@ -29,6 +29,7 @@ public class DoorbellConfig {
     private String doorbellAlarmName;//报警声
     private int ringVolume = 50;
     private int alarmVolume = 50;
+    private int videoVolume = 1;//通话音量
     private boolean isExistOfflineData = false;//标记是否存在离线数据
     private Doorbell doorbell;//网易云登录
     private ConfigData.VideoConfig videoConfig;//视频通话配置
@@ -128,6 +129,14 @@ public class DoorbellConfig {
 
     public void setDoorbellAlarmName(String doorbellAlarmName) {
         this.doorbellAlarmName = doorbellAlarmName;
+    }
+
+    public int getVideoVolume() {
+        return videoVolume == 0 ? 1:videoVolume;
+    }
+
+    public void setVideoVolume(int videoVolume) {
+        this.videoVolume = videoVolume;
     }
 
     public int getRingVolume() {

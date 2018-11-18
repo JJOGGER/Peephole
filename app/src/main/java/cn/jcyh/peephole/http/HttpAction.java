@@ -7,6 +7,7 @@ import cn.jcyh.peephole.entity.AdvertData;
 import cn.jcyh.peephole.entity.ConfigData;
 import cn.jcyh.peephole.entity.Doorbell;
 import cn.jcyh.peephole.entity.DoorbellConfig;
+import cn.jcyh.peephole.entity.LogRecord;
 import cn.jcyh.peephole.entity.User;
 import cn.jcyh.peephole.entity.Version;
 import cn.jcyh.peephole.http.download.ProgressHttpListener;
@@ -203,6 +204,11 @@ public class HttpAction extends BaseHttpAction {
                                String city, String district, String street, String addrStr, IDataListener listener) {
         if (!NetworkUtil.isConnected()) return;
         mHttpRequest.uploadLocation(longitude, latitude, country, province, city, district, street, addrStr, listener);
+    }
+
+    public void uploadLog(LogRecord logRecord,IDataListener listener) {
+        if (!NetworkUtil.isConnected()) return;
+        mHttpRequest.uploadLog(logRecord,listener);
     }
 }
 

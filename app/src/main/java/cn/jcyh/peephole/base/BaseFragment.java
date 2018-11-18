@@ -1,6 +1,7 @@
 package cn.jcyh.peephole.base;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,14 +23,60 @@ import cn.jcyh.peephole.utils.ScreenUtil;
  * 基类fragment
  */
 
-public abstract class BaseFragment extends Fragment{
+public abstract class BaseFragment extends Fragment {
     public Activity mActivity;
     private Unbinder mBind;
+    private ProgressDialog mProgressDialog;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         mActivity = getActivity();
+    }
+
+    private void show(boolean cancelable) {
+        if (mActivity == null || mActivity.isFinishing() || mActivity.getFragmentManager() == null)
+            return;
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(mActivity);
+            mProgressDialog.setMessage(getString(R.string.waiting));
+            mProgressDialog.setCancelable(cancelable);
+        }
+        if (!mProgressDialog.isShowing())
+            mProgressDialog.show();
+    }
+
+    public void showProgressDialog() {
+        show(true);
+    }
+
+    public void showProgressDialog(boolean cancelable) {
+        show(cancelable);
+    }
+
+    public void showProgressDialog(String message) {
+        if (mActivity == null || mActivity.isFinishing() || mActivity.getFragmentManager() == null)
+            return;
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(mActivity);
+        }
+        mProgressDialog.setMessage(message);
+        if (!mProgressDialog.isShowing())
+            mProgressDialog.show();
+    }
+
+    public void cancelProgressDialog() {
+        if (mActivity == null || mActivity.getFragmentManager() == null) return;
+        if (mProgressDialog == null) return;
+        if (mProgressDialog.isShowing())
+            mProgressDialog.cancel();
+        mProgressDialog = null;
+    }
+
+    public boolean isDialogShowing() {
+        if (mActivity == null || mActivity.isFinishing() || mActivity.getFragmentManager() == null)
+            return false;
+        return mProgressDialog != null && mProgressDialog.isShowing();
     }
 
     @Nullable
@@ -60,9 +107,11 @@ public abstract class BaseFragment extends Fragment{
         return view;
     }
 
-    protected LayoutInflater setViewStyle(LayoutInflater inflater){
+    protected LayoutInflater setViewStyle(LayoutInflater inflater) {
         return null;
-    };
+    }
+
+    ;
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
@@ -89,12 +138,14 @@ public abstract class BaseFragment extends Fragment{
         startActivity(intent);
         mActivity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
+
     public void startNewActivity(Class cls, Bundle bundle) {
         Intent intent = new Intent(mActivity, cls);
         intent.putExtras(bundle);
         startActivity(intent);
         mActivity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
+
     public void startNewActivity(Class cls, String key, Object value) {
         Intent intent = new Intent(mActivity, cls);
         if (value instanceof Integer) {
@@ -137,6 +188,7 @@ public abstract class BaseFragment extends Fragment{
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        cancelProgressDialog();
 //        MyApp.getRefWatcher().watch(this);
         mBind.unbind();
     }

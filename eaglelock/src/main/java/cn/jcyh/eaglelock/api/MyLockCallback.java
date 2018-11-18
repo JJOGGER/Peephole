@@ -9,6 +9,7 @@ import android.util.Log;
 import java.util.TimeZone;
 
 import cn.jcyh.eaglelock.constant.Constant;
+import cn.jcyh.eaglelock.constant.MyLockKey;
 import cn.jcyh.eaglelock.constant.Operation;
 import cn.jcyh.eaglelock.entity.LockKey;
 import cn.jcyh.eaglelock.entity.LockPwdRecord;
@@ -67,12 +68,12 @@ public class MyLockCallback implements LockCallback {
     public void onDeviceConnected(ExtendedBluetoothDevice extendedBluetoothDevice) {
         Log.e(TAG, "--------onDeviceConnected:" + MyLockAPI.sBleSession.getOperation());
         MyLockAPI lockAPI = MyLockAPI.getLockAPI();
-        LockKey localKey = null;
+        LockKey localKey = MyLockKey.sCurrentKey;
         String operation = MyLockAPI.sBleSession.getOperation();
         if (Operation.ADD_ADMIN.equals(operation)) {
             lockAPI.addAdministrator(extendedBluetoothDevice);
         }
-
+        Log.e(TAG, "--------------UNLOCK" + operation);
         if (localKey == null) return;
         switch (operation) {
             case Operation.LOCKCAR_DOWN:
@@ -223,13 +224,15 @@ public class MyLockCallback implements LockCallback {
     public void onUnlock(ExtendedBluetoothDevice extendedBluetoothDevice, int uid, int uniqueid, long lockTime, Error error) {
         Log.e(TAG, "---------onUnlock:" + error);
         Intent intent = new Intent(Constant.ACTION_UNLOCK);
+        MyLockKey.sCurrentKey.setElectricQuantity(extendedBluetoothDevice.getBatteryCapacity());
         intent.putExtra(Constant.ERROR_MSG, error);
         intent.putExtra(Constant.LOCK_ADDRESS, extendedBluetoothDevice.getAddress());
         mLocalBroadcastManager.sendBroadcast(intent);
-        MyLockAPI.getLockAPI().connect(extendedBluetoothDevice, Operation.GET_OPERATE_LOG);
-//        if (ControlCenter.sCurrentKey != null) {
-//            LockHttpAction.getHttpAction().uploadElectricQuantity(ControlCenter.sCurrentKey.getLockId(), extendedBluetoothDevice.getBatteryCapacity(), null);
-//        }
+        if (MyLockAPI.getLockAPI().isConnected(extendedBluetoothDevice.getAddress())) {
+            MyLockAPI.getLockAPI().getOperateLog(extendedBluetoothDevice, MyLockKey.sCurrentKey);
+        } else {
+            MyLockAPI.getLockAPI().connect(extendedBluetoothDevice, Operation.GET_OPERATE_LOG);
+        }
     }
 
     @Override
@@ -310,13 +313,18 @@ public class MyLockCallback implements LockCallback {
 
     @Override
     public void onGetOperateLog(ExtendedBluetoothDevice extendedBluetoothDevice, String records, Error error) {
-        Log.e(TAG, "-----------onGetOperateLog");
+        Log.e(TAG, "-----------onGetOperateLog" + error + ":" + records);
         if (Error.SUCCESS != error) return;
         //根据accessToken和lockmac获取钥匙
-//        if (ControlCenter.sCurrentKey != null && ControlCenter.sCurrentKey.getLockMac().equals(extendedBluetoothDevice.getAddress())) {
-//            LockHttpAction.getHttpAction().uploadLockRecords(ControlCenter.sCurrentKey.getLockId(), records, null);
-//        }
-        Log.e(TAG, "----------records:" + records + "-->" + error);
+        if (MyLockKey.sCurrentKey != null && MyLockKey.sCurrentKey.getLockMac().equals(extendedBluetoothDevice.getAddress())) {
+            Intent intent = new Intent(Constant.ACTION_GET_OPERATE_LOG);
+            intent.putExtra(Constant.ERROR_MSG, error);
+            intent.putExtra(Constant.RECORDS, records);
+            Log.e(TAG, "-----------onGetOperateLog succ");
+            mLocalBroadcastManager.sendBroadcast(intent);
+        } else {
+            Log.e(TAG, "-----------onGetOperateLog error");
+        }
     }
 
     @Override

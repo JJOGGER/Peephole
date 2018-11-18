@@ -9,6 +9,10 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.List;
 import java.util.Map;
 
+import cn.jcyh.eaglelock.api.MyLockAPI;
+import cn.jcyh.eaglelock.constant.MyLockKey;
+import cn.jcyh.eaglelock.constant.Operation;
+import cn.jcyh.eaglelock.entity.LockKey;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.command.CommandControl;
 import cn.jcyh.peephole.command.IMMessageCommandImpl;
@@ -74,6 +78,11 @@ public class MessageReceiveObserver implements Observer<List<IMMessage>> {
             case CommandJson.ServerCommand.DOORBELL_BANNER_UPDATE:
                 nimMessageAction.setType(CommandJson.ServerCommand.DOORBELL_BANNER_UPDATE);
                 break;
+            case CommandJson.ServerCommand.DOORBELL_POPUP_UPDATE:
+                if (!ControlCenter.getSN().startsWith(Constant.SIYE_SN)) return;//四叶草定制弹窗
+                L.e("------------commandJson:" + commandJson);
+                nimMessageAction.setType(CommandJson.ServerCommand.DOORBELL_POPUP_UPDATE);
+                break;
         }
         nimMessageAction.putExtra(Constant.COMMAND, commandJson);
         nimMessageAction.putExtra(Constant.FROM_ACCOUNT, imMessage.getFromAccount());
@@ -111,6 +120,10 @@ public class MessageReceiveObserver implements Observer<List<IMMessage>> {
                 ControlCenter.getBCManager().setLock(true);
                 CommandControl.sendUnlockResponse(imMessage.getFromAccount());
                 break;
+            case CommandJson.CommandType.UNLOCK_BLUETOOTH_REQUEST:
+                //蓝牙解锁
+                bluetoothUnlock(commandJson);
+                break;
             case CommandJson.CommandType.CHANGE_CAMERA_REQUEST://切换摄像头
                 break;
             case CommandJson.CommandType.DOORBELL_PARAMS_GET_REQUEST://参数请求
@@ -127,6 +140,31 @@ public class MessageReceiveObserver implements Observer<List<IMMessage>> {
         nimMessageAction.putExtra(Constant.COMMAND, commandJson);
         nimMessageAction.putExtra(Constant.FROM_ACCOUNT, imMessage.getFromAccount());
         EventBus.getDefault().post(nimMessageAction);
+    }
+
+    /**
+     * 蓝牙解锁
+     */
+    private void bluetoothUnlock(CommandJson commandJson) {
+        L.e("-------------UNLOCK_BLUETOOTH_REQUEST:");
+        LockKey lockKey = null;
+        try {
+            lockKey = GsonUtil.fromJson(commandJson.getFlag(), LockKey.class);
+        } catch (Exception ignore) {
+        }
+        L.e("-------------UNLOCK_BLUETOOTH_REQUEST:" + lockKey);
+        if (lockKey == null) return;
+        MyLockKey.sCurrentKey = lockKey;
+        MyLockAPI lockAPI = MyLockAPI.getLockAPI();
+        lockAPI.unlockByUser(null, lockKey);
+        if (lockAPI.isConnected(lockKey.getLockMac())) {
+            if (lockKey.isAdmin())
+                lockAPI.unlockByAdministrator(null, lockKey);
+            else
+                lockAPI.unlockByUser(null, lockKey);
+        } else {
+            lockAPI.connect(lockKey.getLockMac(), Operation.LOCKCAR_DOWN);
+        }
     }
 
     /**

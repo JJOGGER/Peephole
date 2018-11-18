@@ -17,6 +17,7 @@ import okhttp3.Callback;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
@@ -26,6 +27,7 @@ public class DownloadService implements IHttpService {
     private IHttpListener mHttpListener;
     private String mUrl;
     private Map<String, Object> mParams;
+    private RequestBody mRequestBody;
     private OkHttpClient mOkHttpClient;
     private String mFilePath;//下载存储路径
 
@@ -61,6 +63,11 @@ public class DownloadService implements IHttpService {
     @Override
     public void setParams(Map<String, Object> params) {
         mParams = params;
+    }
+
+    @Override
+    public void setRequestBody(RequestBody requestBody) {
+        mRequestBody = requestBody;
     }
 
     @Override

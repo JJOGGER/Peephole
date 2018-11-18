@@ -30,9 +30,15 @@ import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import cn.jcyh.eaglelock.api.MyLockAPI;
+import cn.jcyh.eaglelock.constant.MyLockKey;
+import cn.jcyh.eaglelock.constant.Operation;
+import cn.jcyh.eaglelock.entity.LockKey;
+import cn.jcyh.eaglelock.entity.UnLockData;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.base.BaseFragment;
 import cn.jcyh.peephole.constant.Constant;
+import cn.jcyh.peephole.constant.ExtendFunction;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.entity.AdvertData;
 import cn.jcyh.peephole.entity.CommandJson;
@@ -41,6 +47,7 @@ import cn.jcyh.peephole.event.NIMMessageAction;
 import cn.jcyh.peephole.event.NetworkAction;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.http.IDataListener;
+import cn.jcyh.peephole.http.LockHttpAction;
 import cn.jcyh.peephole.ui.activity.BannerDescActivity;
 import cn.jcyh.peephole.ui.activity.DoorbellLookActivity;
 import cn.jcyh.peephole.utils.FileUtil;
@@ -193,30 +200,46 @@ public class MainFragment extends BaseFragment {
                 startActivity(intent);
                 break;
             case R.id.tv_unlock:
-
-                ControlCenter.getBCManager().setLock(true);
-                T.show(R.string.unlock_success);
-                //测试静默安装
-//                EventBus.getDefault().post(new DoorbellSystemAction(DoorbellSystemAction.TYPE_DOORBELL_INSTALL_APK));
-
-//                if (!PhoneUtil.isPhoneCallable()) {
-//                    T.show(getString(R.string.no_sim_msg));
-//                    return;
-//                }
-//                mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
-//                if (!TextUtils.isEmpty(mDoorbellConfig.getSosNumber())) {
-//                    if (!PhoneNumberUtils.isGlobalPhoneNumber(mDoorbellConfig.getSosNumber())) {
-//                        T.show(R.string.phone_no_regex);
-//                        return;
-//                    }
-//                    PhoneUtil.callPhone(mDoorbellConfig.getSosNumber());
-//                } else {
-//                    T.show(getString(R.string.no_sos_number));
-//                }
+                unlock();
                 break;
             case R.id.tv_doorbell_look:
                 startNewActivity(DoorbellLookActivity.class);
                 break;
+        }
+    }
+
+    /**
+     * 开锁
+     */
+    private void unlock() {
+        if (ControlCenter.isFunctionUse(ExtendFunction.FUNCTION_BLUETOOTH_LOCK)) {
+            showProgressDialog();
+            // TODO: 2018/11/12 从服务器获取钥匙数据开锁
+            LockHttpAction.getHttpAction().getUnLockKeyData(ControlCenter.getSN(), new IDataListener<UnLockData>() {
+                @Override
+                public void onSuccess(UnLockData lockKey) {
+                    if (mActivity == null || mActivity.isDestroyed()) return;
+                    L.e("-------lockKey:" + lockKey);
+                    MyLockAPI lockAPI = MyLockAPI.getLockAPI();
+                    MyLockKey.sCurrentKey = new LockKey(lockKey);
+                    if (lockAPI.isConnected(lockKey.getLockMac())) {
+                        lockAPI.unlockByAdministrator(null, lockKey);
+                    } else {
+                        lockAPI.connect(lockKey.getLockMac(), Operation.LOCKCAR_DOWN);
+                    }
+                    cancelProgressDialog();
+                }
+
+                @Override
+                public void onFailure(int errorCode, String desc) {
+                    L.e("-----onFailure:" + errorCode + ":" + desc);
+                    if (mActivity == null || mActivity.isDestroyed()) return;
+                    cancelProgressDialog();
+                }
+            });
+        } else {
+            ControlCenter.getBCManager().setLock(true);
+            T.show(R.string.unlock_success);
         }
     }
 

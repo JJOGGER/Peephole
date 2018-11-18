@@ -133,6 +133,15 @@ public class FileUtil {
         return fileDir;
     }
 
+    public static String getLogPath() {
+        String logPath = getAPKPath() + File.separator + "log";
+        File file = new File(logPath);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        return logPath;
+    }
+
     /**
      * 获取sd卡路径
      */
