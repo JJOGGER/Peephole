@@ -7,13 +7,16 @@ import android.media.AudioManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
+import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
+import com.netease.nimlib.sdk.StatusCode;
+import com.netease.nimlib.sdk.auth.AuthServiceObserver;
 import com.netease.nimlib.sdk.avchat.AVChatManager;
 import com.netease.nimlib.sdk.avchat.constant.AVChatControlCommand;
 import com.netease.nimlib.sdk.avchat.model.AVChatAudioFrame;
 import com.netease.nimlib.sdk.avchat.model.AVChatCameraCapturer;
-import com.netease.nimlib.sdk.avchat.model.AVChatCommonEvent;
 import com.netease.nimlib.sdk.avchat.model.AVChatControlEvent;
 import com.netease.nimlib.sdk.avchat.model.AVChatData;
 import com.netease.nimlib.sdk.avchat.model.AVChatSessionStats;
@@ -21,15 +24,15 @@ import com.netease.nimlib.sdk.avchat.model.AVChatVideoFrame;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import cn.jcyh.peephole.constant.AVChatExitCode;
 import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.entity.DoorbellConfig;
 import cn.jcyh.peephole.event.AVChatAction;
-import cn.jcyh.peephole.observer.AVChatTimeoutObserver;
 import cn.jcyh.peephole.observer.PhoneCallStateObserver;
 import cn.jcyh.peephole.observer.SimpleAVChatStateObserver;
 import cn.jcyh.peephole.service.video.AVChatControllerCallback;
@@ -40,15 +43,18 @@ import cn.jcyh.peephole.video.AVChatProfile;
 
 /**
  * Created by jogger on 2018/2/2.
+ *
  */
 
 public class MultiAVChatService extends Service {
+    private static final int CHECK_RECEIVED_CALL_TIMEOUT = 10 * 1000;
     public int mCurrentVideoVolume = 1;
     private AVChatController mAVChatController;
     private static final byte IS_DUAL_CAMERA = AVChatControlCommand.NOTIFY_CUSTOM_BASE + 1;
     private static final byte SWITCH_CAMERA = AVChatControlCommand.NOTIFY_CUSTOM_BASE + 2;//切换摄像头
     private static final byte UNLOCK = AVChatControlCommand.NOTIFY_CUSTOM_BASE + 3;
-    private long mSessionDuration;
+    private Handler mMainHandler;
+    private List<String> mJoinUsers = new ArrayList<>();
     private TimerTask mTimerTask = new TimerTask() {
         @Override
         public void run() {
@@ -98,10 +104,10 @@ public class MultiAVChatService extends Service {
                 stopSelf();
             }
         }, doorbellConfig.getVideoConfig().getVideoTimeLimit() * 1000);
-        //通话过程暂时关闭停留报警
+
+        mMainHandler = new Handler(this.getMainLooper());
         AVChatProfile.getInstance().setAVChatting(true);
         registerObserves(true);
-//        createToucher();
     }
 
     /**
@@ -109,10 +115,9 @@ public class MultiAVChatService extends Service {
      */
     private void registerObserves(boolean register) {
         AVChatManager.getInstance().observeAVChatState(mAVChatStateObserver, register);
-        AVChatManager.getInstance().observeHangUpNotification(mCallHangupObserver, register);
         AVChatManager.getInstance().observeControlNotification(mCallControlObserver, register);
-        AVChatTimeoutObserver.getInstance().observeTimeoutNotification(mTimeoutObserver,
-                register, true);
+        NIMClient.getService(AuthServiceObserver.class).observeOnlineStatus(mUserStatusObserver,
+                register);
         PhoneCallStateObserver.getInstance().observeAutoHangUpForLocalPhone
                 (mAutohangupforlocalphoneobserver, register);
         ControlCenter.getBCManager().setMainSpeakerOn(!register);
@@ -127,7 +132,7 @@ public class MultiAVChatService extends Service {
         mAVChatController.joinRoom(new AVChatControllerCallback<AVChatData>() {
             @Override
             public void onSuccess(AVChatData avChatData) {
-                L.e("--------------加入房间成功");
+                L.e("--------------加入房间成功" + avChatData.getChatId());
             }
 
             public void onFailed(int code, String errorMsg) {
@@ -142,14 +147,14 @@ public class MultiAVChatService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-//        HttpAction.getHttpAction().userTaklTimeRecord(mAvChatData.getAccount(), mSessionDuration,
-//                null);
         if (mAVChatController != null) { //界面销毁时强制尝试挂断
             try {
-                mAVChatController.hangUp(AVChatExitCode.HANGUP);
-            } catch (Exception e) {
-                e.printStackTrace();
+                mAVChatController.leaveRoom();
+            } catch (Exception ignore) {
             }
+        }
+        if (mMainHandler != null) {
+            mMainHandler.removeCallbacksAndMessages(null);
         }
         registerObserves(false);
         AVChatAction avChatAction = new AVChatAction();
@@ -158,6 +163,7 @@ public class MultiAVChatService extends Service {
         AVChatProfile.getInstance().setAVChatting(false);
         ControlCenter.getDoorbellManager().setLastVideoTime(System.currentTimeMillis());
         cancelTimer();
+        L.i("-----------结束通话");
     }
 
     private void cancelTimer() {
@@ -171,28 +177,39 @@ public class MultiAVChatService extends Service {
         }
     }
 
+    /**
+     * 检查是否有人在房间
+     */
+    private void startTimerForCheckReceivedCall() {
+        mMainHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (mJoinUsers.isEmpty() && mAVChatController != null) {
+                    //没有人加入房间，自动挂断
+                    mAVChatController.leaveRoom();
+                }
+            }
+        }, CHECK_RECEIVED_CALL_TIMEOUT);
+    }
 
     //通话过程状态监听
     private SimpleAVChatStateObserver mAVChatStateObserver = new SimpleAVChatStateObserver() {
-
         @Override
-        public void onDeviceEvent(int code, String desc) {
-            super.onDeviceEvent(code, desc);
-//            L.e("------------code:" + code + ":" + desc);
-//            if (code == AVChatDeviceEvent.VIDEO_CAMERA_OPEN_ERROR) {
-//                mAVChatController.reCreateCameraCapturer();
-//            }
+        public void onJoinedChannel(int code, String audioFile, String videoFile, int i) {
+            if (code == 200) {
+                startTimerForCheckReceivedCall();
+            } else {
+                L.e("------------加入房间失败");
+            }
         }
 
         @Override
         public void onFirstVideoFrameAvailable(String account) {
             super.onFirstVideoFrameAvailable(account);
-//            mAVChatController.getVideoCapturer().setZoom(10);
         }
 
         @Override
         public void onSessionStats(AVChatSessionStats sessionStats) {
-            mSessionDuration = sessionStats.sessionDuration;
             if (ControlCenter.getDoorbellManager().getDoorbellConfig().getVideoConfig()
                     .getVideoTimeLimit()
                     * 1000 <= sessionStats.sessionDuration) {
@@ -211,10 +228,13 @@ public class MultiAVChatService extends Service {
         public void onUserJoined(String account) {
             if (mAVChatController == null) return;
             L.e("---------------onUserJoined");
-//            if (TextUtils.isEmpty(account)) {
-//                mAVChatController.leaveRoom();
-//                stopSelf();
-//            }
+            if (!TextUtils.isEmpty(account)) {
+                mJoinUsers.add(account);
+            }
+            if (mJoinUsers.isEmpty()) {
+                mAVChatController.leaveRoom();
+                stopSelf();
+            }
             boolean hasMultipleCameras = AVChatCameraCapturer.hasMultipleCameras();
             if (hasMultipleCameras) {
                 AVChatManager.getInstance().sendControlCommand(AVChatManager.getInstance()
@@ -230,19 +250,19 @@ public class MultiAVChatService extends Service {
         @Override
         public void onUserLeave(String account, int event) {
             if (mAVChatController == null) return;
+            if (mJoinUsers.contains(account))
+                mJoinUsers.remove(account);
+            if (mJoinUsers.isEmpty()) {
+                mAVChatController.leaveRoom();
+                stopSelf();
+            }
             L.e("---------------onUserLeave");
-            mAVChatController.leaveRoom();
-//            mAVChatController.hangUp(AVChatExitCode.HANGUP);
-            stopSelf();
         }
 
         //音视频连接建立，会回调
         @Override
         public void onCallEstablished() {
-//            //移除超时监听
             L.e("---------------onCallEstablished");
-            AVChatTimeoutObserver.getInstance().observeTimeoutNotification(mTimeoutObserver,
-                    false, true);
 
         }
 
@@ -254,29 +274,6 @@ public class MultiAVChatService extends Service {
         @Override
         public boolean onAudioFrameFilter(AVChatAudioFrame frame) {
             return true;
-        }
-    };
-    // 通话过程中，收到对方挂断电话
-    Observer<AVChatCommonEvent> mCallHangupObserver = new Observer<AVChatCommonEvent>() {
-        @Override
-        public void onEvent(AVChatCommonEvent avChatHangUpInfo) {
-            if (mAVChatController == null) return;
-            L.e("---------------通话过程中，收到对方挂断电话");
-//            mAvChatData = mAVChatController.getAvChatData();
-//            if (mAvChatData != null && mAvChatData.getChatId() == avChatHangUpInfo.getChatId()) {
-//                mAVChatController.onHangUp(AVChatExitCode.HANGUP);
-//            }
-
-        }
-    };
-    Observer<Integer> mTimeoutObserver = new Observer<Integer>() {
-        @Override
-        public void onEvent(Integer integer) {
-            if (mAVChatController == null) return;
-            L.e("---------------mTimeoutObserver");
-//            mAVChatController.hangUp(AVChatExitCode.CANCEL);
-            mAVChatController.leaveRoom();
-            stopSelf();
         }
     };
     // 监听音视频模式切换通知, 对方音视频开关通知
@@ -315,4 +312,18 @@ public class MultiAVChatService extends Service {
         }
     }
 
+    /**
+     * 在线状态观察者
+     */
+    private Observer<StatusCode> mUserStatusObserver = new Observer<StatusCode>() {
+
+        @Override
+        public void onEvent(StatusCode code) {
+            if (code.wontAutoLogin()) {
+                if (mAVChatController != null)
+                    mAVChatController.leaveRoom();
+                stopSelf();
+            }
+        }
+    };
 }

@@ -23,7 +23,6 @@ import cn.jcyh.peephole.event.DoorbellSystemAction;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.ui.activity.CameraActivity;
 import cn.jcyh.peephole.utils.L;
-import cn.jcyh.peephole.utils.SystemUtil;
 import cn.jcyh.peephole.utils.T;
 import cn.jcyh.peephole.utils.Util;
 import cn.jcyh.peephole.video.AVChatProfile;
@@ -61,11 +60,7 @@ public class BcReceiver extends BroadcastReceiver {
             }
             case RING: {
                 //当前查看猫眼界面时不抓拍
-                if (SystemUtil.getVersionCode() == 10086) {
-                    debugRingAction(context, extAct);
-                } else {
-                    ringAction(context, extAct);
-                }
+                ringAction(context, extAct);
 //		}else if (act.equals("kphone.intent.action.HOME_PRESS")) { // INDOOR_PRESS
 //			String extAct = intent.getStringExtra("value");
 //			if (extAct.equals("pressed")) {
@@ -83,80 +78,60 @@ public class BcReceiver extends BroadcastReceiver {
         }
     }
 
-    private void debugRingAction(final Context context, String extAct) {
-        if (extAct.equals(PRESSED)) {
-            AVChatManager.getInstance().createRoom(ControlCenter.getSN(), null, new
-                    AVChatCallback<AVChatChannelInfo>() {
-                        @Override
-                        public void onSuccess(AVChatChannelInfo avChatChannelInfo) {
-                            L.e("----------创建房间成功");
-                            //启动播放服务后且服务未结束、抓拍界面未关闭时，不再重复抓拍
-                            if (!ControlCenter.sIsVideo) {
-                                ControlCenter.sIsVideo = true;
-                                Intent intent = new Intent(context, CameraActivity.class);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                intent.putExtra(Constant.TYPE, DoorbellSystemAction
-                                        .TYPE_DOORBELL_SYSTEM_RING);
-
-                                context.startActivity(intent);
-                            }
-                            //发送
-                            DoorbellSystemAction systemAction = new DoorbellSystemAction
-                                    (DoorbellSystemAction
-                                            .TYPE_DOORBELL_SYSTEM_RING);
-                            EventBus.getDefault().post(systemAction);
-                        }
-
-                        @Override
-                        public void onFailed(int i) {
-                            L.e("----------创建房间失败" + i);
-                            if (i != 417) return;
-                            //启动播放服务后且服务未结束、抓拍界面未关闭时，不再重复抓拍
-                            if (!ControlCenter.sIsVideo) {
-                                ControlCenter.sIsVideo = true;
-                                Intent intent = new Intent(context, CameraActivity.class);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                intent.putExtra(Constant.TYPE, DoorbellSystemAction
-                                        .TYPE_DOORBELL_SYSTEM_RING);
-                                context.startActivity(intent);
-                            }
-                            //发送
-                            DoorbellSystemAction systemAction = new DoorbellSystemAction
-                                    (DoorbellSystemAction
-                                    .TYPE_DOORBELL_SYSTEM_RING);
-                            EventBus.getDefault().post(systemAction);
-                        }
-
-                        @Override
-                        public void onException(Throwable throwable) {
-                            L.e("----------创建房间失败" + throwable.getMessage());
-                        }
-                    });
-        }
-    }
-
     /**
      * 门铃
      */
-    private void ringAction(Context context, String extAct) {
+    private void ringAction(final Context context, String extAct) {
         if (AVChatProfile.getInstance().isAVChatting()) return;
         if (extAct.equals(PRESSED)) {
             play(ControlCenter.DOORBELL_TYPE_RING);
-            //启动播放服务后且服务未结束、抓拍界面未关闭时，不再重复抓拍
-            if (!ControlCenter.sIsVideo) {
-                ControlCenter.sIsVideo = true;
-                Intent intent = new Intent(context, CameraActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.putExtra(Constant.TYPE, DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_RING);
-                context.startActivity(intent);
+            boolean multiVideo = ControlCenter.getDoorbellManager().getDoorbellConfig()
+                    .isMultiVideo();
+            if (multiVideo) {
+                AVChatManager.getInstance().createRoom(ControlCenter.getSN(), null, new
+                        AVChatCallback<AVChatChannelInfo>() {
+                            @Override
+                            public void onSuccess(AVChatChannelInfo avChatChannelInfo) {
+                                L.i("----------创建房间成功");
+                                //启动播放服务后且服务未结束、抓拍界面未关闭时，不再重复抓拍
+                                toTakePicture(context);
+                            }
+
+                            @Override
+                            public void onFailed(int i) {
+                                L.e("----------创建房间失败" + i);
+                                if (i != 417) return;
+                                //启动播放服务后且服务未结束、抓拍界面未关闭时，不再重复抓拍
+                                toTakePicture(context);
+                            }
+
+                            @Override
+                            public void onException(Throwable throwable) {
+                                L.e("----------创建房间失败" + throwable.getMessage());
+                            }
+                        });
+            } else {
+                //启动播放服务后且服务未结束、抓拍界面未关闭时，不再重复抓拍
+                toTakePicture(context);
             }
-            //发送
-            DoorbellSystemAction systemAction = new DoorbellSystemAction(DoorbellSystemAction
-                    .TYPE_DOORBELL_SYSTEM_RING);
-            EventBus.getDefault().post(systemAction);
+
         }
 
 
+    }
+
+    private void toTakePicture(Context context) {
+        if (!ControlCenter.sIsVideo) {
+            ControlCenter.sIsVideo = true;
+            Intent intent = new Intent(context, CameraActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra(Constant.TYPE, DoorbellSystemAction.TYPE_DOORBELL_SYSTEM_RING);
+            context.startActivity(intent);
+        }
+        //发送
+        DoorbellSystemAction systemAction = new DoorbellSystemAction(DoorbellSystemAction
+                .TYPE_DOORBELL_SYSTEM_RING);
+        EventBus.getDefault().post(systemAction);
     }
 
     /**

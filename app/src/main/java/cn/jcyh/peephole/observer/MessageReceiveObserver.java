@@ -3,7 +3,6 @@ package cn.jcyh.peephole.observer;
 import android.content.Intent;
 
 import com.netease.nimlib.sdk.Observer;
-import com.netease.nimlib.sdk.avchat.AVChatManager;
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 
@@ -37,7 +36,6 @@ import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.ServiceUtil;
 import cn.jcyh.peephole.utils.T;
 import cn.jcyh.peephole.utils.Util;
-import cn.jcyh.peephole.video.AVChatProfile;
 
 /**
  * Created by jogger on 2018/7/26.
@@ -49,7 +47,6 @@ public class MessageReceiveObserver implements Observer<List<IMMessage>> {
         for (int i = 0; i < imMessages.size(); i++) {
             IMMessage imMessage = imMessages.get(i);
             if (imMessage.getMsgType() != MsgTypeEnum.text) return;//文本以外的消息暂不处理
-            // TODO: 2018/9/30 必须是猫眼的绑定用户才可以做操作
             L.e("----->内容：" + imMessages.get(i).getContent() + "，来自：" + imMessages.get(i)
                     .getFromAccount()
                     + ",消息类型：" + imMessages.get(i).getMsgType());
@@ -60,6 +57,7 @@ public class MessageReceiveObserver implements Observer<List<IMMessage>> {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            L.i("------commandJson:"+commandJson);
             if (commandJson == null) {
                 //服务器指令
                 Map<String, Object> remoteExtension = imMessage.getRemoteExtension();
@@ -167,12 +165,9 @@ public class MessageReceiveObserver implements Observer<List<IMMessage>> {
      */
     private void multiVideoReuqest(String account, CommandJson commandJson) {
         if (PhoneCallStateObserver.getInstance().getPhoneCallState() != PhoneCallStateObserver
-                .PhoneCallStateEnum.IDLE
-                || AVChatProfile.getInstance().isAVChatting()
-                || AVChatManager.getInstance().getCurrentChatId() != 0) {
+                .PhoneCallStateEnum.IDLE) {
 //            AVChatManager.getInstance().sendControlCommand(avChatData.getChatId(),
 // AVChatControlCommand.BUSY, null);
-            L.e("------------>拒絕1");
             CommandControl.sendMultiVideoResponse(account, 0);
             return;
         }
@@ -189,12 +184,9 @@ public class MessageReceiveObserver implements Observer<List<IMMessage>> {
         }
         // 有网络来电打开视频服务
         if (ServiceUtil.isServiceRunning(MultiAVChatService.class)) {
-            ServiceUtil.stopService(MultiAVChatService.class);
-            CommandControl.sendMultiVideoResponse(account, 0);
-            L.e("------------>拒絕3");
+            CommandControl.sendMultiVideoResponse(account, 1);
             return;//避免重复调用
         }
-        CommandControl.sendMultiVideoResponse(account, 1);
         ActivityCollector.finishActivity(DoorbellLookActivity.class);//先结束相机界面
         ActivityCollector.finishActivity(CameraActivity.class);
         Intent intent = new Intent(Util.getApp(), MultiAVChatService.class);
@@ -231,6 +223,7 @@ public class MessageReceiveObserver implements Observer<List<IMMessage>> {
      */
     private void sendParams(String account) {
         CommandControl.sendDoorbellParamsGetResponse(account);
+        L.e("-------------->>sendDoorbellParamsGetResponse");
     }
 
     /**

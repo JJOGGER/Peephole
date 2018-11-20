@@ -59,6 +59,7 @@ public class AVChatController {
 
     public void joinRoom(final AVChatControllerCallback<AVChatData> callback) {
         AVChatManager.getInstance().enableRtc();
+        AVChatManager.getInstance().enableVideo();
         if (mVideoCapturer == null) {
 //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 //                mVideoCapturer = AVChatVideoCapturerFactory.createCamera2Capturer();
@@ -84,15 +85,13 @@ public class AVChatController {
 //        AVChatManager.getInstance().setVideoQualityStrategy(AVChatVideoQualityStrategy
 // .PreferImageQuality);
         AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_FRAME_FILTER, true);
-        AVChatManager.getInstance().enableVideo();
-        AVChatManager.getInstance().startVideoPreview();
 //        mVideoCapturer.setZoom(10);
         AVChatManager.getInstance().joinRoom2(ControlCenter.getSN(), AVChatType.VIDEO, new
                 AVChatCallback<AVChatData>() {
             @Override
             public void onSuccess(AVChatData avChatData) {
-                isCallEstablish.set(true);
                 callback.onSuccess(avChatData);
+                AVChatManager.getInstance().startVideoPreview();
             }
 
             @Override
@@ -121,26 +120,8 @@ public class AVChatController {
         if (destroyRTC) {
             return;
         }
-        AVChatManager.getInstance().leaveRoom2(ControlCenter.getSN(), new AVChatCallback<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                L.e("-------------leaveRoom");
-            }
-
-            @Override
-            public void onFailed(int code) {
-                L.e("leaveRoom onFailed->" + code);
-            }
-
-            @Override
-            public void onException(Throwable exception) {
-                L.e("-------leave onException->" + exception);
-            }
-        });
+        AVChatManager.getInstance().leaveRoom2(ControlCenter.getSN(),null);
         closeRtc();
-//        destroyRTC = true;
-//        AVChatSoundPlayer.instance().stop();
-//        showQuitToast(type);
     }
 
     public void receive(final AVChatControllerCallback<Void> callback) {

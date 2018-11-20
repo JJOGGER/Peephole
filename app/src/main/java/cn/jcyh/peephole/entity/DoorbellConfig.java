@@ -32,6 +32,7 @@ public class DoorbellConfig {
     private int videoVolume = 1;//通话音量
     private boolean isExistOfflineData = false;//标记是否存在离线数据
     private Doorbell doorbell;//网易云登录
+    private boolean multiVideo = false;
     private ConfigData.VideoConfig videoConfig;//视频通话配置
 
     public DoorbellModelParam getDoorbellModelParam() {
@@ -132,7 +133,7 @@ public class DoorbellConfig {
     }
 
     public int getVideoVolume() {
-        return videoVolume == 0 ? 1:videoVolume;
+        return videoVolume == 0 ? 1 : videoVolume;
     }
 
     public void setVideoVolume(int videoVolume) {
@@ -177,6 +178,14 @@ public class DoorbellConfig {
 
     public void setVideoConfig(ConfigData.VideoConfig videoConfig) {
         this.videoConfig = videoConfig;
+    }
+
+    public boolean isMultiVideo() {
+        return multiVideo;
+    }
+
+    public void setMultiVideo(boolean multiVideo) {
+        this.multiVideo = multiVideo;
     }
 
     public static Gson getGson() {

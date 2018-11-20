@@ -155,6 +155,9 @@
     <string name="face_set_closed">人脸识别已关闭</string>
     <string name="face_set_opened">人脸识别已开启</string>
     <string name="unlock_success">开锁成功</string>
+    <string name="multi_video_switch_msg">设置多人音视频开关</string>
+    <string name="multi_video_switch">多人音视频</string>
+    <string name="video_volume">视频音量</string>
 
     <!--                   系统设置end             -->
     <!--<string name="date_week_format">%d年%d月%d日&#160;%s</string>-->

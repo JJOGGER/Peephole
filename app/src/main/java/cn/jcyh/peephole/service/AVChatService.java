@@ -106,7 +106,6 @@ public class AVChatService extends Service {
         }
         AVChatProfile.getInstance().setAVChatting(true);
         registerObserves(true);
-//        createToucher();
     }
 
     /**

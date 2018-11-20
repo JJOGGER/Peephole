@@ -5,7 +5,7 @@ android {
         config {
             keyAlias 'peephole'
             keyPassword 'peephole123'
-            storeFile file('I:/PeepholeNIM/peephole.jks')
+            storeFile file('H:/code/PeepholeNIM/peephole.jks')
             storePassword 'peephole123'
         }
     }

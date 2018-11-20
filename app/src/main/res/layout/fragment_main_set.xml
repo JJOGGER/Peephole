@@ -485,6 +485,41 @@
             android:background="@color/gray_dedede"/>
 
         <RelativeLayout
+            android:id="@+id/rl_multi_video_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/tv_multi_video_switch_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="16dp"
+                android:paddingTop="4dp"
+                android:text="@string/multi_video_switch"
+                android:textColor="@color/black_333333"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_multi_video_switch_title"
+                android:paddingLeft="16dp"
+                android:text="@string/multi_video_switch_msg"
+                android:textColor="@color/gray_555555"
+                android:textSize="12sp"/>
+
+            <CheckBox
+                android:id="@+id/cb_multi_video"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="16dp"
+                android:clickable="false"/>
+        </RelativeLayout>
+
+
+        <RelativeLayout
             android:id="@+id/rl_extend_function"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">

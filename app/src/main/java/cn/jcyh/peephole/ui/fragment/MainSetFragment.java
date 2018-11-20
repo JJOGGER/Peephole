@@ -33,6 +33,7 @@ import cn.jcyh.peephole.ui.dialog.ChooseSetDialog;
 import cn.jcyh.peephole.ui.dialog.CommonEditDialog;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.OnDialogListener;
+import cn.jcyh.peephole.utils.SystemUtil;
 import cn.jcyh.peephole.utils.T;
 import cn.jcyh.peephole.utils.Tool;
 
@@ -73,10 +74,14 @@ public class MainSetFragment extends BaseFragment {
     CheckBox cbFaceSwitch;
     @BindView(R.id.tv_face_set)
     TextView tvFaceSet;
+    @BindView(R.id.rl_multi_video_switch)
+    RelativeLayout rlMultiVideoSwitch;
     @BindView(R.id.tv_doorbell_videotap_time)
     TextView tvDoorbellVideotapTime;
     @BindView(R.id.tv_doorbell_look_time)
     TextView tvDoorbellLookTime;
+    @BindView(R.id.cb_multi_video)
+    CheckBox cbMultiVideo;
     private DoorbellConfig mDoorbellConfig;
     private DialogHelper mAutoSensorTimeDialog,
             mVideotapTimeDialog, mDoorbellLookDialog, mDoorbellLeavelTimeDialog;
@@ -95,6 +100,9 @@ public class MainSetFragment extends BaseFragment {
         }
         boolean siye = ControlCenter.getSN().startsWith(Constant.SIYE_SN);
         rlExtendFunction.setVisibility(siye ? View.VISIBLE : View.GONE);
+        boolean isZhongke = ControlCenter.getSN().startsWith(Constant.ZHONGKE_SN) || SystemUtil
+                .getVersionCode() == 10086;
+        rlMultiVideoSwitch.setVisibility(isZhongke ? View.VISIBLE : View.GONE);
         mFragmentManager = getFragmentManager();
         updateView();
     }
@@ -106,22 +114,27 @@ public class MainSetFragment extends BaseFragment {
             R.id.rl_doorbell_leavel_time, R.id.rl_doorbell_videotap_time,
             R.id.rl_doorbell_look_time,
             R.id.rl_extend_function,
-            R.id.rl_face_set
+            R.id.rl_face_set,
+            R.id.rl_multi_video_switch
     })
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_doorbell_set://门铃设置
                 FragmentTransaction transaction = mFragmentManager.beginTransaction();
                 DoorbellSetFragment doorbellSetFragment = new DoorbellSetFragment();
-                transaction.add(R.id.fl_container, doorbellSetFragment, DoorbellSetFragment.class.getName());
-                transaction.hide(mFragmentManager.findFragmentByTag(MainSetFragment.class.getName()));
+                transaction.add(R.id.fl_container, doorbellSetFragment, DoorbellSetFragment.class
+                        .getName());
+                transaction.hide(mFragmentManager.findFragmentByTag(MainSetFragment.class.getName
+                        ()));
                 transaction.commit();
                 break;
             case R.id.rl_sensor_set://传感设置
                 transaction = mFragmentManager.beginTransaction();
                 SensorSetFragment sensorSetFragment = new SensorSetFragment();
-                transaction.add(R.id.fl_container, sensorSetFragment, SensorSetFragment.class.getName());
-                Fragment fragmentByTag = mFragmentManager.findFragmentByTag(MainSetFragment.class.getName());
+                transaction.add(R.id.fl_container, sensorSetFragment, SensorSetFragment.class
+                        .getName());
+                Fragment fragmentByTag = mFragmentManager.findFragmentByTag(MainSetFragment.class
+                        .getName());
                 if (fragmentByTag != null)
                     transaction.hide(fragmentByTag);
                 transaction.commit();
@@ -134,9 +147,12 @@ public class MainSetFragment extends BaseFragment {
                 break;
             case R.id.rl_ring_volume://铃声音量
                 transaction = mFragmentManager.beginTransaction();
-                DoorbellRingVolumeSetFragment ringVolumeSetFragment = new DoorbellRingVolumeSetFragment();
-                transaction.add(R.id.fl_container, ringVolumeSetFragment, DoorbellRingVolumeSetFragment.class.getName());
-                transaction.hide(mFragmentManager.findFragmentByTag(MainSetFragment.class.getName()));
+                DoorbellRingVolumeSetFragment ringVolumeSetFragment = new
+                        DoorbellRingVolumeSetFragment();
+                transaction.add(R.id.fl_container, ringVolumeSetFragment,
+                        DoorbellRingVolumeSetFragment.class.getName());
+                transaction.hide(mFragmentManager.findFragmentByTag(MainSetFragment.class.getName
+                        ()));
                 transaction.commit();
                 break;
 //            case R.id.rl_master_number://主人号码
@@ -157,14 +173,30 @@ public class MainSetFragment extends BaseFragment {
             case R.id.rl_extend_function:
                 transaction = mFragmentManager.beginTransaction();
                 ExtendFunctionFragment extendFunctionFragment = new ExtendFunctionFragment();
-                transaction.add(R.id.fl_container, extendFunctionFragment, ExtendFunctionFragment.class.getName());
-                transaction.hide(mFragmentManager.findFragmentByTag(MainSetFragment.class.getName()));
+                transaction.add(R.id.fl_container, extendFunctionFragment, ExtendFunctionFragment
+                        .class.getName());
+                transaction.hide(mFragmentManager.findFragmentByTag(MainSetFragment.class.getName
+                        ()));
                 transaction.commit();
                 break;
             case R.id.rl_face_set:
                 switchFace();
                 break;
+            case R.id.rl_multi_video_switch:
+                switchMultiVideo();
+                break;
         }
+    }
+
+    /**
+     * 多人音视频开关
+     */
+    private void switchMultiVideo() {
+        cbMultiVideo.setChecked(!cbMultiVideo.isChecked());
+        mDoorbellConfig.setMultiVideo(cbMultiVideo.isChecked());
+        ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
+        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(),
+                mDoorbellConfig, null);
     }
 
     /**
@@ -174,8 +206,10 @@ public class MainSetFragment extends BaseFragment {
         cbFaceSwitch.setChecked(!cbFaceSwitch.isChecked());
         mDoorbellConfig.setFaceRecognize(cbFaceSwitch.isChecked() ? 1 : 0);
         ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
-        tvFaceSet.setText(cbFaceSwitch.isChecked() ? R.string.face_set_opened : R.string.face_set_closed);
-        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(), mDoorbellConfig, null);
+        tvFaceSet.setText(cbFaceSwitch.isChecked() ? R.string.face_set_opened : R.string
+                .face_set_closed);
+        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(),
+                mDoorbellConfig, null);
     }
 
     /**
@@ -208,7 +242,8 @@ public class MainSetFragment extends BaseFragment {
             });
             mDoorbellLeavelTimeDialog = new DialogHelper((BaseActivity) mActivity, chooseSetDialog);
         }
-        ((ChooseSetDialog) mDoorbellLeavelTimeDialog.getDialogFragment()).setCheckedItem(mDoorbellConfig.getVideoLeaveMsgTime() + getString(R.string.second));
+        ((ChooseSetDialog) mDoorbellLeavelTimeDialog.getDialogFragment()).setCheckedItem
+                (mDoorbellConfig.getVideoLeaveMsgTime() + getString(R.string.second));
         mDoorbellLeavelTimeDialog.commit();
     }
 
@@ -226,7 +261,8 @@ public class MainSetFragment extends BaseFragment {
                 public void onConfirm(Object o) {
                     int time = Integer.parseInt(o.toString());
                     if (time > MAX_LOOK_TIME) {
-                        T.show(String.format(getString(R.string.more_than_time_msg), MAX_LOOK_TIME));
+                        T.show(String.format(getString(R.string.more_than_time_msg),
+                                MAX_LOOK_TIME));
                         time = MAX_LOOK_TIME;
                     } else if (time < MIN_LOOK_TIME) {
                         T.show(String.format(getString(R.string.low_than_time_msg), MIN_LOOK_TIME));
@@ -256,20 +292,24 @@ public class MainSetFragment extends BaseFragment {
                 public void onConfirm(Object o) {
                     int time = Integer.parseInt(o.toString());
                     if (time > MAX_RECORD_TIME) {
-                        T.show(String.format(getString(R.string.more_than_time_msg), MAX_RECORD_TIME));
+                        T.show(String.format(getString(R.string.more_than_time_msg),
+                                MAX_RECORD_TIME));
                         time = MAX_RECORD_TIME;
                     } else if (time < MIN_RECORD_TIME) {
-                        T.show(String.format(getString(R.string.low_than_time_msg), MIN_RECORD_TIME));
+                        T.show(String.format(getString(R.string.low_than_time_msg),
+                                MIN_RECORD_TIME));
                         time = MIN_RECORD_TIME;
                     }
                     mDoorbellConfig.setVideotapTime(time);
-                    tvDoorbellVideotapTime.setText(String.valueOf(time) + getString(R.string.second));
+                    tvDoorbellVideotapTime.setText(String.valueOf(time) + getString(R.string
+                            .second));
                     ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
                 }
             });
             mVideotapTimeDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
         } else {
-            ((CommonEditDialog) mVideotapTimeDialog.getDialogFragment()).setContent(String.valueOf(mDoorbellConfig.getVideotapTime()));
+            ((CommonEditDialog) mVideotapTimeDialog.getDialogFragment()).setContent(String
+                    .valueOf(mDoorbellConfig.getVideotapTime()));
         }
         mVideotapTimeDialog.commit();
     }
@@ -298,7 +338,8 @@ public class MainSetFragment extends BaseFragment {
 //            });
 //            mMasterNumberDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
 //        } else {
-//            ((CommonEditDialog) mMasterNumberDialog.getDialogFragment()).setContent(mDoorbellConfig.getMasterNumber());
+//            ((CommonEditDialog) mMasterNumberDialog.getDialogFragment()).setContent
+// (mDoorbellConfig.getMasterNumber());
 //        }
 //        mMasterNumberDialog.commit();
 //    }
@@ -327,7 +368,8 @@ public class MainSetFragment extends BaseFragment {
 //            });
 //            mSOSNumberDialog = new DialogHelper((BaseActivity) mActivity, commonEditDialog);
 //        } else {
-//            ((CommonEditDialog) mSOSNumberDialog.getDialogFragment()).setContent(mDoorbellConfig.getSosNumber());
+//            ((CommonEditDialog) mSOSNumberDialog.getDialogFragment()).setContent
+// (mDoorbellConfig.getSosNumber());
 //        }
 //        mSOSNumberDialog.commit();
 //    }
@@ -339,15 +381,18 @@ public class MainSetFragment extends BaseFragment {
         cbMonitor.setChecked(!cbMonitor.isChecked());
         mDoorbellConfig.getDoorbellSensorParam().setMonitor(cbMonitor.isChecked() ? 1 : 0);
         ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
-        tvMonitorState.setText(cbMonitor.isChecked() ? R.string.monitor_opened : R.string.monitor_closed);
+        tvMonitorState.setText(cbMonitor.isChecked() ? R.string.monitor_opened : R.string
+                .monitor_closed);
         rlSensorTime.setEnabled(cbMonitor.isChecked());
         tvSensorTime.setEnabled(cbMonitor.isChecked());
         tvSensorTimeTitle.setEnabled(cbMonitor.isChecked());
         rlSensorSet.setEnabled(cbMonitor.isChecked());
         tvSensorSetTitle.setEnabled(cbMonitor.isChecked());
         tvSensorSet.setEnabled(cbMonitor.isChecked());
-        ControlCenter.getBCManager().setPIRSensorOn(mDoorbellConfig.getDoorbellSensorParam().getMonitor() == 1);
-        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(), mDoorbellConfig, null);
+        ControlCenter.getBCManager().setPIRSensorOn(mDoorbellConfig.getDoorbellSensorParam()
+                .getMonitor() == 1);
+        ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(),
+                mDoorbellConfig, null);
     }
 
     /**
@@ -370,7 +415,8 @@ public class MainSetFragment extends BaseFragment {
                         tvSensorTime.setText(isConfirm + getString(R.string.second));
                 }
             });
-            mAutoSensorTimeDialog = new DialogHelper((BaseActivity) mActivity, autoSensorTimeDialog);
+            mAutoSensorTimeDialog = new DialogHelper((BaseActivity) mActivity,
+                    autoSensorTimeDialog);
         }
         mAutoSensorTimeDialog.commit();
 
@@ -393,7 +439,8 @@ public class MainSetFragment extends BaseFragment {
         tvSensorSetTitle.setEnabled(isMonitor);
         tvSensorSet.setEnabled(isMonitor);
         rlSensorSet.setEnabled(isMonitor);
-        tvFaceSet.setText(cbFaceSwitch.isChecked() ? R.string.face_set_opened : R.string.face_set_closed);
+        tvFaceSet.setText(cbFaceSwitch.isChecked() ? R.string.face_set_opened : R.string
+                .face_set_closed);
         if (mDoorbellConfig.getDoorbellSensorParam().getMonitor() != 1) {
             tvMonitorState.setText(R.string.monitor_closed);
             rlSensorTime.setEnabled(false);
@@ -405,8 +452,10 @@ public class MainSetFragment extends BaseFragment {
         }
 //        tvMasterNumber.setText(mDoorbellConfig.getMasterNumber());
 //        tvSOSNumber.setText(mDoorbellConfig.getSosNumber());
-        tvDoorbellLookTime.setText(mDoorbellConfig.getDoorbellLookTime() + getString(R.string.second));
-        tvDoorbellVideotapTime.setText(mDoorbellConfig.getVideotapTime() + getString(R.string.second));
+        tvDoorbellLookTime.setText(mDoorbellConfig.getDoorbellLookTime() + getString(R.string
+                .second));
+        tvDoorbellVideotapTime.setText(mDoorbellConfig.getVideotapTime() + getString(R.string
+                .second));
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

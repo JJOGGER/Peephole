@@ -6,6 +6,7 @@ package cn.jcyh.peephole.constant;
 public class Constant {
     public static final String EAGLEKING_SN = "900";
     public static final String SIYE_SN = "910";
+    public static final String ZHONGKE_SN = "910";
     public static final String FILE_PATH = "filePath";
     public static final String DW_USERID = "dw_userid";
     public static final String FILE_LENGTH = "file_length";
