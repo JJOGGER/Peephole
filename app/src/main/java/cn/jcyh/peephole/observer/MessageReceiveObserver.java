@@ -3,6 +3,9 @@ package cn.jcyh.peephole.observer;
 import android.content.Intent;
 
 import com.netease.nimlib.sdk.Observer;
+import com.netease.nimlib.sdk.avchat.AVChatCallback;
+import com.netease.nimlib.sdk.avchat.AVChatManager;
+import com.netease.nimlib.sdk.avchat.model.AVChatChannelInfo;
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 
@@ -57,7 +60,7 @@ public class MessageReceiveObserver implements Observer<List<IMMessage>> {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            L.i("------commandJson:"+commandJson);
+            L.i("------commandJson:" + commandJson);
             if (commandJson == null) {
                 //服务器指令
                 Map<String, Object> remoteExtension = imMessage.getRemoteExtension();
@@ -154,10 +157,41 @@ public class MessageReceiveObserver implements Observer<List<IMMessage>> {
                 nimMessageAction.setType(NIMMessageAction.NIMMESSAGE_MULTI_VIDEO);
                 multiVideoReuqest(imMessage.getFromAccount(), commandJson);
                 break;
+            case CommandJson.CommandType.DOORBELL_CREATE_ROOM_REQUEST:
+                createRoom(imMessage.getFromAccount());
+                break;
         }
         nimMessageAction.putExtra(Constant.COMMAND, commandJson);
         nimMessageAction.putExtra(Constant.FROM_ACCOUNT, imMessage.getFromAccount());
         EventBus.getDefault().post(nimMessageAction);
+    }
+
+    private void createRoom(final String account) {
+        AVChatManager.getInstance().createRoom(ControlCenter.getSN(), null, new
+                AVChatCallback<AVChatChannelInfo>() {
+                    @Override
+                    public void onSuccess(AVChatChannelInfo avChatChannelInfo) {
+                        L.i("----------创建房间成功");
+                        //启动播放服务后且服务未结束、抓拍界面未关闭时，不再重复抓拍
+                        CommandControl.sendDoorbellCreateRoomResponse(account, 1);
+                    }
+
+                    @Override
+                    public void onFailed(int i) {
+                        L.e("----------创建房间失败" + i);
+                        if (i != 417) {
+                            CommandControl.sendDoorbellCreateRoomResponse(account, 0);
+                            return;
+                        }
+                        CommandControl.sendDoorbellCreateRoomResponse(account, 1);
+                    }
+
+                    @Override
+                    public void onException(Throwable throwable) {
+                        L.e("----------创建房间失败" + throwable.getMessage());
+                        CommandControl.sendDoorbellCreateRoomResponse(account, 0);
+                    }
+                });
     }
 
     /**

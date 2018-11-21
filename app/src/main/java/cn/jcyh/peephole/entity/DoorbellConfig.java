@@ -32,7 +32,7 @@ public class DoorbellConfig {
     private int videoVolume = 1;//通话音量
     private boolean isExistOfflineData = false;//标记是否存在离线数据
     private Doorbell doorbell;//网易云登录
-    private boolean multiVideo = false;
+    private int multiVideo = 0;
     private ConfigData.VideoConfig videoConfig;//视频通话配置
 
     public DoorbellModelParam getDoorbellModelParam() {
@@ -181,10 +181,10 @@ public class DoorbellConfig {
     }
 
     public boolean isMultiVideo() {
-        return multiVideo;
+        return multiVideo==1;
     }
 
-    public void setMultiVideo(boolean multiVideo) {
+    public void setMultiVideo(int multiVideo) {
         this.multiVideo = multiVideo;
     }
 

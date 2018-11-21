@@ -13,9 +13,6 @@ import com.netease.nimlib.sdk.avchat.model.AVChatChannelInfo;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.control.DoorbellAudioManager;
@@ -100,7 +97,7 @@ public class BcReceiver extends BroadcastReceiver {
                             @Override
                             public void onFailed(int i) {
                                 L.e("----------创建房间失败" + i);
-                                if (i != 417) return;
+//                                if (i != 417) return;
                                 //启动播放服务后且服务未结束、抓拍界面未关闭时，不再重复抓拍
                                 toTakePicture(context);
                             }
@@ -108,6 +105,7 @@ public class BcReceiver extends BroadcastReceiver {
                             @Override
                             public void onException(Throwable throwable) {
                                 L.e("----------创建房间失败" + throwable.getMessage());
+                                toTakePicture(context);
                             }
                         });
             } else {
@@ -171,8 +169,8 @@ public class BcReceiver extends BroadcastReceiver {
         if (monitorSwitch != 1) return;
         if (AVChatProfile.getInstance().isAVChatting()) return;
         if (extAct.equals(PEOPLE_IN)) {
-            String time = SimpleDateFormat.getDateTimeInstance().format(new Date(System
-                    .currentTimeMillis()));
+//            String time = SimpleDateFormat.getDateTimeInstance().format(new Date(System
+//                    .currentTimeMillis()));
 //            mPrintWriter.write("---" + time + ": PIR中断有人来了" + "\n");
 //            mPrintWriter.flush();
             L.e("---------PIR中断:有人来了");

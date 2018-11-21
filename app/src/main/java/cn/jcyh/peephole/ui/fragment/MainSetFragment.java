@@ -26,13 +26,16 @@ import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.base.BaseFragment;
 import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.entity.ConfigData;
 import cn.jcyh.peephole.entity.DoorbellConfig;
 import cn.jcyh.peephole.event.NIMMessageAction;
+import cn.jcyh.peephole.http.IDataListener;
 import cn.jcyh.peephole.ui.dialog.AutoSensorTimeDialog;
 import cn.jcyh.peephole.ui.dialog.ChooseSetDialog;
 import cn.jcyh.peephole.ui.dialog.CommonEditDialog;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.OnDialogListener;
+import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.SystemUtil;
 import cn.jcyh.peephole.utils.T;
 import cn.jcyh.peephole.utils.Tool;
@@ -193,10 +196,33 @@ public class MainSetFragment extends BaseFragment {
      */
     private void switchMultiVideo() {
         cbMultiVideo.setChecked(!cbMultiVideo.isChecked());
-        mDoorbellConfig.setMultiVideo(cbMultiVideo.isChecked());
+        mDoorbellConfig.setMultiVideo(cbMultiVideo.isChecked() ? 1 : 0);
         ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
         ControlCenter.getDoorbellManager().setDoorbellConfig2Server(ControlCenter.getSN(),
-                mDoorbellConfig, null);
+                mDoorbellConfig, new IDataListener<Boolean>() {
+                    @Override
+                    public void onSuccess(Boolean aBoolean) {
+                        L.e("----------onSuccess");
+                        ControlCenter.getDoorbellManager().getDoorbellConfigFromServer
+                                (ControlCenter.getSN(), new IDataListener<ConfigData>() {
+
+                            @Override
+                            public void onSuccess(ConfigData configData) {
+                                L.e("----------configData" + configData);
+                            }
+
+                            @Override
+                            public void onFailure(int errorCode, String desc) {
+                                L.e("----------onFailure" );
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(int errorCode, String desc) {
+                        L.e("----------onFailure" + errorCode);
+                    }
+                });
     }
 
     /**
@@ -429,6 +455,7 @@ public class MainSetFragment extends BaseFragment {
         boolean isMonitor = mDoorbellConfig.getDoorbellSensorParam().getMonitor() == 1;
         cbMonitor.setChecked(isMonitor);
         cbFaceSwitch.setChecked(mDoorbellConfig.getFaceRecognize() == 1);
+        cbMultiVideo.setChecked(mDoorbellConfig.isMultiVideo());
         tvSensorTimeTitle.setEnabled(isMonitor);
         tvSensorTime.setEnabled(isMonitor);
         if (mDoorbellConfig.getAutoSensorTime() == 60)

@@ -71,6 +71,13 @@ public class CommandControl {
     }
 
     public static void sendMultiVideoResponse(String account, int isSuccess) {
-        IMMessageCommandImpl.sendMultiVideoResponse(account,isSuccess);
+        IMMessageCommandImpl.sendMultiVideoResponse(account, isSuccess);
+    }
+
+    /**
+     * 创建房间
+     */
+    public static void sendDoorbellCreateRoomResponse(String account, int isSuccess) {
+        IMMessageCommandImpl.sendDoorbellCreateRoomResponse(account, isSuccess);
     }
 }
