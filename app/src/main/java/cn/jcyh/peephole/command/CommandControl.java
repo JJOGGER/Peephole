@@ -80,4 +80,8 @@ public class CommandControl {
     public static void sendDoorbellCreateRoomResponse(String account, int isSuccess) {
         IMMessageCommandImpl.sendDoorbellCreateRoomResponse(account, isSuccess);
     }
+
+    public static void sendDoorbellSwitchCameraResponse(String account, int isSuccess) {
+        IMMessageCommandImpl.sendDoorbellCreateRoomResponse(account, isSuccess);
+    }
 }

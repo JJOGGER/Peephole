@@ -121,6 +121,9 @@ public class CommandJson implements Parcelable {
         public static final String DOORBELL_CREATE_ROOM_REQUEST = "doorbell_create_room_request";//多人视频请求猫眼创建房间
         public static final String DOORBELL_CREATE_ROOM_RESPONSE = "doorbell_create_room_response";//猫眼创建房间响应
 
+        public static final String DOORBELL_SWITCH_CAMERA_REQUEST = "doorbell_switch_camera_request";//猫眼切换摄像头
+        public static final String DOORBELL_SWITCH_CAMERA_RESPONSE = "doorbell_switch_camera_response";//猫眼切换摄像头
+
         public static final String DOORBELL_PARAMS_REQUEST = "doorbell_params_request";//参数设置
         public static final String DOORBELL_PARAMS_RESPONSE = "doorbell_params_response";//参数设置响应
         public static final String DOORBELL_PARAMS_GET_REQUEST = "doorbell_params_get_request";//猫眼参数获取

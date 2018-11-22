@@ -23,16 +23,21 @@ import com.netease.nimlib.sdk.avchat.model.AVChatSessionStats;
 import com.netease.nimlib.sdk.avchat.model.AVChatVideoFrame;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import cn.jcyh.peephole.command.CommandControl;
 import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.entity.CommandJson;
 import cn.jcyh.peephole.entity.DoorbellConfig;
 import cn.jcyh.peephole.event.AVChatAction;
+import cn.jcyh.peephole.event.NIMMessageAction;
 import cn.jcyh.peephole.observer.PhoneCallStateObserver;
 import cn.jcyh.peephole.observer.SimpleAVChatStateObserver;
 import cn.jcyh.peephole.service.video.AVChatControllerCallback;
@@ -43,7 +48,6 @@ import cn.jcyh.peephole.video.AVChatProfile;
 
 /**
  * Created by jogger on 2018/2/2.
- *
  */
 
 public class MultiAVChatService extends Service {
@@ -114,6 +118,13 @@ public class MultiAVChatService extends Service {
      * 来电监听
      */
     private void registerObserves(boolean register) {
+        if (register) {
+            if (!EventBus.getDefault().isRegistered(this))
+                EventBus.getDefault().register(this);
+        } else {
+            if (EventBus.getDefault().isRegistered(this))
+                EventBus.getDefault().unregister(this);
+        }
         AVChatManager.getInstance().observeAVChatState(mAVChatStateObserver, register);
         AVChatManager.getInstance().observeControlNotification(mCallControlObserver, register);
         NIMClient.getService(AuthServiceObserver.class).observeOnlineStatus(mUserStatusObserver,
@@ -142,6 +153,23 @@ public class MultiAVChatService extends Service {
         });
         return START_NOT_STICKY;
 
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageAction(NIMMessageAction messageAction) {
+        if (!NIMMessageAction.NIMMESSAGE_SWITCH_CAMERA.equals(messageAction.getType())) return;
+        CommandJson commandJson = messageAction.getParcelableExtra(Constant.COMMAND);
+        if (commandJson == null || !CommandJson.CommandType.DOORBELL_SWITCH_CAMERA_REQUEST.equals
+                (commandJson.getCommandType()))
+            return;
+        mAVChatController.switchCamera();
+        CommandControl.sendDoorbellSwitchCameraResponse(messageAction.getStringExtra(Constant
+                .FROM_ACCOUNT), 1);
+        AVChatManager.getInstance().sendControlCommand(AVChatManager.getInstance()
+                .getCurrentChatId(), SWITCH_CAMERA, null);
+        if (AVChatManager.getInstance().isLocalVideoMuted()) {
+            AVChatManager.getInstance().muteLocalVideo(false);
+        }
     }
 
     @Override

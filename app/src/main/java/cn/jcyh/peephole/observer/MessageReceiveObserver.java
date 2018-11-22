@@ -160,6 +160,9 @@ public class MessageReceiveObserver implements Observer<List<IMMessage>> {
             case CommandJson.CommandType.DOORBELL_CREATE_ROOM_REQUEST:
                 createRoom(imMessage.getFromAccount());
                 break;
+            case CommandJson.CommandType.DOORBELL_SWITCH_CAMERA_REQUEST:
+                nimMessageAction.setType(NIMMessageAction.NIMMESSAGE_SWITCH_CAMERA);
+                break;
         }
         nimMessageAction.putExtra(Constant.COMMAND, commandJson);
         nimMessageAction.putExtra(Constant.FROM_ACCOUNT, imMessage.getFromAccount());

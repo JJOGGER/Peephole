@@ -215,6 +215,13 @@ public class IMMessageCommandImpl {
         sendTextCommand(account, commandJson);
     }
 
+    public static void sendDoorbellSwitchCameraResponse(String account, int isSuccess) {
+        CommandJson commandJson = new CommandJson();
+        commandJson.setCommandType(CommandJson.CommandType.DOORBELL_SWITCH_CAMERA_RESPONSE);
+        commandJson.setFlag2(isSuccess);
+        sendTextCommand(account, commandJson);
+    }
+
     private static void sendTextCommand(String account, CommandJson command) {
         SessionTypeEnum sessionType = SessionTypeEnum.P2P;
         IMMessage messageTxt = MessageBuilder.createTextMessage(account, sessionType, GsonUtil
