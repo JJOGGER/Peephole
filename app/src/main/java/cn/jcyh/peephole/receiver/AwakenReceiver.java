@@ -13,6 +13,8 @@ import android.os.SystemClock;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.StatusCode;
 
+import cn.jcyh.peephole.constant.Constant;
+import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.service.MainService;
 import cn.jcyh.peephole.utils.L;
@@ -50,8 +52,10 @@ public class AwakenReceiver extends BroadcastReceiver {
         assert alarmManager != null;
         alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()
                 + 4000 * 60, pi);
-        StatusCode status = NIMClient.getStatus();
-        HttpAction.getHttpAction().sendHeartBeat(status.getValue(), null);
+        if (ControlCenter.getSN().startsWith(Constant.ZHONGKE_SN)) {
+            StatusCode status = NIMClient.getStatus();
+            HttpAction.getHttpAction().sendHeartBeat(status.getValue(), null);
+        }
 //        SystemUtil.wakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP |
 //                PowerManager.PARTIAL_WAKE_LOCK);
     }
