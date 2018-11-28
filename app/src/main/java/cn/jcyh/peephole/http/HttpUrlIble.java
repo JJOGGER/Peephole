@@ -54,9 +54,11 @@ public interface HttpUrlIble {
     //上传定位
     String DOORBELL_UPLOAD_LOCATION = EAGLERKING_IP + "Doorbell/AddDeviceLocationInfo";
 
+    String DOORBELL_SEND_HEARTBEAT = EAGLERKING_IP + "Extend/CateyeHeartbeat";
 
     /*------------------------------蓝牙锁-----------------------------*/
-    String LOCK_UPDATE_ELECTRIC_QUANTITY = EAGLERKING_IP + "Extend/CateyeUpdateLockElectricQuantity";
+    String LOCK_UPDATE_ELECTRIC_QUANTITY = EAGLERKING_IP +
+            "Extend/CateyeUpdateLockElectricQuantity";
     String LOCK_GET_KEY_DATA = EAGLERKING_IP + "Extend/CateyeOpenLock";
     String LOCK_RECORD_UPLOAD = EAGLERKING_IP + "Extend/CateyeLockRecordUpload";
     String DOORBELL_LOG_UPLOAD = EAGLERKING_IP + "Extend/CateyeAlarmUpload";

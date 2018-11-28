@@ -8,6 +8,7 @@ import cn.jcyh.eaglelock.entity.UnLockData;
 import cn.jcyh.peephole.entity.AdvertData;
 import cn.jcyh.peephole.entity.ConfigData;
 import cn.jcyh.peephole.entity.Doorbell;
+import cn.jcyh.peephole.entity.Heartbeat;
 import cn.jcyh.peephole.entity.LogRecord;
 import cn.jcyh.peephole.entity.RequestUploadElectricQuantity;
 import cn.jcyh.peephole.entity.User;
@@ -36,13 +37,15 @@ public class HttpRequest implements IHttpRequest {
     public void setDoorbellConfig(String configJson, IDataListener listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("config", configJson);
-        HttpTaskVoid httpTask = new HttpTaskVoid(HttpUrlIble.DOORBELL_SET_CONFIG_URL, params, listener);
+        HttpTaskVoid httpTask = new HttpTaskVoid(HttpUrlIble.DOORBELL_SET_CONFIG_URL, params,
+                listener);
         mThreadPoolManager.excute(new FutureTask<Object>(httpTask, listener));
     }
 
     @Override
     public void getDoorbellConfig(IDataListener listener) {
-        HttpTask httpTask = new HttpTask(HttpUrlIble.DOORBELL_GET_CONFIG_URL, null, ConfigData.class, listener);
+        HttpTask httpTask = new HttpTask(HttpUrlIble.DOORBELL_GET_CONFIG_URL, null, ConfigData
+                .class, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(httpTask, listener));
     }
 
@@ -51,7 +54,8 @@ public class HttpRequest implements IHttpRequest {
         Map<String, Object> params = new HashMap<>();
         params.put("UserId", userID);
         params.put("AuthorizationCode", authorizationCode);
-        HttpTaskVoid httpTask = new HttpTaskVoid(HttpUrlIble.DOORBELL_UNBIND_USER_URL, params, listener);
+        HttpTaskVoid httpTask = new HttpTaskVoid(HttpUrlIble.DOORBELL_UNBIND_USER_URL, params,
+                listener);
         mThreadPoolManager.excute(new FutureTask<Object>(httpTask, listener));
     }
 
@@ -60,7 +64,8 @@ public class HttpRequest implements IHttpRequest {
         Map<String, Object> params = new HashMap<>();
         params.put("type", type);
         params.put("command", command);
-        HttpTaskVoid httpTaskVoid = new HttpTaskVoid(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL, filePath, params, listener);
+        HttpTaskVoid httpTaskVoid = new HttpTaskVoid(HttpUrlIble.UPLOAD_DOORBELL_ALARM_URL,
+                filePath, params, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(httpTaskVoid, listener));
     }
 
@@ -68,21 +73,26 @@ public class HttpRequest implements IHttpRequest {
     public void setDoorbellName(String name, IDataListener listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("Name", name);
-        HttpTaskVoid httpTaskVoid = new HttpTaskVoid(HttpUrlIble.DOORBELL_SET_NAME_URL, params, listener);
+        HttpTaskVoid httpTaskVoid = new HttpTaskVoid(HttpUrlIble.DOORBELL_SET_NAME_URL, params,
+                listener);
         mThreadPoolManager.excute(new FutureTask<Object>(httpTaskVoid, listener));
     }
 
     @Override
-    public void getSysVersion(int versionCode, String sysVersion, String screenResolution, IDataListener listener) {
+    public void getSysVersion(int versionCode, String sysVersion, String screenResolution,
+                              IDataListener listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("Number", versionCode);
-        HttpTask getVersion = new HttpTask(HttpUrlIble.DOORBELL_GET_VERSION_URL, params, Version.class, listener);
+        HttpTask getVersion = new HttpTask(HttpUrlIble.DOORBELL_GET_VERSION_URL, params, Version
+                .class, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(getVersion, listener));
     }
 
     @Override
-    public void updateVersion(String url, String savePath, ProgressHttpListener progressHttpListener, IDataListener listener) {
-        HttpTaskVoid updateVersion = new HttpTaskVoid(url, savePath, progressHttpListener, listener);
+    public void updateVersion(String url, String savePath, ProgressHttpListener
+            progressHttpListener, IDataListener listener) {
+        HttpTaskVoid updateVersion = new HttpTaskVoid(url, savePath, progressHttpListener,
+                listener);
         mThreadPoolManager.excute(new FutureTask<Object>(updateVersion, listener));
     }
 
@@ -90,7 +100,8 @@ public class HttpRequest implements IHttpRequest {
     public void uploadBattery(int battery, IDataListener listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("ElectricQuantity", battery);
-        HttpTaskVoid updateVersion = new HttpTaskVoid(HttpUrlIble.DOORBELL_UPLOAD_BATTERY_URL, params, listener);
+        HttpTaskVoid updateVersion = new HttpTaskVoid(HttpUrlIble.DOORBELL_UPLOAD_BATTERY_URL,
+                params, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(updateVersion, listener));
     }
 
@@ -98,22 +109,26 @@ public class HttpRequest implements IHttpRequest {
     public void getBanners(int terminalSize, IDataListener listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("terminalSize", terminalSize);
-        HttpTask banners = new HttpTask(HttpUrlIble.DOORBELL_GET_BANNERS_URL, params, AdvertData.class, listener);
+        HttpTask banners = new HttpTask(HttpUrlIble.DOORBELL_GET_BANNERS_URL, params, AdvertData
+                .class, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(banners, listener));
     }
 
     @Override
     public void getBindUsers(IDataListener listener) {
-        HttpTaskList bindUsers = new HttpTaskList(HttpUrlIble.DOORBELL_GET_BIND_USERS_URL, null, User.class, listener);
+        HttpTaskList bindUsers = new HttpTaskList(HttpUrlIble.DOORBELL_GET_BIND_USERS_URL, null,
+                User.class, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(bindUsers, listener));
     }
 
     @Override
-    public void setDoorbellManager(String userID, String authorizationCode, IDataListener listener) {
+    public void setDoorbellManager(String userID, String authorizationCode, IDataListener
+            listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("userId", userID);
         params.put("authorizationCode", authorizationCode);
-        HttpTaskVoid updateVersion = new HttpTaskVoid(HttpUrlIble.DOORBELL_SET_MANAGER_URL, params, listener);
+        HttpTaskVoid updateVersion = new HttpTaskVoid(HttpUrlIble.DOORBELL_SET_MANAGER_URL,
+                params, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(updateVersion, listener));
     }
 
@@ -121,7 +136,8 @@ public class HttpRequest implements IHttpRequest {
     public void updatePatch(String sysVersion, String screenResolution, IDataListener listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("CurrentVersion", SystemUtil.getVersionCode());
-        HttpTask updatePatch = new HttpTask(HttpUrlIble.DOORBELL_UPDATE_PATCH_URL, params, Version.class, listener);
+        HttpTask updatePatch = new HttpTask(HttpUrlIble.DOORBELL_UPDATE_PATCH_URL, params,
+                Version.class, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(updatePatch, listener));
     }
 
@@ -131,17 +147,20 @@ public class HttpRequest implements IHttpRequest {
         params.put("CurrentVersion", SystemUtil.getVersionCode());
         params.put("VersionCode", sysVersion);
         params.put("ScreenResolution", screenResolution);
-        HttpTask updatePatch = new HttpTask(HttpUrlIble.DOORBELL_UPDATE_SOFT_URL, params, Version.class, listener);
+        HttpTask updatePatch = new HttpTask(HttpUrlIble.DOORBELL_UPDATE_SOFT_URL, params, Version
+                .class, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(updatePatch, listener));
     }
 
     @Override
-    public void updateSystem(int versionCode, String sysVersion, String screenResolution, IDataListener listener) {
+    public void updateSystem(int versionCode, String sysVersion, String screenResolution,
+                             IDataListener listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("Number", versionCode);
         params.put("VersionCode", sysVersion);
         params.put("ScreenResolution", screenResolution);
-        HttpTask getVersion = new HttpTask(HttpUrlIble.DOORBELL_UPDATE_SYSTEM_URL, params, Version.class, listener);
+        HttpTask getVersion = new HttpTask(HttpUrlIble.DOORBELL_UPDATE_SYSTEM_URL, params,
+                Version.class, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(getVersion, listener));
     }
 
@@ -149,7 +168,8 @@ public class HttpRequest implements IHttpRequest {
     public void antiBreakAlarm(boolean isAlarm, IDataListener listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("isAlarm", isAlarm);
-        HttpTaskVoid updateVersion = new HttpTaskVoid(HttpUrlIble.DOORBELL_ANTI_BREAK_ALARM, params, listener);
+        HttpTaskVoid updateVersion = new HttpTaskVoid(HttpUrlIble.DOORBELL_ANTI_BREAK_ALARM,
+                params, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(updateVersion, listener));
     }
 
@@ -157,7 +177,8 @@ public class HttpRequest implements IHttpRequest {
     public void doorbellMagneticNotice(boolean isOpen, IDataListener listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("IsOpen", isOpen);
-        HttpTaskVoid updateVersion = new HttpTaskVoid(HttpUrlIble.DOORBELL_MAGNETIC_NOTICE, params, listener);
+        HttpTaskVoid updateVersion = new HttpTaskVoid(HttpUrlIble.DOORBELL_MAGNETIC_NOTICE,
+                params, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(updateVersion, listener));
     }
 
@@ -166,12 +187,15 @@ public class HttpRequest implements IHttpRequest {
         Map<String, Object> params = new HashMap<>();
         params.put("UserId", userID);
         params.put("TalkTime", sessionDuration);
-        HttpTaskVoid userTaklTimeRecord = new HttpTaskVoid(HttpUrlIble.DOORBELL_TALK_TIME_RECORD, params, listener);
+        HttpTaskVoid userTaklTimeRecord = new HttpTaskVoid(HttpUrlIble.DOORBELL_TALK_TIME_RECORD,
+                params, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(userTaklTimeRecord, listener));
     }
 
     @Override
-    public void uploadLocation(double longitude, double latitude, String country, String province, String city, String district, String street, String addrStr, IDataListener listener) {
+    public void uploadLocation(double longitude, double latitude, String country, String
+            province, String city, String district, String street, String addrStr, IDataListener
+                                       listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("Longitude", longitude);
         params.put("Latitude", latitude);
@@ -181,13 +205,18 @@ public class HttpRequest implements IHttpRequest {
         params.put("District", district);
         params.put("Street", street);
         params.put("Address", addrStr);
-        HttpTaskVoid uploadLocation = new HttpTaskVoid(HttpUrlIble.DOORBELL_UPLOAD_LOCATION, params, listener);
+        HttpTaskVoid uploadLocation = new HttpTaskVoid(HttpUrlIble.DOORBELL_UPLOAD_LOCATION,
+                params, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(uploadLocation, listener));
     }
 
     @Override
-    public void lockUpdateElectricQuantity(RequestUploadElectricQuantity requestUploadElectricQuantity, IDataListener listener) {
-        HttpTaskVoid lockUpdateElectricQuantity = new HttpTaskVoid(HttpUrlIble.LOCK_UPDATE_ELECTRIC_QUANTITY, GsonUtil.toJson(requestUploadElectricQuantity), listener);
+    public void lockUpdateElectricQuantity(RequestUploadElectricQuantity
+                                                   requestUploadElectricQuantity,
+                                           IDataListener listener) {
+        HttpTaskVoid lockUpdateElectricQuantity = new HttpTaskVoid(HttpUrlIble
+                .LOCK_UPDATE_ELECTRIC_QUANTITY, GsonUtil.toJson(requestUploadElectricQuantity),
+                listener);
         mThreadPoolManager.excute(new FutureTask<Object>(lockUpdateElectricQuantity, listener));
     }
 
@@ -195,23 +224,36 @@ public class HttpRequest implements IHttpRequest {
     public void getUnLockKeyData(String sn, IDataListener listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("cateyeId", sn);
-        HttpTask unLockKeyData = new HttpTask(HttpUrlIble.LOCK_GET_KEY_DATA, params, UnLockData.class, listener);
+        HttpTask unLockKeyData = new HttpTask(HttpUrlIble.LOCK_GET_KEY_DATA, params, UnLockData
+                .class, listener);
         mThreadPoolManager.excute(new FutureTask<Object>(unLockKeyData, listener));
     }
 
     @Override
-    public void lockUploadLog(int lockId, String accessToken, String records, IDataListener listener) {
+    public void lockUploadLog(int lockId, String accessToken, String records, IDataListener
+            listener) {
         Map<String, Object> params = new HashMap<>();
         params.put("lockId", lockId);
         params.put("accessToken", accessToken);
         params.put("records", records);
-        HttpTaskVoid lockUploadLog = new HttpTaskVoid(HttpUrlIble.LOCK_RECORD_UPLOAD, params, listener);
+        HttpTaskVoid lockUploadLog = new HttpTaskVoid(HttpUrlIble.LOCK_RECORD_UPLOAD, params,
+                listener);
         mThreadPoolManager.excute(new FutureTask<Object>(lockUploadLog, listener));
     }
 
     @Override
     public void uploadLog(LogRecord logRecord, IDataListener listener) {
-        HttpTaskVoid lockUploadLog = new HttpTaskVoid(HttpUrlIble.DOORBELL_LOG_UPLOAD, GsonUtil.toJson(logRecord), listener);
+        HttpTaskVoid lockUploadLog = new HttpTaskVoid(HttpUrlIble.DOORBELL_LOG_UPLOAD, GsonUtil
+                .toJson(logRecord), listener);
         mThreadPoolManager.excute(new FutureTask<Object>(lockUploadLog, listener));
+    }
+
+    @Override
+    public void sendHeartBeat(int value, IDataListener listener) {
+        Heartbeat heartbeat = new Heartbeat();
+        heartbeat.setState(value);
+        HttpTaskVoid sendHeartBeat = new HttpTaskVoid(HttpUrlIble.DOORBELL_SEND_HEARTBEAT,
+                GsonUtil.toJson(heartbeat), listener);
+        mThreadPoolManager.excute(new FutureTask<Object>(sendHeartBeat, listener));
     }
 }

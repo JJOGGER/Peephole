@@ -210,5 +210,10 @@ public class HttpAction extends BaseHttpAction {
         if (!NetworkUtil.isConnected()) return;
         mHttpRequest.uploadLog(logRecord,listener);
     }
+
+    public void sendHeartBeat(int value, IDataListener listener) {
+        if (!NetworkUtil.isConnected()) return;
+        mHttpRequest.sendHeartBeat(value,listener);
+    }
 }
 

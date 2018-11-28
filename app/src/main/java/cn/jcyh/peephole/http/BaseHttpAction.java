@@ -11,4 +11,5 @@ package cn.jcyh.peephole.http;
     BaseHttpAction() {
         mHttpRequest = getHttpRequest();
     }
+
 }

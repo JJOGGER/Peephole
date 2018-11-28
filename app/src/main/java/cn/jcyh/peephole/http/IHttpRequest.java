@@ -57,4 +57,6 @@ public interface IHttpRequest {
     void lockUploadLog(int lockId, String accessToken, String records, IDataListener listener);
 
     void uploadLog(LogRecord logRecord, IDataListener listener);
+
+    void sendHeartBeat(int value, IDataListener listener);
 }
