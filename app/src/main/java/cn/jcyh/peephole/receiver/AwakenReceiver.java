@@ -52,11 +52,14 @@ public class AwakenReceiver extends BroadcastReceiver {
         assert alarmManager != null;
         alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()
                 + 4000 * 60, pi);
+        L.i("-----------------coming in request HeartBeat");
         if (ControlCenter.getSN().startsWith(Constant.ZHONGKE_SN)) {
+
             StatusCode status = NIMClient.getStatus();
-            HttpAction.getHttpAction().sendHeartBeat(status.getValue(), null);
+            L.i("-----------------http start request HeartBeat" + status.getValue());
+            HttpAction.getHttpAction().sendHeartBeat(status.getValue(),null);
         }
-//        SystemUtil.wakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP |
+//        SystemUtil.wakeLPowerManager.ACQUIRE_CAUSES_WAKEUP |
 //                PowerManager.PARTIAL_WAKE_LOCK);
     }
 }

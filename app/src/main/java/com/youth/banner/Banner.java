@@ -240,16 +240,23 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
     }
 
     public void update(List<?> imageUrls, List<String> titles) {
-        this.titles.clear();
-        this.titles.addAll(titles);
-        update(imageUrls);
+        if(this.titles!=null)
+        {
+            this.titles.clear();
+            this.titles.addAll(titles);
+            update(imageUrls);
+        }
     }
 
     @SuppressWarnings("unchecked")
     public void update(List<?> imageUrls) {
         if (this.imageUrls != null) {
             this.imageUrls.clear();
-            this.imageUrls.addAll(imageUrls);
+            if(imageUrls!=null)
+            {
+                this.imageUrls.addAll(imageUrls);
+            }
+
         } else {
             this.imageUrls = imageUrls;
         }

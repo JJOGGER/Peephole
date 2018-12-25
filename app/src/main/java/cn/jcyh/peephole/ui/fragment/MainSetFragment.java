@@ -36,7 +36,6 @@ import cn.jcyh.peephole.ui.dialog.CommonEditDialog;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.OnDialogListener;
 import cn.jcyh.peephole.utils.L;
-import cn.jcyh.peephole.utils.SystemUtil;
 import cn.jcyh.peephole.utils.T;
 import cn.jcyh.peephole.utils.Tool;
 
@@ -103,8 +102,7 @@ public class MainSetFragment extends BaseFragment {
         }
         boolean siye = ControlCenter.getSN().startsWith(Constant.SIYE_SN);
         rlExtendFunction.setVisibility(siye ? View.VISIBLE : View.GONE);
-        boolean isZhongke = ControlCenter.getSN().startsWith(Constant.ZHONGKE_SN) || SystemUtil
-                .getVersionCode() == 10086;
+        boolean isZhongke = ControlCenter.getSN().startsWith(Constant.ZHONGKE_SN);
         rlMultiVideoSwitch.setVisibility(isZhongke ? View.VISIBLE : View.GONE);
         mFragmentManager = getFragmentManager();
         updateView();

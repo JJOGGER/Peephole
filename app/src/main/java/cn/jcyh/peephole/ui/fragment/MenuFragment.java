@@ -46,7 +46,7 @@ public class MenuFragment extends BaseFragment {
         return R.layout.fragment_menu;
     }
 
-    @OnClick({R.id.tv_doorbell_set, R.id.tv_system_set, R.id.tv_file_manager,
+    @OnClick({R.id.tv_doorbell_set, R.id.tv_system_set, R.id.tv_file_manager,/*R.id.tv_abc,*/
             R.id.tv_calendar, R.id.tv_browser, R.id.tv_video, R.id.tv_bind, R.id.tv_about})
     public void onClick(View v) {
         Intent intent = new Intent();
@@ -63,6 +63,7 @@ public class MenuFragment extends BaseFragment {
                 intent.setComponent(new ComponentName("com.android.calendar",
                         "com.android.calendar.LaunchActivity"));
                 startActivity(intent);
+
                 break;
             case R.id.tv_browser:
                 intent.setAction(Intent.ACTION_VIEW);
@@ -81,6 +82,11 @@ public class MenuFragment extends BaseFragment {
                 intent.setComponent(componentName);
                 startActivity(intent);
                 break;
+            /*case R.id.tv_abc:
+                intent.setComponent(new ComponentName("com.wualo7.iclass.phone",
+                        "air.com.alo7.iclass.phone.AppEntry"));
+                startActivity(intent);
+                break;*/
             case R.id.tv_video:
                 startNewActivity(VideoServiceActivity.class);
                 break;

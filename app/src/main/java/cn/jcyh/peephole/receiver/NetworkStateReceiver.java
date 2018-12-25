@@ -152,6 +152,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
             osw.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+
         } catch (IOException e) {
             e.printStackTrace();
         }

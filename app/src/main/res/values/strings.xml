@@ -9,6 +9,7 @@
     <string name="bind">绑定</string>
     <string name="browser">浏览器</string>
     <string name="about">关于</string>
+    <string name="abc">爱作业</string>
     <string name="user_bind_window">用户绑定窗口</string>
     <string name="device_no_">设备号:%s</string>
     <string name="bind_device_hint">此时不能进行视频通话，请尽快绑定设备</string>
@@ -154,7 +155,7 @@
     <string name="open_lock">打开门锁</string>
     <string name="face_set_closed">人脸识别已关闭</string>
     <string name="face_set_opened">人脸识别已开启</string>
-    <string name="unlock_success">开锁成功</string>
+    <string name="unlock_success">开锁指令已发送</string>
     <string name="multi_video_switch_msg">设置多人音视频开关</string>
     <string name="multi_video_switch">多人音视频</string>
     <string name="video_volume">视频音量</string>
