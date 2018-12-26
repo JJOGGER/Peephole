@@ -120,4 +120,36 @@
             android:textColor="@color/gray_555555"
             android:textSize="12sp"/>
     </RelativeLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="2dp"
+        android:background="@color/gray_dedede"/>
+
+    <RelativeLayout
+        android:id="@+id/rl_custom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp">
+
+        <TextView
+            android:id="@+id/tv_custom_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="16dp"
+            android:text="@string/custom"
+            android:textColor="@color/black_333333"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/tv_custom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tv_custom_title"
+            android:paddingLeft="16dp"
+            android:textColor="@color/gray_555555"
+            android:textSize="12sp"/>
+    </RelativeLayout>
 </LinearLayout>

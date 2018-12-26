@@ -27,6 +27,7 @@ import cn.jcyh.peephole.ui.dialog.BaseDialogFragment;
 import cn.jcyh.peephole.ui.dialog.ChooseSetDialog;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.OnDialogListener;
+import cn.jcyh.peephole.ui.dialog.RecordAudioDialogFragment;
 import cn.jcyh.peephole.ui.dialog.VolumeSetDialog;
 import cn.jcyh.peephole.utils.ServiceUtil;
 
@@ -45,6 +46,7 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
     private DialogHelper mDoorbellRingDialog;
     private DialogHelper mAlarmRingDialog;
     private DialogHelper mVolumeDialog;
+    private DialogHelper mCustomDialog;
     private List<String> mDoorbellRings;
     private List<String> mAlarmRings;
     private DoorbellConfig mDoorbellConfig;
@@ -79,7 +81,7 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
         Collections.addAll(mAlarmRings, alarms);
     }
 
-    @OnClick({R.id.rl_volume, R.id.rl_doorbell_ring, R.id.rl_alarm_ring})
+    @OnClick({R.id.rl_volume, R.id.rl_doorbell_ring, R.id.rl_alarm_ring,R.id.rl_custom})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.rl_volume:
@@ -95,7 +97,25 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
             case R.id.rl_alarm_ring:
                 showAlarmDialog();
                 break;
+            case R.id.rl_custom:
+                showCustomDialog();
+                break;
         }
+    }
+
+    private void showCustomDialog() {
+        if (mCustomDialog == null) {
+            final RecordAudioDialogFragment recordAudioDialogFragment = new RecordAudioDialogFragment();
+//            chooseSetDialog.setType(ControlCenter.DOORBELL_TYPE_ALARM);
+            mCustomDialog = new DialogHelper((BaseActivity) mActivity, recordAudioDialogFragment);
+        }
+        ChooseSetDialog dialogFragment = (ChooseSetDialog) mAlarmRingDialog.getDialogFragment();
+        if (dialogFragment != null) {
+            dialogFragment.setCheckedItem(mDoorbellConfig.getDoorbellAlarmName().replace(ASSET_ALARM + File.separator, ""));
+        }
+        ControlCenter.getBCManager().setMainSpeakerOn(false);
+        mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();//重新获取数据
+        mAlarmRingDialog.commit();
     }
 
     private void showAlarmDialog() {
