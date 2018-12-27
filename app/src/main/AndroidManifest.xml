@@ -131,7 +131,7 @@
         <service android:name=".service.AudioValiService"/>
         <service android:name=".service.UpdateSoftService"/>
         <service android:name=".service.MultiAVChatService"/>
-
+        <service android:name=".service.RecordingService"/>
         <receiver android:name=".receiver.BcReceiver">
             <intent-filter>
                 <action android:name="kphone.intent.action.LOCK_DETECT"/>

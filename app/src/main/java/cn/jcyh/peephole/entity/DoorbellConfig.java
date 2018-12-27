@@ -7,6 +7,8 @@ import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.io.File;
+
 /**
  * Created by Jogger on 2018/4/20.
  * 猫眼默认设置
@@ -27,6 +29,8 @@ public class DoorbellConfig {
     private int doorbellLookTime = 10;//猫眼查看时间
     private String doorbellRingName;//门铃声
     private String doorbellAlarmName;//报警声
+    private String customDoorbellRingName;
+    private String customDoorbellAlarmName;
     private int ringVolume = 50;
     private int alarmVolume = 50;
     private int videoVolume = 1;//通话音量
@@ -128,6 +132,34 @@ public class DoorbellConfig {
         return TextUtils.isEmpty(doorbellAlarmName) ? DEFAULT_ALARM : doorbellAlarmName;
     }
 
+    public String getCustomDoorbellRingName() {
+        File file = null;
+        if (customDoorbellRingName != null)
+            file = new File(customDoorbellRingName);
+        if (file == null) return null;
+        if (file.exists())
+            return customDoorbellRingName;
+        return null;
+    }
+
+    public void setCustomDoorbellRingName(String customDoorbellRingName) {
+        this.customDoorbellRingName = customDoorbellRingName;
+    }
+
+    public String getCustomDoorbellAlarmName() {
+        File file = null;
+        if (customDoorbellAlarmName != null)
+            file = new File(customDoorbellAlarmName);
+        if (file == null) return null;
+        if (file.exists())
+            return customDoorbellAlarmName;
+        return null;
+    }
+
+    public void setCustomDoorbellAlarmName(String customDoorbellAlarmName) {
+        this.customDoorbellAlarmName = customDoorbellAlarmName;
+    }
+
     public void setDoorbellAlarmName(String doorbellAlarmName) {
         this.doorbellAlarmName = doorbellAlarmName;
     }
@@ -181,7 +213,7 @@ public class DoorbellConfig {
     }
 
     public boolean isMultiVideo() {
-        return multiVideo==1;
+        return multiVideo == 1;
     }
 
     public void setMultiVideo(int multiVideo) {

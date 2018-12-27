@@ -240,8 +240,7 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
     }
 
     public void update(List<?> imageUrls, List<String> titles) {
-        if(this.titles!=null)
-        {
+        if (this.titles != null) {
             this.titles.clear();
             this.titles.addAll(titles);
             update(imageUrls);
@@ -252,15 +251,16 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
     public void update(List<?> imageUrls) {
         if (this.imageUrls != null) {
             this.imageUrls.clear();
-            if(imageUrls!=null)
-            {
+            if (imageUrls != null) {
                 this.imageUrls.addAll(imageUrls);
             }
-
         } else {
             this.imageUrls = imageUrls;
         }
-        this.imageViews.clear();
+        if (this.imageUrls == null)
+            this.imageUrls = new ArrayList();
+        else
+            this.imageViews.clear();
         this.indicatorImages.clear();
         this.count = this.imageUrls == null ? 0 : this.imageUrls.size();
         start();

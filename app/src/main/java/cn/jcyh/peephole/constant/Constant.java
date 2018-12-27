@@ -8,6 +8,8 @@ public class Constant {
     public static final String SIYE_SN = "910";
     public static final String ZHONGKE_SN = "909";
     public static final String FILE_PATH = "filePath";
+    public static final int TYPE_RING = 0;
+    public static final int TYPE_ALARM = 1;
     public static final String DW_USERID = "dw_userid";
     public static final String FILE_LENGTH = "file_length";
     public static final String W_PARAM = "w_param";
@@ -50,4 +52,6 @@ public class Constant {
     public static final String DOWNLOAD_INFO = "download_info";
     public static final String COMMAND_PATH = "command_path";
     public static final String DOWNLOAD_APK_ID = "download_apk_id";
+    public static final String RECORIDING_ITEM = "recording_item";
+    public static final String MAX_RECORDING = "max_recording";
 }

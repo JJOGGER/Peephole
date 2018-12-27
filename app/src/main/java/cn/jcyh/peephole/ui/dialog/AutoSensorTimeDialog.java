@@ -30,7 +30,7 @@ public class AutoSensorTimeDialog extends BaseDialogFragment {
     private DoorbellConfig mDoorbellConfig;
 
     @Override
-    int getLayoutId() {
+    public int getLayoutId() {
         return R.layout.dialog_auto_sensor_time;
     }
 

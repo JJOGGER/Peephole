@@ -1,12 +1,18 @@
 apply plugin: 'com.android.application'
-
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+def keyStorePath_ = properties.getProperty("key.keyStorePath")
+def storePassword_ = properties.getProperty("key.storePassword")
+def keyAlias_ = properties.getProperty("key.keyAlias")
+def keyPassword_ = properties.getProperty("key.keyPassword")
+def storeFile_ = file(keyStorePath_)
 android {
     signingConfigs {
         config {
-            keyAlias 'peephole'
-            keyPassword 'peephole123'
-            storeFile file('I:/PeepholeNIM/peephole.jks')
-            storePassword 'peephole123'
+            storeFile storeFile_
+            storePassword storePassword_
+            keyAlias keyAlias_
+            keyPassword keyPassword_
         }
     }
     compileSdkVersion rootProject.ext.android.compileSdkVersion
@@ -24,7 +30,7 @@ android {
             cmake {
                 cppFlags ""
                 //生成多个版本的so文件
-                abiFilters "armeabi-v7a"
+                abiFilters "armeabi-v7a","x86"
             }
         }
     }

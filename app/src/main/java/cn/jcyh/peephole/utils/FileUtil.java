@@ -92,6 +92,20 @@ public class FileUtil {
         return DOORBELL_DATA_PATH + File.separator + "doorbell_config.config";
     }
 
+    public static String getExpandRingPath() {
+        File file = new File(getSDCardPath() + "ring");
+        if (!file.exists())
+            file.mkdirs();
+        return file.getAbsolutePath();
+    }
+
+    public static String getExpandAlarmPath() {
+        File file = new File(getSDCardPath() + "alarm");
+        if (!file.exists())
+            file.mkdirs();
+        return file.getAbsolutePath();
+    }
+
     /**
      * @param removable true返回外部存储，false返回内部存储
      *                  不存在则列表为空

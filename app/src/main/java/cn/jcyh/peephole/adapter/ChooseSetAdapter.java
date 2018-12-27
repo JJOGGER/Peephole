@@ -11,6 +11,7 @@ import android.widget.TextView;
 import java.util.List;
 
 import cn.jcyh.peephole.R;
+import cn.jcyh.peephole.utils.L;
 
 public class ChooseSetAdapter extends RecyclerView.Adapter<ChooseSetAdapter.MyViewHolder> {
     private List<String> mDatas;
@@ -40,6 +41,7 @@ public class ChooseSetAdapter extends RecyclerView.Adapter<ChooseSetAdapter.MyVi
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position) {
+        if (mDatas == null) return;
         holder.tvContent.setText(mDatas.get(position));
         holder.rbChecked.setChecked(false);
         if (mCurrentPos == position) {
@@ -70,6 +72,8 @@ public class ChooseSetAdapter extends RecyclerView.Adapter<ChooseSetAdapter.MyVi
     }
 
     public int getPosition(String data) {
+        if (mDatas == null) return 0;
+        L.e("------------>>" + data);
         for (int i = 0; i < mDatas.size(); i++) {
             if (data.equals(mDatas.get(i)))
                 return i;

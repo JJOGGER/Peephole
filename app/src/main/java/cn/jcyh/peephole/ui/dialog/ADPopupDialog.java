@@ -26,7 +26,7 @@ public class ADPopupDialog extends BaseDialogFragment {
     ImageView ivAd;
 
     @Override
-    int getLayoutId() {
+    public int getLayoutId() {
         return R.layout.dialog_ad_popup;
     }
 

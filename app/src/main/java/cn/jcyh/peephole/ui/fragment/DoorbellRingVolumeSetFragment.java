@@ -24,11 +24,12 @@ import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.entity.DoorbellConfig;
 import cn.jcyh.peephole.service.MediaPlayService;
 import cn.jcyh.peephole.ui.dialog.BaseDialogFragment;
-import cn.jcyh.peephole.ui.dialog.ChooseSetDialog;
+import cn.jcyh.peephole.ui.dialog.ChooseCustomRingDialog;
+import cn.jcyh.peephole.ui.dialog.ChooseRingDialog;
 import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.OnDialogListener;
-import cn.jcyh.peephole.ui.dialog.RecordAudioDialogFragment;
 import cn.jcyh.peephole.ui.dialog.VolumeSetDialog;
+import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.ServiceUtil;
 
 /**
@@ -105,49 +106,43 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
 
     private void showCustomDialog() {
         if (mCustomDialog == null) {
-            final RecordAudioDialogFragment recordAudioDialogFragment = new RecordAudioDialogFragment();
-//            chooseSetDialog.setType(ControlCenter.DOORBELL_TYPE_ALARM);
-            mCustomDialog = new DialogHelper((BaseActivity) mActivity, recordAudioDialogFragment);
+            final ChooseCustomRingDialog chooseCustomRingDialog = new ChooseCustomRingDialog();
+            mCustomDialog = new DialogHelper((BaseActivity) mActivity, chooseCustomRingDialog);
         }
-        ChooseSetDialog dialogFragment = (ChooseSetDialog) mAlarmRingDialog.getDialogFragment();
-        if (dialogFragment != null) {
-            dialogFragment.setCheckedItem(mDoorbellConfig.getDoorbellAlarmName().replace(ASSET_ALARM + File.separator, ""));
-        }
-        ControlCenter.getBCManager().setMainSpeakerOn(false);
-        mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();//重新获取数据
-        mAlarmRingDialog.commit();
+        mCustomDialog.commit();
     }
 
     private void showAlarmDialog() {
         if (mAlarmRingDialog == null) {
-            final ChooseSetDialog chooseSetDialog = new ChooseSetDialog();
-//            chooseSetDialog.setType(ControlCenter.DOORBELL_TYPE_ALARM);
-            chooseSetDialog.setTitle(getString(R.string.alarm_ring));
-            ChooseSetAdapter adapter = new ChooseSetAdapter(mAlarmRings);
-            chooseSetDialog.setAdapter(adapter);
-            adapter.setOnItemClickListener(new ChooseSetAdapter.OnItemClickListener() {
+            final ChooseRingDialog chooseRingDialog = new ChooseRingDialog();
+            chooseRingDialog.setType(ControlCenter.DOORBELL_TYPE_ALARM);
+            chooseRingDialog.setTitle(getString(R.string.alarm_ring));
+            chooseRingDialog.setDatas(mAlarmRings);
+            chooseRingDialog.setOnChooseRingClickListener(new ChooseRingDialog.OnChooseRingClickListener() {
                 @Override
                 public void onItemClick(String data, int pos) {
-                    chooseSetDialog.setCheckedItem(data);
-                    Intent intent = new Intent(mActivity, MediaPlayService.class);
-                    intent.putExtra(Constant.RESOURCE_PATH, ASSET_ALARM + File.separator + data);
-                    intent.putExtra(Constant.VOLUME, mDoorbellConfig.getAlarmVolume() / 100f);
-                    mActivity.startService(intent);
+                    L.e("-----------data:"+data+"::"+pos);
+//                    chooseRingDialog.setCheckedItem(data);
+//                    Intent intent = new Intent(mActivity, MediaPlayService.class);
+//                    intent.putExtra(Constant.RESOURCE_PATH, ASSET_ALARM + File.separator + data);
+//                    intent.putExtra(Constant.VOLUME, mDoorbellConfig.getAlarmVolume() / 100f);
+//                    mActivity.startService(intent);
 //                    play(data, ControlCenter.DOORBELL_TYPE_ALARM);
                 }
             });
-            chooseSetDialog.setOnDismissListener(this);
-            chooseSetDialog.setOnDialogListener(new OnDialogListener() {
+            chooseRingDialog.setOnDismissListener(this);
+            chooseRingDialog.setOnDialogListener(new OnDialogListener() {
                 @Override
                 public void onConfirm(Object content) {
-                    mDoorbellConfig.setDoorbellAlarmName(ASSET_ALARM + File.separator + content.toString());
-                    ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
-                    tvAlarmRing.setText(content.toString());
+                    L.e("----------content:"+content);
+//                    mDoorbellConfig.setDoorbellAlarmName(ASSET_ALARM + File.separator + content.toString());
+//                    ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
+//                    tvAlarmRing.setText(content.toString());
                 }
             });
-            mAlarmRingDialog = new DialogHelper((BaseActivity) mActivity, chooseSetDialog);
+            mAlarmRingDialog = new DialogHelper((BaseActivity) mActivity, chooseRingDialog);
         }
-        ChooseSetDialog dialogFragment = (ChooseSetDialog) mAlarmRingDialog.getDialogFragment();
+        ChooseRingDialog dialogFragment = (ChooseRingDialog) mAlarmRingDialog.getDialogFragment();
         if (dialogFragment != null) {
             dialogFragment.setCheckedItem(mDoorbellConfig.getDoorbellAlarmName().replace(ASSET_ALARM + File.separator, ""));
         }
@@ -161,15 +156,15 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
      */
     private void showRingDialog() {
         if (mDoorbellRingDialog == null) {
-            final ChooseSetDialog chooseSetDialog = new ChooseSetDialog();
-//            chooseSetDialog.setType(ControlCenter.DOORBELL_TYPE_RING);
-            chooseSetDialog.setTitle(getString(R.string.doorbell_ring));
+            final ChooseRingDialog chooseRingDialog = new ChooseRingDialog();
+            chooseRingDialog.setType(ControlCenter.DOORBELL_TYPE_RING);
+            chooseRingDialog.setTitle(getString(R.string.doorbell_ring));
             ChooseSetAdapter adapter = new ChooseSetAdapter(mDoorbellRings);
-            chooseSetDialog.setAdapter(adapter);
+            chooseRingDialog.setAdapter(adapter);
             adapter.setOnItemClickListener(new ChooseSetAdapter.OnItemClickListener() {
                 @Override
                 public void onItemClick(String data, int pos) {
-                    chooseSetDialog.setCheckedItem(data);
+                    chooseRingDialog.setCheckedItem(data);
                     Intent intent = new Intent(mActivity, MediaPlayService.class);
                     intent.putExtra(Constant.RESOURCE_PATH, ASSET_RING + File.separator + data);
                     intent.putExtra(Constant.VOLUME, mDoorbellConfig.getRingVolume() / 100f);
@@ -177,8 +172,8 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
 //                    play(data, ControlCenter.DOORBELL_TYPE_RING);
                 }
             });
-            chooseSetDialog.setOnDismissListener(this);
-            chooseSetDialog.setOnDialogListener(new OnDialogListener() {
+            chooseRingDialog.setOnDismissListener(this);
+            chooseRingDialog.setOnDialogListener(new OnDialogListener() {
                 @Override
                 public void onConfirm(Object content) {
                     mDoorbellConfig.setDoorbellRingName(ASSET_RING + File.separator + content.toString());
@@ -186,9 +181,9 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
                     tvDoorbellRing.setText(content.toString());
                 }
             });
-            mDoorbellRingDialog = new DialogHelper((BaseActivity) mActivity, chooseSetDialog);
+            mDoorbellRingDialog = new DialogHelper((BaseActivity) mActivity, chooseRingDialog);
         }
-        ChooseSetDialog dialogFragment = (ChooseSetDialog) mDoorbellRingDialog.getDialogFragment();
+        ChooseRingDialog dialogFragment = (ChooseRingDialog) mDoorbellRingDialog.getDialogFragment();
         if (dialogFragment != null)
             dialogFragment.setCheckedItem(mDoorbellConfig.getDoorbellRingName().replace(ASSET_RING + File.separator, ""));
         mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();//重新获取数据

@@ -29,7 +29,7 @@ public class VolumeSetDialog extends BaseDialogFragment implements SeekBar.OnSee
     private DoorbellConfig mDoorbellConfig;
 
     @Override
-    int getLayoutId() {
+    public int getLayoutId() {
         return R.layout.dialog_volume_set;
     }
 

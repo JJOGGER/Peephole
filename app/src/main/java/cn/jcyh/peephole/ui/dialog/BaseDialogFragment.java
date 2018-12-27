@@ -50,7 +50,7 @@ public abstract class BaseDialogFragment extends DialogFragment {
         return view;
     }
 
-    abstract int getLayoutId();
+    public abstract int getLayoutId();
 
     protected void init(View view) {
 

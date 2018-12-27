@@ -47,7 +47,7 @@ public class DialogHelper {
     public void dismiss() {
         if (mDialogFragment != null && mDialogFragment.getDialog() != null
                 && mDialogFragment.getDialog().isShowing()) {
-            mDialogFragment.dismiss();
+            mDialogFragment.dismissAllowingStateLoss();
         }
     }
 

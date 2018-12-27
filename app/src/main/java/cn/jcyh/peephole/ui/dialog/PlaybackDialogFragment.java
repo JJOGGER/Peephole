@@ -1,29 +1,31 @@
 package cn.jcyh.peephole.ui.dialog;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.OnClick;
 import cn.jcyh.peephole.R;
+import cn.jcyh.peephole.constant.Constant;
+import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.entity.DoorbellConfig;
 import cn.jcyh.peephole.entity.RecordingItem;
+import cn.jcyh.peephole.utils.FileUtil;
+import cn.jcyh.peephole.utils.L;
 
 /**
  * 播放录音的 DialogFragment
@@ -43,26 +45,21 @@ public class PlaybackDialogFragment extends BaseDialogFragment {
     @BindView(R.id.fab_play)
     FloatingActionButton fabPlay;
     private static final String LOG_TAG = "PlaybackFragment";
-
-    private static final String ARG_ITEM = "recording_item";
-    private RecordingItem item;
+    private RecordingItem mRecordingItem;
 
     private Handler mHandler = new Handler();
 
     private MediaPlayer mMediaPlayer = null;
 
-    //stores whether or not the mediaplayer is currently playing audio
-    private boolean isPlaying = false;
+    private boolean mIsPlaying = false;
 
-    //stores minutes and seconds of the length of the file.
-    long minutes = 0;
-    long seconds = 0;
-    private static long mFileLength = 0;
+    long mMinutes = 0;
+    long mSeconds = 0;
 
     public static PlaybackDialogFragment newInstance(RecordingItem item) {
         PlaybackDialogFragment f = new PlaybackDialogFragment();
         Bundle b = new Bundle();
-        b.putParcelable(ARG_ITEM, item);
+        b.putParcelable(Constant.RECORIDING_ITEM, item);
         f.setArguments(b);
         return f;
     }
@@ -70,17 +67,17 @@ public class PlaybackDialogFragment extends BaseDialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        item = getArguments().getParcelable(ARG_ITEM);
-
-        long itemDuration = item.getLength();
-        mFileLength = itemDuration;
-        minutes = TimeUnit.MILLISECONDS.toMinutes(itemDuration);
-        seconds = TimeUnit.MILLISECONDS.toSeconds(itemDuration)
-                - TimeUnit.MINUTES.toSeconds(minutes);
+        setCancelable(false);
+        mRecordingItem = getArguments().getParcelable(Constant.RECORIDING_ITEM);
+        assert mRecordingItem != null;
+        long itemDuration = mRecordingItem.getLength();
+        mMinutes = TimeUnit.MILLISECONDS.toMinutes(itemDuration);
+        mSeconds = TimeUnit.MILLISECONDS.toSeconds(itemDuration)
+                - TimeUnit.MINUTES.toSeconds(mMinutes);
     }
 
     @Override
-    int getLayoutId() {
+    public int getLayoutId() {
         return R.layout.fragment_media_playback;
     }
 
@@ -89,22 +86,15 @@ public class PlaybackDialogFragment extends BaseDialogFragment {
         super.onActivityCreated(savedInstanceState);
     }
 
-    @NonNull
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-
-        Dialog dialog = super.onCreateDialog(savedInstanceState);
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        View view = getActivity().getLayoutInflater().inflate(R.layout.fragment_media_playback,
-                null);
-
+    protected void init(View view) {
+        super.init(view);
         ColorFilter filter = new LightingColorFilter
                 (getResources().getColor(R.color.colorPrimary), getResources().getColor(R.color
                         .colorPrimary));
         sbProgress.getProgressDrawable().setColorFilter(filter);
         sbProgress.getThumb().setColorFilter(filter);
-        tvFileLength.setText(String.valueOf(mFileLength));
+        tvFileLength.setText(String.valueOf(mRecordingItem.getLength()));
         sbProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -129,7 +119,6 @@ public class PlaybackDialogFragment extends BaseDialogFragment {
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
                 if (mMediaPlayer != null) {
-                    // remove message Handler from updating progress bar
                     mHandler.removeCallbacks(mRunnable);
                 }
             }
@@ -151,64 +140,61 @@ public class PlaybackDialogFragment extends BaseDialogFragment {
             }
         });
 
-        tvFileName.setText(item.getName());
-        tvFileLength.setText(String.format("%02d:%02d", minutes, seconds));
-
-        builder.setView(view);
-
-        // request a window without the title
-        dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        TextView tvReRecord = view.findViewById(R.id.tv_re_record);
-        tvReRecord.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final RecordAudioDialogFragment fragment = RecordAudioDialogFragment.newInstance();
-                fragment.show(getActivity().getSupportFragmentManager(),
-                        RecordAudioDialogFragment.class.getSimpleName());
-                fragment.setOnCancelListener(new RecordAudioDialogFragment.OnAudioCancelListener() {
-                    @Override
-                    public void onCancel() {
-                        fragment.dismiss();
-                    }
-                });
-                dismiss();
-            }
-        });
-        view.findViewById(R.id.tv_save).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getActivity(), "保存", Toast.LENGTH_LONG).show();
-                dismiss();
-            }
-        });
-        return builder.create();
+        tvFileName.setText(mRecordingItem.getName());
+        tvFileLength.setText(String.format("%02d:%02d", mMinutes, mSeconds));
+        onPlay(mIsPlaying);
     }
 
-    @OnClick({R.id.fab_play})
+    @OnClick({R.id.iv_close, R.id.fab_play, R.id.tv_save, R.id.tv_re_record})
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.iv_close:
+                if (mRecordingItem.isRecord()) {
+                    File file = new File(mRecordingItem.getFilePath());
+                    if (file.exists())
+                        file.delete();
+                }
+                dismiss();
                 break;
             case R.id.fab_play:
-                onPlay(isPlaying);
-                isPlaying = !isPlaying;
+                onPlay(mIsPlaying);
+                break;
+            case R.id.tv_save:
+                Toast.makeText(getActivity(), "保存", Toast.LENGTH_LONG).show();
+                save();
+                dismiss();
+                break;
+            case R.id.tv_re_record:
+                if (mRecordingItem.isRecord()) {
+                    File file = new File(mRecordingItem.getFilePath());
+                    if (file.exists())
+                        file.delete();
+                }
+                final RecordAudioDialogFragment fragment = RecordAudioDialogFragment.newInstance(mRecordingItem.getType());
+                fragment.show(getActivity().getSupportFragmentManager(),
+                        RecordAudioDialogFragment.class.getSimpleName());
+                dismiss();
                 break;
         }
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        //set transparent background
-        Window window = getDialog().getWindow();
-        window.setBackgroundDrawableResource(android.R.color.transparent);
-
-        //disable buttons from dialog
-        AlertDialog alertDialog = (AlertDialog) getDialog();
-        alertDialog.getButton(Dialog.BUTTON_POSITIVE).setEnabled(false);
-        alertDialog.getButton(Dialog.BUTTON_NEGATIVE).setEnabled(false);
-        alertDialog.getButton(Dialog.BUTTON_NEUTRAL).setEnabled(false);
+    private void save() {
+        if (mRecordingItem.isRecord()) return;
+        //从文件夹中选取的，如果不在目录下，则拷到目录
+        File file;
+        if (mRecordingItem.getType() == Constant.TYPE_RING) {
+            file=new File(FileUtil.getExpandRingPath());
+        } else {
+            file=new File(FileUtil.getExpandAlarmPath());
+        }
+        if (!file.exists()) return;
+        File file2=new File(mRecordingItem.getFilePath());
+        for (int i = 0; i < file.list().length; i++) {
+            if (mRecordingItem.getName().equals(file2.getName())){
+                return;
+            }
+        }
+        FileUtil.copyFile(mRecordingItem.getFilePath(),file.getAbsolutePath()+File.separator+mRecordingItem.getName());
     }
 
     @Override
@@ -229,28 +215,27 @@ public class PlaybackDialogFragment extends BaseDialogFragment {
         }
     }
 
-    // Play start/stop
     private void onPlay(boolean isPlaying) {
         if (!isPlaying) {
-            //currently MediaPlayer is not playing audio
             if (mMediaPlayer == null) {
-                startPlaying(); //start from beginning
+                startPlaying();
             } else {
-                resumePlaying(); //resume the currently paused MediaPlayer
+                resumePlaying();
             }
 
         } else {
             pausePlaying();
         }
+        mIsPlaying = !isPlaying;
     }
 
     private void startPlaying() {
         fabPlay.setImageResource(R.mipmap.ic_media_pause);
         mMediaPlayer = new MediaPlayer();
-
         try {
-            mMediaPlayer.setDataSource(item.getFilePath());
+            mMediaPlayer.setDataSource(mRecordingItem.getFilePath());
             mMediaPlayer.prepare();
+            sbProgress.setProgress(0);
             sbProgress.setMax(mMediaPlayer.getDuration());
 
             mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -262,27 +247,21 @@ public class PlaybackDialogFragment extends BaseDialogFragment {
         } catch (IOException e) {
             Log.e(LOG_TAG, "prepare() failed");
         }
-
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 stopPlaying();
             }
         });
-
         updateSeekBar();
-
-        //keep screen on while playing audio
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     private void prepareMediaPlayerFromPoint(int progress) {
-        //set mediaPlayer to start from middle of the audio file
-
         mMediaPlayer = new MediaPlayer();
 
         try {
-            mMediaPlayer.setDataSource(item.getFilePath());
+            mMediaPlayer.setDataSource(mRecordingItem.getFilePath());
             mMediaPlayer.prepare();
             sbProgress.setMax(mMediaPlayer.getDuration());
             mMediaPlayer.seekTo(progress);
@@ -298,7 +277,6 @@ public class PlaybackDialogFragment extends BaseDialogFragment {
             Log.e(LOG_TAG, "prepare() failed");
         }
 
-        //keep screen on while playing audio
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
@@ -324,27 +302,29 @@ public class PlaybackDialogFragment extends BaseDialogFragment {
         mMediaPlayer = null;
 
         sbProgress.setProgress(sbProgress.getMax());
-        isPlaying = !isPlaying;
+        mIsPlaying = !mIsPlaying;
 
         tvCurrentProgress.setText(tvFileLength.getText());
         sbProgress.setProgress(sbProgress.getMax());
 
-        //allow the screen to turn off again once audio is finished playing
         getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
-    //updating mSeekBar
     private Runnable mRunnable = new Runnable() {
         @Override
         public void run() {
             if (mMediaPlayer != null) {
 
                 int mCurrentPosition = mMediaPlayer.getCurrentPosition();
-                sbProgress.setProgress(mCurrentPosition);
-
                 long minutes = TimeUnit.MILLISECONDS.toMinutes(mCurrentPosition);
                 long seconds = TimeUnit.MILLISECONDS.toSeconds(mCurrentPosition)
                         - TimeUnit.MINUTES.toSeconds(minutes);
+                if (minutes == 0 && seconds == 0) {
+                    sbProgress.setProgress(0);
+                } else {
+                    sbProgress.setProgress(mCurrentPosition);
+                }
+                L.e("--------mCurrentPosition：" + mCurrentPosition + "::" + minutes + ":" + seconds);
                 tvCurrentProgress.setText(String.format("%02d:%02d", minutes, seconds));
 
                 updateSeekBar();

@@ -40,7 +40,7 @@ public class ChooseSetDialog extends BaseDialogFragment {
 //    }
 
     @Override
-    int getLayoutId() {
+    public int getLayoutId() {
         return R.layout.dialog_choose_set;
     }
 

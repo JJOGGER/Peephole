@@ -291,6 +291,7 @@ public class ImgUtil {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 10;
         Bitmap optionBitmap = BitmapFactory.decodeFile(filePath, options);
+        if (optionBitmap == null) return true;
         file = new File(thumbPath);
         try {
             bos = new BufferedOutputStream(new FileOutputStream(file));
@@ -315,7 +316,7 @@ public class ImgUtil {
         return false;
     }
 
-    public static boolean saveBitmap2File(String filePath, String thumbPath,Bitmap
+    public static boolean saveBitmap2File(String filePath, String thumbPath, Bitmap
             bitmap) {
 //        Bitmap waterMaskBitmap = createWaterMaskBitmap(src, watermark, 30, 24);
         File file = new File(filePath);

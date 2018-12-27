@@ -25,7 +25,7 @@ public class CommonEditDialog extends BaseDialogFragment {
     private int mType = InputType.TYPE_CLASS_NUMBER;
 
     @Override
-    int getLayoutId() {
+    public int getLayoutId() {
         return R.layout.dialog_common_edit;
     }
 
