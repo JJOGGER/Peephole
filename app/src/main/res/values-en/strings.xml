@@ -156,6 +156,7 @@
     <string name="custom">自定义</string>
     <string name="max_record_format">最多%d秒</string>
     <string name="no_local_file">没有本地文件</string>
+    <string name="delete_msg">删除？</string>
 
     <!--                   系统设置end             -->
     <!--<string name="date_week_format">%d年%d月%d日&#160;%s</string>-->

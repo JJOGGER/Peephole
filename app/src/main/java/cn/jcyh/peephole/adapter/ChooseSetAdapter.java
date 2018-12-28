@@ -24,6 +24,7 @@ public class ChooseSetAdapter extends RecyclerView.Adapter<ChooseSetAdapter.MyVi
 
     public interface OnItemClickListener {
         void onItemClick(String data, int pos);
+        void onLongItemClick(String data, int pos);
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {
@@ -59,6 +60,16 @@ public class ChooseSetAdapter extends RecyclerView.Adapter<ChooseSetAdapter.MyVi
                 }
             }
         });
+        holder.rlItem.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                if (mListener != null) {
+                    int pos = (int) holder.rlItem.getTag();
+                    mListener.onLongItemClick(mDatas.get(pos), pos);
+                }
+                return false;
+            }
+        });
     }
 
     @Override
@@ -72,13 +83,12 @@ public class ChooseSetAdapter extends RecyclerView.Adapter<ChooseSetAdapter.MyVi
     }
 
     public int getPosition(String data) {
-        if (mDatas == null) return 0;
-        L.e("------------>>" + data);
+        if (mDatas == null) return -1;
         for (int i = 0; i < mDatas.size(); i++) {
             if (data.equals(mDatas.get(i)))
                 return i;
         }
-        return 0;
+        return -1;
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {

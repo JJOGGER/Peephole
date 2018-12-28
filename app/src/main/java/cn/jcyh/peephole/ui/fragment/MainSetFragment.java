@@ -263,6 +263,11 @@ public class MainSetFragment extends BaseFragment {
                     ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
                     chooseSetDialog.dismiss();
                 }
+
+                @Override
+                public void onLongItemClick(String data, int pos) {
+
+                }
             });
             mDoorbellLeavelTimeDialog = new DialogHelper((BaseActivity) mActivity, chooseSetDialog);
         }

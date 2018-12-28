@@ -10,6 +10,8 @@ public class Constant {
     public static final String FILE_PATH = "filePath";
     public static final int TYPE_RING = 0;
     public static final int TYPE_ALARM = 1;
+    public static final String ASSET_RING = "ring";
+    public static final String ASSET_ALARM = "alarm";
     public static final String DW_USERID = "dw_userid";
     public static final String FILE_LENGTH = "file_length";
     public static final String W_PARAM = "w_param";
