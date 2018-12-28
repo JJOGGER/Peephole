@@ -1,8 +1,5 @@
 package cn.jcyh.peephole.ui.fragment;
 
-import android.content.Intent;
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
 import android.media.MediaPlayer;
 import android.view.View;
 import android.widget.TextView;
@@ -16,13 +13,11 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.OnClick;
 import cn.jcyh.peephole.R;
-import cn.jcyh.peephole.adapter.ChooseSetAdapter;
 import cn.jcyh.peephole.base.BaseActivity;
 import cn.jcyh.peephole.base.BaseFragment;
 import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.entity.DoorbellConfig;
-import cn.jcyh.peephole.service.MediaPlayService;
 import cn.jcyh.peephole.ui.dialog.BaseDialogFragment;
 import cn.jcyh.peephole.ui.dialog.ChooseCustomRingDialog;
 import cn.jcyh.peephole.ui.dialog.ChooseRingDialog;
@@ -30,7 +25,6 @@ import cn.jcyh.peephole.ui.dialog.DialogHelper;
 import cn.jcyh.peephole.ui.dialog.OnDialogListener;
 import cn.jcyh.peephole.ui.dialog.VolumeSetDialog;
 import cn.jcyh.peephole.utils.L;
-import cn.jcyh.peephole.utils.ServiceUtil;
 
 /**
  * Created by jogger on 2018/4/28.
@@ -197,39 +191,39 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
         }
     }
 
-    public void play(String data, int type) {
-        try {
-            AssetFileDescriptor descriptor;
-            AssetManager assets = getResources().getAssets();
-            if (mPlayer == null) {
-                mPlayer = new MediaPlayer();
-                mPlayer.setLooping(false);
-            } else {
-                mPlayer.stop();
-                mPlayer.reset();
-            }
-            if (type == ControlCenter.DOORBELL_TYPE_RING) {
-                descriptor = assets.openFd(Constant.ASSET_RING + File.separator + data);
-                mPlayer.setVolume(mDoorbellConfig.getRingVolume() / 100f, mDoorbellConfig.getRingVolume() / 100f);
-            } else {
-                descriptor = assets.openFd(Constant.ASSET_ALARM + File.separator + data);
-                mPlayer.setVolume(mDoorbellConfig.getAlarmVolume() / 100f, mDoorbellConfig.getAlarmVolume() / 100f);
-            }
-            mPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
-            mPlayer.prepare();
-            mPlayer.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    public void play(String data, int type) {
+//        try {
+//            AssetFileDescriptor descriptor;
+//            AssetManager assets = getResources().getAssets();
+//            if (mPlayer == null) {
+//                mPlayer = new MediaPlayer();
+//                mPlayer.setLooping(false);
+//            } else {
+//                mPlayer.stop();
+//                mPlayer.reset();
+//            }
+//            if (type == ControlCenter.DOORBELL_TYPE_RING) {
+//                descriptor = assets.openFd(Constant.ASSET_RING + File.separator + data);
+//                mPlayer.setVolume(mDoorbellConfig.getRingVolume() / 100f, mDoorbellConfig.getRingVolume() / 100f);
+//            } else {
+//                descriptor = assets.openFd(Constant.ASSET_ALARM + File.separator + data);
+//                mPlayer.setVolume(mDoorbellConfig.getAlarmVolume() / 100f, mDoorbellConfig.getAlarmVolume() / 100f);
+//            }
+//            mPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
+//            mPlayer.prepare();
+//            mPlayer.start();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     @Override
     public void onDismiss() {
-        ServiceUtil.stopService(MediaPlayService.class);
-        if (mPlayer != null) {
-            mPlayer.stop();
-            mPlayer.release();
-            mPlayer = null;
-        }
+//        ServiceUtil.stopService(MediaPlayService.class);
+//        if (mPlayer != null) {
+//            mPlayer.stop();
+//            mPlayer.release();
+//            mPlayer = null;
+//        }
     }
 }

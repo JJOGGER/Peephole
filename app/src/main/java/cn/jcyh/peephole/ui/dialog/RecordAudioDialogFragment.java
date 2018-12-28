@@ -99,8 +99,12 @@ public class RecordAudioDialogFragment extends BaseDialogFragment {
         if (start) {
             resetRecordingItem();
             mRecordingItem = new RecordingItem();
-            mRecordingItem.setName(mType == Constant.TYPE_RING ? "ring" : "alarm" + System.currentTimeMillis());
-            mRecordingItem.setFilePath(mType == Constant.TYPE_RING ? FileUtil.getExpandRingPath() : FileUtil.getExpandAlarmPath());
+            mRecordingItem.setName(mType == Constant.TYPE_RING ? "ring" : "alarm" + System
+                    .currentTimeMillis());
+            mRecordingItem.setFilePath((mType == Constant.TYPE_RING ? FileUtil.getExpandRingPath
+                    () : FileUtil.getExpandAlarmPath())
+                    + System.currentTimeMillis() + ".mp3");
+            L.e("-------->");
             mRecordingItem.setRecord(true);
             intent.putExtra(Constant.RECORIDING_ITEM, mRecordingItem);
             fabPlay.setImageResource(R.mipmap.ic_media_stop);
@@ -123,7 +127,8 @@ public class RecordAudioDialogFragment extends BaseDialogFragment {
 //            long elpased = sharePreferences.getLong("elpased", 0);
 //            recordingItem.setFilePath(filePath);
 //            recordingItem.setLength((int) elpased);
-            PlaybackDialogFragment fragmentPlay = PlaybackDialogFragment.newInstance(mRecordingItem);
+            PlaybackDialogFragment fragmentPlay = PlaybackDialogFragment.newInstance
+                    (mRecordingItem);
             fragmentPlay.show(getActivity().getSupportFragmentManager(), PlaybackDialogFragment
                     .class.getSimpleName());
             dismiss();
@@ -164,8 +169,10 @@ public class RecordAudioDialogFragment extends BaseDialogFragment {
                         mRecordingItem.setFilePath(path);
                         mRecordingItem.setLength(mediaPlayer.getDuration());
                         mRecordingItem.setType(mType);
-                        PlaybackDialogFragment fragmentPlay = PlaybackDialogFragment.newInstance(mRecordingItem);
-                        fragmentPlay.show(getActivity().getSupportFragmentManager(), PlaybackDialogFragment.class.getSimpleName());
+                        PlaybackDialogFragment fragmentPlay = PlaybackDialogFragment.newInstance
+                                (mRecordingItem);
+                        fragmentPlay.show(getActivity().getSupportFragmentManager(),
+                                PlaybackDialogFragment.class.getSimpleName());
                     }
                     dismiss();
                     break;

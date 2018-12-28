@@ -80,13 +80,13 @@ public class DoorbellAudioManager {
         }
     }
 
-    public synchronized void playFile(RingerTypeEnum typeEnum,String path) {
+    public synchronized void playFile(RingerTypeEnum typeEnum, String path) {
         mCurrentType = typeEnum;
         switch (typeEnum) {
             case DOORBELL_RING_CUSTOM:
-                mResPath=path;
-                mVolume=0.5f;
-                mPlayCount=1;
+                mResPath = path;
+                mVolume = 0.5f;
+                mPlayCount = 1;
                 ControlCenter.getBCManager().setMainSpeakerOn(true);
                 break;
             case DOORBELL_ALARM_CUSTOM:
@@ -146,33 +146,67 @@ public class DoorbellAudioManager {
 
     public synchronized void play(RingerTypeEnum typeEnum, OnCompletionListener listener) {
         mCurrentType = typeEnum;
+        mLoop = false;
         switch (typeEnum) {
             case LEAVE_MSG_START:
                 mResPath = AssetConstant.DOORBELL_LEAVE_MSG_START;
                 mVolume = 0.5f;
                 ControlCenter.getBCManager().setMainSpeakerOn(false);
+                play(listener);
                 break;
             case LEAVE_MSG_END:
                 mResPath = AssetConstant.DOORBELL_LEAVE_MSG_END;
                 mVolume = 0.5f;
                 ControlCenter.getBCManager().setMainSpeakerOn(false);
+                play(listener);
                 break;
             case DOORBELL_RING:
-                DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
-                mResPath = doorbellConfig.getDoorbellRingName();
+                DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager()
+                        .getDoorbellConfig();
                 mVolume = doorbellConfig.getRingVolume() / 100f;
-                mPlayCount = 3;
                 ControlCenter.getBCManager().setMainSpeakerOn(true);
+                L.e("--------->"+doorbellConfig.getDoorbellRingName());
+                mResPath = doorbellConfig.getDoorbellRingName();
+                mPlayCount = 3;
+                play(listener);
                 break;
             case DOORBELL_ALARM:
                 doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
                 mResPath = doorbellConfig.getDoorbellAlarmName();
                 mVolume = doorbellConfig.getAlarmVolume() / 100f;
                 ControlCenter.getBCManager().setMainSpeakerOn(false);
+                play(listener);
+                break;
+            case DOORBELL_RING_CUSTOM:
+                doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
+                mVolume = doorbellConfig.getRingVolume() / 100f;
+                ControlCenter.getBCManager().setMainSpeakerOn(true);
+                L.e("--------doorbellConfig.getCustomDoorbellRingName():" + doorbellConfig
+                        .getCustomDoorbellRingName());
+                if (!TextUtils.isEmpty(doorbellConfig.getCustomDoorbellRingName())) {
+                    mResPath = doorbellConfig.getCustomDoorbellRingName();
+                    mPlayCount = 1;
+                    playFile();
+                } else {
+                    mResPath = doorbellConfig.getDoorbellRingName();
+                    mPlayCount = 3;
+                    play(listener);
+                }
+                break;
+            case DOORBELL_ALARM_CUSTOM:
+                doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
+                mResPath = doorbellConfig.getDoorbellAlarmName();
+                mVolume = doorbellConfig.getAlarmVolume() / 100f;
+                ControlCenter.getBCManager().setMainSpeakerOn(false);
+                if (!TextUtils.isEmpty(doorbellConfig.getCustomDoorbellAlarmName())) {
+                    mResPath = doorbellConfig.getCustomDoorbellAlarmName();
+                    playFile();
+                } else {
+                    mResPath = doorbellConfig.getDoorbellAlarmName();
+                    play(listener);
+                }
                 break;
         }
-        mLoop = false;
-        play(listener);
     }
 
 
@@ -188,6 +222,7 @@ public class DoorbellAudioManager {
     }
 
     private void play(final OnCompletionListener listener) {
+        L.e("------------>>"+mCurrentType+":"+mResPath);
         if (TextUtils.isEmpty(mResPath)) return;
         mExecutorService.execute(new Runnable() {
             @Override
@@ -206,7 +241,8 @@ public class DoorbellAudioManager {
                     mPlayer.setLooping(false);
                     descriptor = assets.openFd(mResPath);
                     mPlayer.setVolume(mVolume, mVolume);
-                    mPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
+                    mPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor
+                            .getStartOffset(), descriptor.getLength());
                     mPlayer.prepare();
                     mPlayer.start();
                     mIsPlaying = true;

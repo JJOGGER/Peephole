@@ -21,11 +21,8 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.constant.Constant;
-import cn.jcyh.peephole.control.ControlCenter;
-import cn.jcyh.peephole.entity.DoorbellConfig;
 import cn.jcyh.peephole.entity.RecordingItem;
 import cn.jcyh.peephole.utils.FileUtil;
-import cn.jcyh.peephole.utils.L;
 
 /**
  * 播放录音的 DialogFragment
@@ -324,7 +321,6 @@ public class PlaybackDialogFragment extends BaseDialogFragment {
                 } else {
                     sbProgress.setProgress(mCurrentPosition);
                 }
-                L.e("--------mCurrentPosition：" + mCurrentPosition + "::" + minutes + ":" + seconds);
                 tvCurrentProgress.setText(String.format("%02d:%02d", minutes, seconds));
 
                 updateSeekBar();

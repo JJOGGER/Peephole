@@ -3,11 +3,9 @@ package cn.jcyh.peephole.service;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaRecorder;
-import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.TimerTask;
 
@@ -43,7 +41,6 @@ public class RecordingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        L.e("----------onStartCommand" + intent);
         if (intent != null) {
             mRecordingItem = intent.getParcelableExtra(Constant.RECORIDING_ITEM);
             startRecording();
@@ -63,6 +60,7 @@ public class RecordingService extends Service {
         mRecorder = new MediaRecorder();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        L.e("------------mRecordingItem"+mRecordingItem.getFilePath());
         mRecorder.setOutputFile(mRecordingItem.getFilePath());
         mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
         mRecorder.setAudioChannels(1);

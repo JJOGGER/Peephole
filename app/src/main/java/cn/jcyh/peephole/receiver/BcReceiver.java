@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
+import android.text.TextUtils;
 
 import com.netease.nimlib.sdk.avchat.AVChatCallback;
 import com.netease.nimlib.sdk.avchat.AVChatManager;
@@ -16,6 +17,7 @@ import org.greenrobot.eventbus.EventBus;
 import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.control.DoorbellAudioManager;
+import cn.jcyh.peephole.entity.DoorbellConfig;
 import cn.jcyh.peephole.event.DoorbellSystemAction;
 import cn.jcyh.peephole.http.HttpAction;
 import cn.jcyh.peephole.ui.activity.CameraActivity;
@@ -56,6 +58,7 @@ public class BcReceiver extends BroadcastReceiver {
                 break;
             }
             case RING: {
+                L.e("---------RING");
                 //当前查看猫眼界面时不抓拍
                 ringAction(context, extAct);
 //		}else if (act.equals("kphone.intent.action.HOME_PRESS")) { // INDOOR_PRESS
@@ -79,6 +82,7 @@ public class BcReceiver extends BroadcastReceiver {
      * 门铃
      */
     private void ringAction(final Context context, String extAct) {
+        L.e("---------RING"+AVChatProfile.getInstance().isAVChatting());
         if (AVChatProfile.getInstance().isAVChatting()) return;
         if (extAct.equals(PRESSED)) {
             play(ControlCenter.DOORBELL_TYPE_RING);
@@ -218,6 +222,7 @@ public class BcReceiver extends BroadcastReceiver {
 
     private void play(final int type) {
         //如果正在留言中，则不再响铃
+        L.e("---------play");
         if (ControlCenter.sIsLeaveMsgRecording) {
             return;
         }
@@ -226,12 +231,24 @@ public class BcReceiver extends BroadcastReceiver {
             //正在播放门铃，不处理
             return;
         }
+        DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
         if (type == ControlCenter.DOORBELL_TYPE_RING) {
-            DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager
-                    .RingerTypeEnum.DOORBELL_RING, null);
+            if (!TextUtils.isEmpty(doorbellConfig.getCustomDoorbellRingName())){
+                DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager
+                        .RingerTypeEnum.DOORBELL_RING_CUSTOM, null);
+            }else {
+                DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager
+                        .RingerTypeEnum.DOORBELL_RING, null);
+            }
         } else {
-            DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager
-                    .RingerTypeEnum.DOORBELL_ALARM, null);
+            if (!TextUtils.isEmpty(doorbellConfig.getCustomDoorbellAlarmName())){
+                DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager
+                        .RingerTypeEnum.DOORBELL_ALARM_CUSTOM, null);
+            }else {
+                DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager
+                        .RingerTypeEnum.DOORBELL_ALARM, null);
+            }
+
         }
     }
 

@@ -96,14 +96,14 @@ public class FileUtil {
         File file = new File(getSDCardPath() + "ring");
         if (!file.exists())
             file.mkdirs();
-        return file.getAbsolutePath();
+        return file.getAbsolutePath()+File.separator;
     }
 
     public static String getExpandAlarmPath() {
         File file = new File(getSDCardPath() + "alarm");
         if (!file.exists())
             file.mkdirs();
-        return file.getAbsolutePath();
+        return file.getAbsolutePath()+File.separator;
     }
 
     /**

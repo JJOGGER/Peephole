@@ -11,7 +11,6 @@ import android.widget.TextView;
 import java.util.List;
 
 import cn.jcyh.peephole.R;
-import cn.jcyh.peephole.utils.L;
 
 public class ChooseSetAdapter extends RecyclerView.Adapter<ChooseSetAdapter.MyViewHolder> {
     private List<String> mDatas;
@@ -74,6 +73,7 @@ public class ChooseSetAdapter extends RecyclerView.Adapter<ChooseSetAdapter.MyVi
 
     @Override
     public int getItemCount() {
+        if (mDatas==null)return 0;
         return mDatas.size();
     }
 
