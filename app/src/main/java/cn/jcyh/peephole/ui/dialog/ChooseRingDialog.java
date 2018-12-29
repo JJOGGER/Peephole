@@ -19,6 +19,7 @@ import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
 import cn.jcyh.peephole.control.DoorbellAudioManager;
 import cn.jcyh.peephole.entity.DoorbellConfig;
+import cn.jcyh.peephole.entity.PlayAudio;
 import cn.jcyh.peephole.utils.FileUtil;
 import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.T;
@@ -32,7 +33,7 @@ public class ChooseRingDialog extends BaseDialogFragment {
     private String mTitle;
     private ChooseSetAdapter mChooseSetAdapter;
     private int mCurrentType;
-    private String mCurrentData;
+    private String mCurrentData;//文件显示名称，不含路径
     private ChooseSetAdapter mFileAdapter;
     private int mCurrentShow = 0;
     private OnChooseRingClickListener mListener;
@@ -76,6 +77,7 @@ public class ChooseRingDialog extends BaseDialogFragment {
         if (!TextUtils.isEmpty(mTitle)) {
             tvTitle.setText(mTitle);
         }
+        mLocalFiles = new ArrayList<>();
         rvContent.setLayoutManager(new LinearLayoutManager(mActivity));
         boolean existLocal = false;
         File file;
@@ -99,7 +101,6 @@ public class ChooseRingDialog extends BaseDialogFragment {
             }
         }
         if (file.exists() && file.list() != null && file.list().length != 0) {
-            mLocalFiles = new ArrayList<>();
             for (int i = 0; i < file.list().length; i++) {
                 L.e("----------files:" + file.list()[i]);
                 if (!file.list()[i].endsWith(".mp3") && !file.list()[i].endsWith(".wav"))
@@ -116,14 +117,16 @@ public class ChooseRingDialog extends BaseDialogFragment {
             public void onItemClick(String data, int pos) {
                 mCurrentData = data;
                 L.e("--------mCurrentData" + mCurrentData);
+                //选中时播放
+                PlayAudio playAudio;
                 if (mCurrentType == ControlCenter.DOORBELL_TYPE_RING) {
+                    playAudio = new PlayAudio(FileUtil.getExpandRingPath() + mCurrentData);
                     DoorbellAudioManager.getDoorbellAudioManager().playFile(DoorbellAudioManager
-                                    .RingerTypeEnum.DOORBELL_RING_CUSTOM,
-                            FileUtil.getExpandRingPath() + mCurrentData);
+                            .RingerTypeEnum.DOORBELL_RING_CUSTOM, playAudio);
                 } else {
+                    playAudio = new PlayAudio(FileUtil.getExpandAlarmPath() + mCurrentData);
                     DoorbellAudioManager.getDoorbellAudioManager().playFile(DoorbellAudioManager
-                                    .RingerTypeEnum.DOORBELL_ALARM_CUSTOM,
-                            FileUtil.getExpandAlarmPath() + mCurrentData);
+                            .RingerTypeEnum.DOORBELL_ALARM_CUSTOM, playAudio);
                 }
                 mFileAdapter.setCheckedItem(pos);
                 if (mListener != null) {
@@ -187,13 +190,16 @@ public class ChooseRingDialog extends BaseDialogFragment {
             @Override
             public void onItemClick(String data, int pos) {
                 mCurrentData = data;
-                L.e("-----data"+data);
+                L.e("-----data" + data);
+                PlayAudio playAudio;
                 if (mCurrentType == ControlCenter.DOORBELL_TYPE_RING) {
-                    DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager
-                                    .RingerTypeEnum.DOORBELL_RING,null);
+                    playAudio = new PlayAudio(Constant.ASSET_RING + File.separator + data);
+                    DoorbellAudioManager.getDoorbellAudioManager().playAssets(DoorbellAudioManager
+                            .RingerTypeEnum.DOORBELL_RING, playAudio);
                 } else {
-                    DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager
-                                    .RingerTypeEnum.DOORBELL_ALARM,null);
+                    playAudio = new PlayAudio(Constant.ASSET_ALARM + File.separator + data);
+                    DoorbellAudioManager.getDoorbellAudioManager().playAssets(DoorbellAudioManager
+                            .RingerTypeEnum.DOORBELL_ALARM, playAudio);
                 }
                 mChooseSetAdapter.setCheckedItem(pos);
                 if (mListener != null) {
@@ -216,20 +222,18 @@ public class ChooseRingDialog extends BaseDialogFragment {
             File local = new File(fileName);
             mCurrentData = local.getName();
             mFileAdapter.setCheckedItem(mFileAdapter.getPosition(mCurrentData));
-            mCurrentShow=1;
+            mCurrentShow = 1;
             rvContent.setAdapter(mFileAdapter);
         } else {
             String assetName;
             if (mCurrentType == ControlCenter.DOORBELL_TYPE_RING) {
-                assetName = mDoorbellConfig.getDoorbellRingName().replace(Constant.ASSET_RING +
-                        File.separator, "");
+                assetName = mDoorbellConfig.getShowDoorbellRingName();
             } else {
-                assetName = mDoorbellConfig.getDoorbellAlarmName().replace(Constant.ASSET_ALARM +
-                        File.separator, "");
+                assetName = mDoorbellConfig.getShowDoorbellAlarmName();
             }
             mCurrentData = assetName;
             mChooseSetAdapter.setCheckedItem(mChooseSetAdapter.getPosition(assetName));
-            mCurrentShow=0;
+            mCurrentShow = 0;
             rvContent.setAdapter(mChooseSetAdapter);
         }
 
@@ -246,10 +250,10 @@ public class ChooseRingDialog extends BaseDialogFragment {
             case R.id.tv_confirm:
                 if (mCurrentShow == 1) {
                     if (mCurrentType == ControlCenter.DOORBELL_TYPE_RING) {
-                        L.e("----FileUtil.getExpandRingPath()+mCurrentData:"+FileUtil.getExpandRingPath()+mCurrentData);
-                        mDoorbellConfig.setCustomDoorbellRingName(FileUtil.getExpandRingPath()+mCurrentData);
+                        L.e("----FileUtil.getExpandRingPath()+mCurrentData:" + FileUtil.getExpandRingPath() + mCurrentData);
+                        mDoorbellConfig.setCustomDoorbellRingName(FileUtil.getExpandRingPath() + mCurrentData);
                     } else {
-                        mDoorbellConfig.setCustomDoorbellAlarmName(FileUtil.getExpandAlarmPath()+mCurrentData);
+                        mDoorbellConfig.setCustomDoorbellAlarmName(FileUtil.getExpandAlarmPath() + mCurrentData);
                     }
                 } else {
                     if (mCurrentType == ControlCenter.DOORBELL_TYPE_RING) {
@@ -269,7 +273,6 @@ public class ChooseRingDialog extends BaseDialogFragment {
             case R.id.ibtn_file:
                 if (mCurrentShow == 0) {
                     setCheckedItemLocal();
-                    mCurrentShow = 1;
                 } else {
                     rvContent.setAdapter(mChooseSetAdapter);
                     mCurrentShow = 0;
@@ -282,6 +285,10 @@ public class ChooseRingDialog extends BaseDialogFragment {
         if (mFileAdapter == null || rvContent == null) return;
         File file;
         String name;
+        if (mFileAdapter.getData().isEmpty()){
+            T.show(R.string.no_local_file);
+            return;
+        }
         if (mCurrentType == ControlCenter.DOORBELL_TYPE_RING) {
             file = new File(FileUtil.getExpandRingPath());
             if (!file.exists() || file.list() == null || file.list().length == 0) {
@@ -297,19 +304,25 @@ public class ChooseRingDialog extends BaseDialogFragment {
             }
             name = mDoorbellConfig.getCustomDoorbellAlarmName();
         }
-        for (int i = 0; i < file.list().length; i++) {
-            if (file.list()[i].contains(name)){
-                mCurrentData=file.list()[i];
-                break;
+        //存在本地文件，但没有配置到猫眼
+        mCurrentData=null;
+        if (!TextUtils.isEmpty(name)) {
+            for (int i = 0; i < file.list().length; i++) {
+                if (file.list()[i].contains(name)) {
+                    mCurrentData = file.list()[i];
+                    break;
+                }
             }
         }
 //        if (!TextUtils.isEmpty(name)) {
 //            mCurrentData = name;
 //        }
-        L.e("----------mCurrentData:::"+mCurrentData);
+        L.e("----------mCurrentData:::" + mCurrentData);
         mFileAdapter.setCheckedItem(mFileAdapter.getPosition(mCurrentData));
         rvContent.setAdapter(mFileAdapter);
+        mCurrentShow = 1;
     }
+
     private void setCheckedItemDefault() {
         if (mChooseSetAdapter == null || rvContent == null) return;
         File file;
@@ -335,6 +348,7 @@ public class ChooseRingDialog extends BaseDialogFragment {
         mFileAdapter.setCheckedItem(mFileAdapter.getPosition(mCurrentData));
         rvContent.setAdapter(mFileAdapter);
     }
+
     @Override
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);

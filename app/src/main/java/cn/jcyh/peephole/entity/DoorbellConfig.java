@@ -9,6 +9,8 @@ import com.google.gson.GsonBuilder;
 
 import java.io.File;
 
+import cn.jcyh.peephole.constant.Constant;
+
 /**
  * Created by Jogger on 2018/4/20.
  * 猫眼默认设置
@@ -124,12 +126,22 @@ public class DoorbellConfig {
         return TextUtils.isEmpty(doorbellRingName) ? DEFAULT_RING : doorbellRingName;
     }
 
+    public String getShowDoorbellRingName() {
+        return (TextUtils.isEmpty(doorbellRingName) ? DEFAULT_RING : doorbellRingName).replace(Constant.ASSET_RING +
+                File.separator, "");
+    }
+
     public void setDoorbellRingName(String doorbellRingName) {
         this.doorbellRingName = doorbellRingName;
     }
 
     public String getDoorbellAlarmName() {
         return TextUtils.isEmpty(doorbellAlarmName) ? DEFAULT_ALARM : doorbellAlarmName;
+    }
+
+    public String getShowDoorbellAlarmName() {
+        return (TextUtils.isEmpty(doorbellAlarmName) ? DEFAULT_ALARM : doorbellAlarmName).replace(Constant.ASSET_ALARM +
+                File.separator, "");
     }
 
     public String getCustomDoorbellRingName() {

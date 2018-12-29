@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 
 import cn.jcyh.peephole.constant.AssetConstant;
 import cn.jcyh.peephole.entity.DoorbellConfig;
+import cn.jcyh.peephole.entity.PlayAudio;
 import cn.jcyh.peephole.utils.L;
 import cn.jcyh.peephole.utils.Util;
 
@@ -71,25 +72,24 @@ public class DoorbellAudioManager {
     /**
      * 播放资源文件
      */
-    public synchronized void playAssets(RingerTypeEnum typeEnum) {
-        switch (typeEnum) {
-            case DOORBELL_RING_CUSTOM:
-                break;
-            case DOORBELL_ALARM_CUSTOM:
-                break;
-        }
+    public synchronized void playAssets(RingerTypeEnum typeEnum, PlayAudio playAudio) {
+        mCurrentType = typeEnum;
+        mResPath=playAudio.getPath();
+        mVolume=playAudio.getVolume();
+        play(null);
     }
 
-    public synchronized void playFile(RingerTypeEnum typeEnum, String path) {
+    public synchronized void playFile(RingerTypeEnum typeEnum, PlayAudio playAudio) {
         mCurrentType = typeEnum;
+        mResPath = playAudio.getPath();
+        mVolume =playAudio.getVolume();
+        mPlayCount = playAudio.getCount();
         switch (typeEnum) {
             case DOORBELL_RING_CUSTOM:
-                mResPath = path;
-                mVolume = 0.5f;
-                mPlayCount = 1;
                 ControlCenter.getBCManager().setMainSpeakerOn(true);
                 break;
             case DOORBELL_ALARM_CUSTOM:
+                ControlCenter.getBCManager().setMainSpeakerOn(false);
                 break;
         }
         mLoop = false;

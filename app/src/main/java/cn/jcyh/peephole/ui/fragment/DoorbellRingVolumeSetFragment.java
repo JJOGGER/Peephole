@@ -55,8 +55,8 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
         mDoorbellRings = new ArrayList<>();
         mAlarmRings = new ArrayList<>();
         DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
-        tvDoorbellRing.setText(doorbellConfig.getDoorbellRingName().replace(Constant.ASSET_RING + File.separator, ""));
-        tvAlarmRing.setText(doorbellConfig.getDoorbellAlarmName().replace(Constant.ASSET_ALARM + File.separator, ""));
+        tvDoorbellRing.setText(doorbellConfig.getShowDoorbellRingName());
+        tvAlarmRing.setText(doorbellConfig.getShowDoorbellAlarmName());
         mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
         String[] rings = new String[0];
         try {

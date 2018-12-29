@@ -10,7 +10,9 @@ import butterknife.OnClick;
 import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
+import cn.jcyh.peephole.control.DoorbellAudioManager;
 import cn.jcyh.peephole.entity.DoorbellConfig;
+import cn.jcyh.peephole.entity.PlayAudio;
 import cn.jcyh.peephole.service.MediaPlayService;
 import cn.jcyh.peephole.utils.ServiceUtil;
 
@@ -66,23 +68,29 @@ public class VolumeSetDialog extends BaseDialogFragment implements SeekBar.OnSee
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-        Intent intent = new Intent(mActivity, MediaPlayService.class);
+        PlayAudio playAudio;
+//        Intent intent = new Intent(mActivity, MediaPlayService.class);
         switch (seekBar.getId()) {
             case R.id.sb_doorbell:
                 ControlCenter.getBCManager().setMainSpeakerOn(true);
                 mDoorbellConfig.setRingVolume(seekBar.getProgress());
-                intent.putExtra(Constant.RESOURCE_PATH, mDoorbellConfig.getDoorbellRingName());
-                intent.putExtra(Constant.VOLUME, seekBar.getProgress() / 100f);
-                mActivity.startService(intent);
+//                intent.putExtra(Constant.RESOURCE_PATH, mDoorbellConfig.getDoorbellRingName());
+//                intent.putExtra(Constant.VOLUME, seekBar.getProgress() / 100f);
+//                mActivity.startService(intent);
+                playAudio=new PlayAudio(mDoorbellConfig.getDoorbellRingName());
+                playAudio.setVolume(seekBar.getProgress()/ 100f);
+                DoorbellAudioManager.getDoorbellAudioManager().playAssets(DoorbellAudioManager.RingerTypeEnum.DOORBELL_RING,playAudio);
 //                play(TYPE_RING, seekBar.getProgress());
                 break;
             case R.id.sb_alarm:
                 ControlCenter.getBCManager().setMainSpeakerOn(false);
                 mDoorbellConfig.setAlarmVolume(seekBar.getProgress());
-                intent.putExtra(Constant.RESOURCE_PATH, mDoorbellConfig.getDoorbellAlarmName());
-                intent.putExtra(Constant.VOLUME, seekBar.getProgress() / 100f);
-                mActivity.startService(intent);
-//                play(TYPE_ALARM, seekBar.getProgress());
+//                intent.putExtra(Constant.RESOURCE_PATH, mDoorbellConfig.getDoorbellAlarmName());
+//                intent.putExtra(Constant.VOLUME, seekBar.getProgress() / 100f);
+//                mActivity.startService(intent);
+                playAudio=new PlayAudio(mDoorbellConfig.getDoorbellAlarmName());
+                playAudio.setVolume(seekBar.getProgress()/ 100f);
+                DoorbellAudioManager.getDoorbellAudioManager().playAssets(DoorbellAudioManager.RingerTypeEnum.DOORBELL_RING,playAudio);
                 break;
             case R.id.sb_video:
                 mDoorbellConfig.setVideoVolume(seekBar.getProgress());
@@ -93,6 +101,6 @@ public class VolumeSetDialog extends BaseDialogFragment implements SeekBar.OnSee
     @Override
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
-        ServiceUtil.stopService(MediaPlayService.class);
+//        ServiceUtil.stopService(MediaPlayService.class);
     }
 }

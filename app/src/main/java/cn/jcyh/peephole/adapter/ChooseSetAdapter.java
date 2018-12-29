@@ -1,6 +1,7 @@
 package cn.jcyh.peephole.adapter;
 
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -83,7 +84,7 @@ public class ChooseSetAdapter extends RecyclerView.Adapter<ChooseSetAdapter.MyVi
     }
 
     public int getPosition(String data) {
-        if (mDatas == null) return -1;
+        if (mDatas == null||TextUtils.isEmpty(data)) return -1;
         for (int i = 0; i < mDatas.size(); i++) {
             if (data.equals(mDatas.get(i)))
                 return i;
