@@ -1,7 +1,6 @@
 package cn.jcyh.peephole.ui.dialog;
 
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
@@ -13,10 +12,8 @@ import android.view.WindowManager;
 import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.File;
-import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -27,6 +24,7 @@ import cn.jcyh.peephole.service.RecordingService;
 import cn.jcyh.peephole.utils.FileUtil;
 import cn.jcyh.peephole.utils.GetImagePath;
 import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.T;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -35,7 +33,7 @@ import static android.app.Activity.RESULT_OK;
  */
 
 public class RecordAudioDialogFragment extends BaseDialogFragment {
-    public static final int MAX_RECORDING = 15;
+    public static final int MAX_RECORDING = 9;
     private static final int CODE_GALLERY_REQUEST = 0X0c;
     @BindView(R.id.c_audio_time)
     Chronometer cAudioTime;
@@ -46,9 +44,7 @@ public class RecordAudioDialogFragment extends BaseDialogFragment {
     @BindView(R.id.tv_max)
     TextView tvMax;
     private static final String TAG = "RecordAudioDialogFragme";
-    private int mRecordPromptCount = 0;
     private boolean mStartRecording = true;
-    private boolean mPauseRecording = true;
     private int mType;
     private RecordingItem mRecordingItem;
 
@@ -65,8 +61,20 @@ public class RecordAudioDialogFragment extends BaseDialogFragment {
     @Override
     protected void init(View view) {
         super.init(view);
-        tvMax.setText(String.format(getString(R.string.max_record_format), MAX_RECORDING));
+        setCancelable(false);
+        tvMax.setText(String.format(getString(R.string.max_record_format), MAX_RECORDING-1));
         mType = getArguments().getInt(Constant.TYPE, Constant.TYPE_RING);
+        cAudioTime.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+            @Override
+            public void onChronometerTick(Chronometer chronometer) {
+                if ((SystemClock.elapsedRealtime() - cAudioTime.getBase()) > MAX_RECORDING * 1000) {
+                    cAudioTime.setBase(SystemClock.elapsedRealtime());
+                    //停止录制
+                    mStartRecording=false;
+                    onRecord(false);
+                }
+            }
+        });
     }
 
     @Override
@@ -82,7 +90,6 @@ public class RecordAudioDialogFragment extends BaseDialogFragment {
                 break;
             case R.id.fab_play:
                 onRecord(mStartRecording);
-                mStartRecording = !mStartRecording;
                 break;
             case R.id.ibtn_file:
                 Intent intent = new Intent();
@@ -94,9 +101,9 @@ public class RecordAudioDialogFragment extends BaseDialogFragment {
     }
 
     private void onRecord(boolean start) {
-
         Intent intent = new Intent(getActivity(), RecordingService.class);
         if (start) {
+            L.e("------开始录音");
             resetRecordingItem();
             mRecordingItem = new RecordingItem();
             mRecordingItem.setName(mType == Constant.TYPE_RING ? "ring" : "alarm" + System
@@ -104,11 +111,9 @@ public class RecordAudioDialogFragment extends BaseDialogFragment {
             mRecordingItem.setFilePath((mType == Constant.TYPE_RING ? FileUtil.getExpandRingPath
                     () : FileUtil.getExpandAlarmPath())
                     + System.currentTimeMillis() + ".mp3");
-            L.e("-------->");
             mRecordingItem.setRecord(true);
             intent.putExtra(Constant.RECORIDING_ITEM, mRecordingItem);
             fabPlay.setImageResource(R.mipmap.ic_media_stop);
-            Toast.makeText(getActivity(), "开始录音...", Toast.LENGTH_SHORT).show();
             cAudioTime.setBase(SystemClock.elapsedRealtime());
             cAudioTime.start();
             getActivity().startService(intent);
@@ -116,23 +121,16 @@ public class RecordAudioDialogFragment extends BaseDialogFragment {
             fabPlay.setImageResource(R.mipmap.ic_mic_white_36dp);
             cAudioTime.stop();
             timeWhenPaused = 0;
-            Toast.makeText(getActivity(), "录音结束...", Toast.LENGTH_SHORT).show();
+            T.show(R.string.record_end);
             getActivity().stopService(intent);
-            //allow the screen to turn off again once recording is finished
             getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-//            RecordingItem recordingItem = new RecordingItem();
-//            SharedPreferences sharePreferences = getActivity().getSharedPreferences
-//                    ("sp_name_audio", MODE_PRIVATE);
-//            final String filePath = sharePreferences.getString("audio_path", "");
-//            long elpased = sharePreferences.getLong("elpased", 0);
-//            recordingItem.setFilePath(filePath);
-//            recordingItem.setLength((int) elpased);
             PlaybackDialogFragment fragmentPlay = PlaybackDialogFragment.newInstance
                     (mRecordingItem);
             fragmentPlay.show(getActivity().getSupportFragmentManager(), PlaybackDialogFragment
                     .class.getSimpleName());
             dismiss();
         }
+        mStartRecording = !mStartRecording;
     }
 
     private void resetRecordingItem() {
@@ -155,19 +153,10 @@ public class RecordAudioDialogFragment extends BaseDialogFragment {
                     if (!TextUtils.isEmpty(path)) {
                         File file = new File(path);
                         if (!file.exists()) return;
-                        MediaPlayer mediaPlayer = new MediaPlayer();
-                        try {
-                            mediaPlayer.setDataSource(path);
-                            mediaPlayer.prepare();
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
                         resetRecordingItem();
                         mRecordingItem = new RecordingItem();
                         mRecordingItem.setName(file.getName());
                         mRecordingItem.setFilePath(path);
-                        mRecordingItem.setLength(mediaPlayer.getDuration());
                         mRecordingItem.setType(mType);
                         PlaybackDialogFragment fragmentPlay = PlaybackDialogFragment.newInstance
                                 (mRecordingItem);

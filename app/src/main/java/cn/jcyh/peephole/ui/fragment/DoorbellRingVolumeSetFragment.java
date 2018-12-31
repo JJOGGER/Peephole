@@ -1,10 +1,9 @@
 package cn.jcyh.peephole.ui.fragment;
 
-import android.media.MediaPlayer;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +30,8 @@ import cn.jcyh.peephole.utils.L;
  * 设置铃声和音量
  */
 
-public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseDialogFragment.OnDialogDissmissListener {
+public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseDialogFragment
+        .OnDialogDissmissListener {
     @BindView(R.id.tv_doorbell_ring)
     TextView tvDoorbellRing;
     @BindView(R.id.tv_alarm_ring)
@@ -42,8 +42,6 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
     private DialogHelper mCustomDialog;
     private List<String> mDoorbellRings;
     private List<String> mAlarmRings;
-    private DoorbellConfig mDoorbellConfig;
-    private MediaPlayer mPlayer;
 
     @Override
     public int getLayoutId() {
@@ -55,9 +53,17 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
         mDoorbellRings = new ArrayList<>();
         mAlarmRings = new ArrayList<>();
         DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
-        tvDoorbellRing.setText(doorbellConfig.getShowDoorbellRingName());
-        tvAlarmRing.setText(doorbellConfig.getShowDoorbellAlarmName());
-        mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();
+        if (!TextUtils.isEmpty(doorbellConfig.getCustomDoorbellRingName())) {
+            tvDoorbellRing.setText(doorbellConfig.getCustomDoorbellRingName());
+        } else {
+            tvDoorbellRing.setText(doorbellConfig.getShowDoorbellRingName());
+        }
+        if (!TextUtils.isEmpty(doorbellConfig.getCustomDoorbellAlarmName())) {
+            tvAlarmRing.setText(doorbellConfig.getCustomDoorbellAlarmName());
+        } else {
+            tvAlarmRing.setText(doorbellConfig.getShowDoorbellAlarmName());
+        }
+
         String[] rings = new String[0];
         try {
             rings = getResources().getAssets().list(Constant.ASSET_RING);
@@ -111,31 +117,19 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
         chooseRingDialog.setType(ControlCenter.DOORBELL_TYPE_ALARM);
         chooseRingDialog.setTitle(getString(R.string.alarm_ring));
         chooseRingDialog.setDatas(mAlarmRings);
-        chooseRingDialog.setOnChooseRingClickListener(new ChooseRingDialog.OnChooseRingClickListener() {
-            @Override
-            public void onItemClick(String data, int pos) {
-                L.e("-----------data:" + data + "::" + pos);
-//                    chooseRingDialog.setCheckedItem(data);
-//                    Intent intent = new Intent(mActivity, MediaPlayService.class);
-//                    intent.putExtra(Constant.RESOURCE_PATH, ASSET_ALARM + File.separator + data);
-//                    intent.putExtra(Constant.VOLUME, mDoorbellConfig.getAlarmVolume() / 100f);
-//                    mActivity.startService(intent);
-//                    play(data, ControlCenter.DOORBELL_TYPE_ALARM);
-            }
-        });
         chooseRingDialog.setOnDismissListener(this);
         chooseRingDialog.setOnDialogListener(new OnDialogListener() {
             @Override
             public void onConfirm(Object content) {
                 L.e("----------content:" + content);
-//                    mDoorbellConfig.setDoorbellAlarmName(ASSET_ALARM + File.separator + content.toString());
+//                    mDoorbellConfig.setDoorbellAlarmName(ASSET_ALARM + File.separator + content
+// .toString());
 //                    ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
-//                    tvAlarmRing.setText(content.toString());
+                tvAlarmRing.setText(content.toString());
             }
         });
         mAlarmRingDialog = new DialogHelper((BaseActivity) mActivity, chooseRingDialog);
         ControlCenter.getBCManager().setMainSpeakerOn(false);
-        mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();//重新获取数据
         mAlarmRingDialog.commit();
     }
 
@@ -147,31 +141,17 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
         chooseRingDialog.setType(ControlCenter.DOORBELL_TYPE_RING);
         chooseRingDialog.setTitle(getString(R.string.doorbell_ring));
         chooseRingDialog.setDatas(mDoorbellRings);
-//            adapter.setOnItemClickListener(new ChooseSetAdapter.OnItemClickListener() {
-//                @Override
-//                public void onItemClick(String data, int pos) {
-//                    chooseRingDialog.setCheckedItem(data);
-//                    Intent intent = new Intent(mActivity, MediaPlayService.class);
-//                    intent.putExtra(Constant.RESOURCE_PATH, ASSET_RING + File.separator + data);
-//                    intent.putExtra(Constant.VOLUME, mDoorbellConfig.getRingVolume() / 100f);
-//                    mActivity.startService(intent);
-////                    play(data, ControlCenter.DOORBELL_TYPE_RING);
-//                }
-//            });
         chooseRingDialog.setOnDismissListener(this);
         chooseRingDialog.setOnDialogListener(new OnDialogListener() {
             @Override
             public void onConfirm(Object content) {
-//                    mDoorbellConfig.setDoorbellRingName(ASSET_RING + File.separator + content.toString());
+//                    mDoorbellConfig.setDoorbellRingName(ASSET_RING + File.separator + content
+// .toString());
 //                    ControlCenter.getDoorbellManager().setDoorbellConfig(mDoorbellConfig);
                 tvDoorbellRing.setText(content.toString());
             }
         });
         mDoorbellRingDialog = new DialogHelper((BaseActivity) mActivity, chooseRingDialog);
-        ChooseRingDialog dialogFragment = (ChooseRingDialog) mDoorbellRingDialog.getDialogFragment();
-//        if (dialogFragment != null)
-//            dialogFragment.setCheckedItem(mDoorbellConfig.getDoorbellRingName().replace(ASSET_RING + File.separator, ""));
-        mDoorbellConfig = ControlCenter.getDoorbellManager().getDoorbellConfig();//重新获取数据
         ControlCenter.getBCManager().setMainSpeakerOn(true);
         mDoorbellRingDialog.commit();
     }
@@ -185,10 +165,6 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
             mDoorbellRingDialog.dismiss();
         if (mVolumeDialog != null)
             mVolumeDialog.dismiss();
-        if (mPlayer != null) {
-            mPlayer.stop();
-            mPlayer.release();
-        }
     }
 
 //    public void play(String data, int type) {
@@ -204,12 +180,15 @@ public class DoorbellRingVolumeSetFragment extends BaseFragment implements BaseD
 //            }
 //            if (type == ControlCenter.DOORBELL_TYPE_RING) {
 //                descriptor = assets.openFd(Constant.ASSET_RING + File.separator + data);
-//                mPlayer.setVolume(mDoorbellConfig.getRingVolume() / 100f, mDoorbellConfig.getRingVolume() / 100f);
+//                mPlayer.setVolume(mDoorbellConfig.getRingVolume() / 100f, mDoorbellConfig
+// .getRingVolume() / 100f);
 //            } else {
 //                descriptor = assets.openFd(Constant.ASSET_ALARM + File.separator + data);
-//                mPlayer.setVolume(mDoorbellConfig.getAlarmVolume() / 100f, mDoorbellConfig.getAlarmVolume() / 100f);
+//                mPlayer.setVolume(mDoorbellConfig.getAlarmVolume() / 100f, mDoorbellConfig
+// .getAlarmVolume() / 100f);
 //            }
-//            mPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
+//            mPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(),
+// descriptor.getLength());
 //            mPlayer.prepare();
 //            mPlayer.start();
 //        } catch (IOException e) {

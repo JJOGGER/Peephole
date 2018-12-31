@@ -8,13 +8,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.SystemClock;
+import android.text.TextUtils;
 
 import com.netease.nimlib.sdk.avchat.AVChatCallback;
 import com.netease.nimlib.sdk.avchat.AVChatManager;
 import com.netease.nimlib.sdk.avchat.model.AVChatChannelInfo;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.control.ControlCenter;
@@ -23,6 +21,7 @@ import cn.jcyh.peephole.entity.DoorbellConfig;
 import cn.jcyh.peephole.event.DoorbellSystemAction;
 import cn.jcyh.peephole.ui.activity.CameraActivity;
 import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.NetworkUtil;
 
 /**
  * Created by jogger on 2018/5/2.
@@ -45,8 +44,8 @@ public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(final Context context, Intent intent) {
         if (!ControlCenter.sPIRRunning) return;
-        String time = SimpleDateFormat.getDateTimeInstance().format(new Date(System
-                .currentTimeMillis()));
+//        String time = SimpleDateFormat.getDateTimeInstance().format(new Date(System
+//                .currentTimeMillis()));
 //        mPrintWriter.write("---" + time + " 达到感应时间:");
         boolean pirStatus = ControlCenter.getBCManager().getPIRStatus();
 //        mPrintWriter.write("--- 当前pir状态:" + pirStatus + "\n");
@@ -54,6 +53,10 @@ public class AlarmReceiver extends BroadcastReceiver {
         if (pirStatus) {
             final DoorbellConfig doorbellConfig = ControlCenter.getDoorbellManager()
                     .getDoorbellConfig();
+            if (!NetworkUtil.isConnected()) {
+                toTakePicture(context,doorbellConfig);
+                return;
+            }
             boolean multiVideo =doorbellConfig.isMultiVideo();
             if (multiVideo) {
                 AVChatManager.getInstance().createRoom(ControlCenter.getSN(), null, new
@@ -127,7 +130,8 @@ public class AlarmReceiver extends BroadcastReceiver {
             return;
         }
         if (DoorbellAudioManager.getDoorbellAudioManager().isPlaying(DoorbellAudioManager
-                .RingerTypeEnum.DOORBELL_RING)) {
+                .RingerTypeEnum.DOORBELL_RING)||DoorbellAudioManager.getDoorbellAudioManager().isPlaying(DoorbellAudioManager
+                .RingerTypeEnum.DOORBELL_RING_CUSTOM)) {
             //正在播放门铃，不处理
             return;
         }
@@ -135,8 +139,16 @@ public class AlarmReceiver extends BroadcastReceiver {
             DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager
                     .RingerTypeEnum.DOORBELL_RING, null);
         } else {
+            //判断是否存在自定义
             DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager
                     .RingerTypeEnum.DOORBELL_ALARM, null);
+            if (!TextUtils.isEmpty(ControlCenter.getDoorbellManager().getDoorbellConfig().getCustomDoorbellAlarmName())) {
+                DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager
+                        .RingerTypeEnum.DOORBELL_ALARM_CUSTOM, null);
+            } else {
+                DoorbellAudioManager.getDoorbellAudioManager().play(DoorbellAudioManager
+                        .RingerTypeEnum.DOORBELL_ALARM, null);
+            }
         }
     }
 }

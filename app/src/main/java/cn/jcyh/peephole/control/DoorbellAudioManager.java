@@ -211,7 +211,6 @@ public class DoorbellAudioManager {
 
 
     public void stop() {
-        L.e("-----结束播放:" + mExecutorService.isShutdown());
         if (mPlayer != null) {
             mPlayer.stop();
             mPlayer.reset();

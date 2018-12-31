@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +22,8 @@ import cn.jcyh.peephole.R;
 import cn.jcyh.peephole.constant.Constant;
 import cn.jcyh.peephole.entity.RecordingItem;
 import cn.jcyh.peephole.utils.FileUtil;
+import cn.jcyh.peephole.utils.L;
+import cn.jcyh.peephole.utils.T;
 
 /**
  * 播放录音的 DialogFragment
@@ -62,18 +63,6 @@ public class PlaybackDialogFragment extends BaseDialogFragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setCancelable(false);
-        mRecordingItem = getArguments().getParcelable(Constant.RECORIDING_ITEM);
-        assert mRecordingItem != null;
-        long itemDuration = mRecordingItem.getLength();
-        mMinutes = TimeUnit.MILLISECONDS.toMinutes(itemDuration);
-        mSeconds = TimeUnit.MILLISECONDS.toSeconds(itemDuration)
-                - TimeUnit.MINUTES.toSeconds(mMinutes);
-    }
-
-    @Override
     public int getLayoutId() {
         return R.layout.fragment_media_playback;
     }
@@ -86,12 +75,28 @@ public class PlaybackDialogFragment extends BaseDialogFragment {
     @Override
     protected void init(View view) {
         super.init(view);
+        setCancelable(false);
+        mRecordingItem = getArguments().getParcelable(Constant.RECORIDING_ITEM);
+        assert mRecordingItem != null;
+        long itemDuration;
+        MediaPlayer mediaPlayer = new MediaPlayer();
+        try {
+            mediaPlayer.setDataSource(mRecordingItem.getFilePath());
+            mediaPlayer.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        itemDuration=mediaPlayer.getDuration();
+        mediaPlayer.release();
+        mRecordingItem.setLength(mediaPlayer.getDuration());
+        mMinutes = TimeUnit.MILLISECONDS.toMinutes(itemDuration);
+        mSeconds = TimeUnit.MILLISECONDS.toSeconds(itemDuration)
+                - TimeUnit.MINUTES.toSeconds(mMinutes);
         ColorFilter filter = new LightingColorFilter
                 (getResources().getColor(R.color.colorPrimary), getResources().getColor(R.color
                         .colorPrimary));
         sbProgress.getProgressDrawable().setColorFilter(filter);
         sbProgress.getThumb().setColorFilter(filter);
-        tvFileLength.setText(String.valueOf(mRecordingItem.getLength()));
         sbProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -157,7 +162,7 @@ public class PlaybackDialogFragment extends BaseDialogFragment {
                 onPlay(mIsPlaying);
                 break;
             case R.id.tv_save:
-                Toast.makeText(getActivity(), "保存", Toast.LENGTH_LONG).show();
+                T.show(R.string.save);
                 save();
                 dismiss();
                 break;
@@ -187,10 +192,11 @@ public class PlaybackDialogFragment extends BaseDialogFragment {
         if (!file.exists()) return;
         File file2=new File(mRecordingItem.getFilePath());
         for (int i = 0; i < file.list().length; i++) {
-            if (mRecordingItem.getName().equals(file2.getName())){
+            if (mRecordingItem.getName().equals(file.getName())){
                 return;
             }
         }
+        L.e("--------->>拷贝文件");
         FileUtil.copyFile(mRecordingItem.getFilePath(),file.getAbsolutePath()+File.separator+mRecordingItem.getName());
     }
 

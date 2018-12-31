@@ -15,7 +15,7 @@ import cn.jcyh.peephole.R;
 
 public class ChooseSetAdapter extends RecyclerView.Adapter<ChooseSetAdapter.MyViewHolder> {
     private List<String> mDatas;
-    private int mCurrentPos;
+    private int mCurrentPos=-1;
     private OnItemClickListener mListener;
 
     public ChooseSetAdapter(List<String> datas) {
